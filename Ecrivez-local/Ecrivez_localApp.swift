@@ -4,11 +4,11 @@
 //
 //  Created by Tobias Fu on 7/22/24.
 //
-
+import SwiftData
 import SwiftUI
 
 @main
-struct Ecrivez_localApp: App {
+struct NotesApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
