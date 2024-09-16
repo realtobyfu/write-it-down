@@ -233,6 +233,7 @@ struct ContentView: View {
                         .foregroundColor(.white)
                     }
                 }
+                .padding(.bottom, showBubbles ? 100 : 0)
                 .listStyle(PlainListStyle())
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -244,6 +245,7 @@ struct ContentView: View {
                     }
                 }
                 .navigationTitle("Ideas")
+                
                 .sheet(isPresented: $showingNoteEditor, onDismiss: {
                     // Update the notes array before clearing selectedNote
                     if let updatedNote = selectedNote {
@@ -257,7 +259,7 @@ struct ContentView: View {
                         NoteEditorView(note: note, onSave: { updatedNote in
                             selectedNote = updatedNote
                         })
-                        .frame(maxHeight: UIScreen.main.bounds.height / 2)
+                        .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
                     }
                 }
 

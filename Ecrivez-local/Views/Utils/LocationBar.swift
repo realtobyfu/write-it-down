@@ -53,7 +53,7 @@ struct LocationBar: View {
             } else if let placemark = placemarks?.first {
                 locationString = [
                     placemark.locality,
-                    placemark.administrativeArea,
+//                    placemark.administrativeArea,
                     placemark.country
                 ].compactMap { $0 }.joined(separator: ", ")
             } else {

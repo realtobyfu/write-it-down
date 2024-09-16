@@ -18,6 +18,7 @@ struct NoteEditorView: View {
     @State private var showingImagePicker = false
     @State private var showingWeatherPicker = false
     @State private var showingLocationPicker = false
+    @FocusState private var isTextEditorFocused: Bool // For handling focus
 
     let categories: [Category] = [
         Category(symbol: "book", colorName: "green"),
@@ -33,7 +34,7 @@ struct NoteEditorView: View {
         self.onSave = onSave
         self.placeholder = placeholder
         
-        let initialText = note?.attributedText ?? NSAttributedString(string: placeholder, attributes: [.foregroundColor: UIColor.gray])
+        let initialText = note?.attributedText ?? NSAttributedString(string: placeholder, attributes: [.foregroundColor: UIColor.gray.withAlphaComponent(0.5)])
         _attributedText = State(initialValue: initialText)
         _selectedRange = State(initialValue: NSRange(location: 0, length: 0))
         _selectedImages = State(initialValue: note?.images ?? [])
@@ -42,7 +43,7 @@ struct NoteEditorView: View {
         _tapped = State(initialValue: note != nil)
         _category = State(initialValue: note?.category ?? category)
     }
-    
+
     var body: some View {
         NavigationView {
             VStack {
@@ -85,30 +86,34 @@ struct NoteEditorView: View {
                 .padding(.vertical, 5)
 
                 ZStack(alignment: .topLeading) {
-                    if attributedText.string.isEmpty && !tapped {
-                        let placeholderAttributedText = NSAttributedString(
-                            string: placeholder,
-                            attributes: [
-                                .font: UIFont.systemFont(ofSize: 17),
-                                .foregroundColor: UIColor.gray.withAlphaComponent(0.2)
-                            ]
-                        )
-
-                        AttributedTextView(attributedText: placeholderAttributedText)
-                            .padding(8)
-                            .onTapGesture {
-                                tapped = true
-                                attributedText = NSAttributedString(string: "")
-                            }
+                    // Show placeholder when text editor is empty
+                    if attributedText.string.isEmpty && !isTextEditorFocused {
+                        Text(placeholder)
+                            .foregroundColor(Color.gray.opacity(0.5))
+                            .padding(.leading, 8)
+                            .padding(.top, 12)
                     }
 
                     TextEditor(text: Binding(
                         get: { attributedText.string },
-                        set: { attributedText = NSAttributedString(string: $0) }
+                        set: { newText in
+                            attributedText = NSAttributedString(string: newText)
+                        }
                     ))
                     .frame(height: 200)
                     .padding(8)
                     .background(Color.white)
+                    .focused($isTextEditorFocused) // Focus management
+                }
+                .onAppear {
+                    if attributedText.string == placeholder {
+                        isTextEditorFocused = false
+                    }
+                }
+                
+                // Print focus changes
+                .onChange(of: isTextEditorFocused) { focused in
+                    print("TextEditor focused: \(focused)")
                 }
 
                 formattingToolbar
@@ -268,110 +273,5 @@ struct NoteEditorView: View {
         mutableText.insert(NSAttributedString(string: bullet), at: safeLocation)
         attributedText = mutableText
         selectedRange = NSRange(location: safeLocation + bullet.count, length: 0)
-    }
-}
-
-struct RichTextEditor: UIViewRepresentable {
-    @Binding var attributedText: NSAttributedString
-    @Binding var selectedRange: NSRange
-    var placeholder: String
-    var placeholderColor: UIColor = UIColor.gray.withAlphaComponent(0.5)
-    var normalTextColor: UIColor = UIColor.label
-
-    func makeUIView(context: Context) -> UITextView {
-        let textView = UITextView()
-        textView.isEditable = false
-        textView.isScrollEnabled = false
-        textView.backgroundColor = UIColor.clear
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
-        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        return textView
-    }
-
-    func updateUIView(_ uiView: UITextView, context: Context) {
-        if attributedText.length == 0 {
-            uiView.text = placeholder
-            uiView.textColor = placeholderColor
-        } else {
-            uiView.attributedText = attributedText
-            uiView.textColor = normalTextColor
-        }
-
-        let textLength = uiView.attributedText.length
-        let safeLocation = min(selectedRange.location, textLength)
-        let safeLength = min(selectedRange.length, textLength - safeLocation)
-        let safeSelectedRange = NSRange(location: safeLocation, length: safeLength)
-
-        if uiView.selectedRange != safeSelectedRange {
-            uiView.selectedRange = safeSelectedRange
-        }
-    }
-
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    class Coordinator: NSObject, UITextViewDelegate {
-        var parent: RichTextEditor
-
-        init(_ parent: RichTextEditor) {
-            self.parent = parent
-        }
-
-        func textViewDidChange(_ textView: UITextView) {
-            if textView.textColor == parent.placeholderColor {
-                parent.attributedText = NSAttributedString(string: "")
-            } else {
-                parent.attributedText = textView.attributedText
-            }
-        }
-
-        func textViewDidBeginEditing(_ textView: UITextView) {
-            if textView.textColor == parent.placeholderColor {
-                textView.text = nil
-                textView.textColor = parent.normalTextColor
-            }
-        }
-
-        func textViewDidEndEditing(_ textView: UITextView) {
-            if textView.text.isEmpty {
-                textView.text = parent.placeholder
-                textView.textColor = parent.placeholderColor
-            }
-        }
-
-        func textViewDidChangeSelection(_ textView: UITextView) {
-            let textLength = textView.attributedText.length
-            let safeLocation = min(textView.selectedRange.location, textLength)
-            let safeLength = min(textView.selectedRange.length, textLength - safeLocation)
-            parent.selectedRange = NSRange(location: safeLocation, length: safeLength)
-        }
-    }
-}
-
-
-struct NoteEditorView_Previews: PreviewProvider {
-    @State static var sampleAttributedText = NSAttributedString(string: "Sample Note Text")
-    @State static var sampleImages: [UIImage] = []
-    @State static var sampleLocation: String = "Sample Location"
-    @State static var sampleWeather: String = "Sunny"
-    @State static var selectedCategory: Category? = Category(symbol: "book", colorName: "green")
-
-    static var previews: some View {
-        // Use a simplified version of NoteEditorView for preview
-        NoteEditorView(
-            note: Note(
-                id: UUID(),
-                attributedText: sampleAttributedText,
-                images: sampleImages,
-                category: selectedCategory!
-            ),
-            onSave: { note in
-                print("Note saved: \(note)")
-            }
-        )
-//        .environment(\.presentationMode, .constant(.active))
-        .previewLayout(.sizeThatFits)
     }
 }
