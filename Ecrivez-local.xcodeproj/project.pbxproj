@@ -7,18 +7,40 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3E51FF382C64597400D317B7 /* DateBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E51FF372C64597400D317B7 /* DateBar.swift */; };
+		3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */; };
+		3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70242C87B07F0001BD86 /* MapView.swift */; };
+		3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70282C87B8280001BD86 /* LocationBar.swift */; };
+		3EA5DB5F2C6D6957002F4827 /* DatePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA5DB5E2C6D6957002F4827 /* DatePicker.swift */; };
+		3EC53C732C62DD4000CED78A /* WeatherBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC53C722C62DD4000CED78A /* WeatherBar.swift */; };
+		3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC53C742C63051000CED78A /* LocationPicker.swift */; };
 		3ED060312C4EE7ED00392BDC /* Ecrivez_localApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060302C4EE7ED00392BDC /* Ecrivez_localApp.swift */; };
 		3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060322C4EE7ED00392BDC /* ContentView.swift */; };
 		3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060342C4EE7EF00392BDC /* Assets.xcassets */; };
 		3ED060382C4EE7EF00392BDC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */; };
+		3EF9F7972C5D1FFC00CD8F31 /* WeatherPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */; };
+		3EFCE2312C5A90F2000F748A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2302C5A90F2000F748A /* SettingsView.swift */; };
+		3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2352C5ACC48000F748A /* ImagePicker.swift */; };
+		3EFCE23A2C5ACD37000F748A /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		3E51FF372C64597400D317B7 /* DateBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateBar.swift; sourceTree = "<group>"; };
+		3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchViewModel.swift; sourceTree = "<group>"; };
+		3E8E70242C87B07F0001BD86 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		3E8E70282C87B8280001BD86 /* LocationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationBar.swift; sourceTree = "<group>"; };
+		3EA5DB5E2C6D6957002F4827 /* DatePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatePicker.swift; sourceTree = "<group>"; };
+		3EC53C722C62DD4000CED78A /* WeatherBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBar.swift; sourceTree = "<group>"; };
+		3EC53C742C63051000CED78A /* LocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPicker.swift; sourceTree = "<group>"; };
 		3ED0602D2C4EE7ED00392BDC /* Ecrivez-local.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ecrivez-local.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ED060302C4EE7ED00392BDC /* Ecrivez_localApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ecrivez_localApp.swift; sourceTree = "<group>"; };
 		3ED060322C4EE7ED00392BDC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3ED060342C4EE7EF00392BDC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPicker.swift; sourceTree = "<group>"; };
+		3EFCE2302C5A90F2000F748A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3EFCE2352C5ACC48000F748A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +54,34 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3E51FF392C64598500D317B7 /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */,
+				3EFCE2302C5A90F2000F748A /* SettingsView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		3E8E70492C88FDDA0001BD86 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		3EC53C712C62DD1C00CED78A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				3E8E70242C87B07F0001BD86 /* MapView.swift */,
+				3E8E70282C87B8280001BD86 /* LocationBar.swift */,
+				3E51FF372C64597400D317B7 /* DateBar.swift */,
+				3EC53C722C62DD4000CED78A /* WeatherBar.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
 		3ED060242C4EE7ED00392BDC = {
 			isa = PBXGroup;
 			children = (
@@ -53,6 +103,9 @@
 			children = (
 				3ED060302C4EE7ED00392BDC /* Ecrivez_localApp.swift */,
 				3ED060322C4EE7ED00392BDC /* ContentView.swift */,
+				3E8E70492C88FDDA0001BD86 /* ViewModels */,
+				3EFCE23C2C5ACD62000F748A /* Utils */,
+				3EFCE2332C5A910F000F748A /* Views */,
 				3ED060342C4EE7EF00392BDC /* Assets.xcassets */,
 				3ED060362C4EE7EF00392BDC /* Preview Content */,
 			);
@@ -65,6 +118,26 @@
 				3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3EFCE2332C5A910F000F748A /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				3E51FF392C64598500D317B7 /* Screens */,
+				3EC53C712C62DD1C00CED78A /* Utils */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		3EFCE23C2C5ACD62000F748A /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */,
+				3EC53C742C63051000CED78A /* LocationPicker.swift */,
+				3EFCE2352C5ACC48000F748A /* ImagePicker.swift */,
+				3EA5DB5E2C6D6957002F4827 /* DatePicker.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,8 +210,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3EF9F7972C5D1FFC00CD8F31 /* WeatherPicker.swift in Sources */,
+				3EFCE2312C5A90F2000F748A /* SettingsView.swift in Sources */,
 				3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */,
+				3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */,
+				3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */,
 				3ED060312C4EE7ED00392BDC /* Ecrivez_localApp.swift in Sources */,
+				3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */,
+				3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */,
+				3EA5DB5F2C6D6957002F4827 /* DatePicker.swift in Sources */,
+				3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */,
+				3E51FF382C64597400D317B7 /* DateBar.swift in Sources */,
+				3EC53C732C62DD4000CED78A /* WeatherBar.swift in Sources */,
+				3EFCE23A2C5ACD37000F748A /* NoteEditorView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,6 +359,7 @@
 				DEVELOPMENT_TEAM = KUXA576FBM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Ecrivez needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,6 +389,7 @@
 				DEVELOPMENT_TEAM = KUXA576FBM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Ecrivez needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

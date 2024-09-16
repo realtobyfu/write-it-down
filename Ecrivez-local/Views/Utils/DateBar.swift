@@ -8,11 +8,33 @@
 import SwiftUI
 
 struct DateBar: View {
+    var date: Date
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            Image(systemName: "calendar")
+                .foregroundColor(.blue)
+                .font(.title2)
+            Text(dateFormatted)
+                .font(.headline)
+                .foregroundColor(.blue)
+            Spacer()
+        }
+        .padding(5)
+        .background(Color.white)
+        .cornerRadius(15)
+        .shadow(radius: 3)
+        .padding(.horizontal, 10)
+    }
+    
+    // Date formatter for displaying the date
+    private var dateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 }
-
-#Preview {
-    DateBar()
-}
+//
+//#Preview {
+//    DateBar()
+//}
