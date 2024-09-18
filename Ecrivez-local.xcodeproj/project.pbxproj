@@ -16,6 +16,9 @@
 		3E71463B2C9A174300F5ACE0 /* FormattingToolBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E71463A2C9A172400F5ACE0 /* FormattingToolBar.swift */; };
 		3E71463D2C9A178500F5ACE0 /* ImageSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E71463C2C9A178500F5ACE0 /* ImageSelectionView.swift */; };
 		3E71463F2C9A179D00F5ACE0 /* LocationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E71463E2C9A179D00F5ACE0 /* LocationView.swift */; };
+		3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146442C9A756A00F5ACE0 /* UserSettings.swift */; };
+		3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */; };
+		3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */; };
 		3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */; };
 		3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70242C87B07F0001BD86 /* MapView.swift */; };
 		3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70282C87B8280001BD86 /* LocationBar.swift */; };
@@ -43,6 +46,9 @@
 		3E71463A2C9A172400F5ACE0 /* FormattingToolBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormattingToolBar.swift; sourceTree = "<group>"; };
 		3E71463C2C9A178500F5ACE0 /* ImageSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageSelectionView.swift; sourceTree = "<group>"; };
 		3E71463E2C9A179D00F5ACE0 /* LocationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationView.swift; sourceTree = "<group>"; };
+		3E7146442C9A756A00F5ACE0 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
+		3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorView.swift; sourceTree = "<group>"; };
+		3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorListView.swift; sourceTree = "<group>"; };
 		3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchViewModel.swift; sourceTree = "<group>"; };
 		3E8E70242C87B07F0001BD86 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		3E8E70282C87B8280001BD86 /* LocationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationBar.swift; sourceTree = "<group>"; };
@@ -75,6 +81,8 @@
 		3E51FF392C64598500D317B7 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */,
+				3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */,
 				3EBD2FF52C97D0B40061BB83 /* FeedView.swift */,
 				3ED060322C4EE7ED00392BDC /* ContentView.swift */,
 				3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */,
@@ -97,6 +105,7 @@
 		3E71462F2C9A0FF300F5ACE0 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				3E7146442C9A756A00F5ACE0 /* UserSettings.swift */,
 				3E7146302C9A0FFB00F5ACE0 /* Category.swift */,
 				3E7146322C9A102100F5ACE0 /* Note.swift */,
 			);
@@ -268,6 +277,9 @@
 				3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */,
 				3EA5DB5F2C6D6957002F4827 /* DatePicker.swift in Sources */,
 				3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */,
+				3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */,
+				3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */,
+				3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */,
 				3E7146332C9A102100F5ACE0 /* Note.swift in Sources */,
 				3E7146312C9A0FFD00F5ACE0 /* Category.swift in Sources */,
 				3E71463D2C9A178500F5ACE0 /* ImageSelectionView.swift in Sources */,

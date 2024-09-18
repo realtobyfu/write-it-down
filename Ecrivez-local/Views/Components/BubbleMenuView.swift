@@ -37,6 +37,7 @@ struct BubbleMenuView: View {
                 }
                 .offset(y: -100)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6))
+                .padding(.horizontal, 10)
             }
 
             HStack {

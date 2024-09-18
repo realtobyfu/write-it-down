@@ -15,7 +15,7 @@ struct ContentView: View {
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
 
-    let categories: [Category] = [
+    @State private var categories: [Category] = [
         Category(symbol: "book", colorName: "green"),
         Category(symbol: "fork.knife", colorName: "blue"),
         Category(symbol: "sun.min", colorName: "yellow"),
@@ -175,7 +175,7 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        NavigationLink(destination: SettingsView()) {
+                        NavigationLink(destination: SettingsView(categories: $categories)) {
                             Image(systemName: "gear")
                                 .font(.system(size: 26))
                                 .foregroundColor(.white)

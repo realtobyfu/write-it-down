@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import uuid
 
-struct Category: Hashable, Codable {
+struct Category: Hashable, Codable, Identifiable {
+    var id = UUID()
     var symbol: String
     var colorName: String
+//    var name: String
 
     var color: Color {
         switch colorName {
@@ -25,6 +28,16 @@ struct Category: Hashable, Codable {
             return .brown
         case "gray":
             return .gray
+        case "red":
+            return .red
+        case "purple":
+            return .purple
+        case "orange":
+            return .orange
+        case "teal":
+            return .teal
+        case "indigo":
+            return .indigo
         default:
             return .white
         }
