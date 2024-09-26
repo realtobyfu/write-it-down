@@ -27,51 +27,50 @@ struct NoteEditorView: View {
     @State private var showingImagePicker = false
     @State private var showingWeatherPicker = false
     @FocusState private var isTextEditorFocused: Bool
-    
-    
     // Note: use the type system to make sure that we don't have both note and category as nil,
     
     // reduce down the possible inputs of this init so if a note is passed,
     // we rely on the note for the category
     
-    
     // 2 Init can be a good option because they are used for different purposes
     // can also use enum
     
+    // a case can carry a payload
+    // this is a tag union
+    
+    // should design all type, functions for 'clarity at the point of use'
+    
+    enum Mode {
+        case edit(Note)
+        case create(Category)
+    }
+    
     init (
-        category: Category,
+        mode: Mode,
         categories: [Category],
         onSave: @escaping (Note) -> Void,
         placeholder: String = "Write something down..."
     ) {
-        self.init(
-            note: nil,
-            categories: categories,
-            category: category,
-            onSave: onSave,
-            placeholder: placeholder
-        )
-        
-        
-        
+        switch mode {
+        case .edit(let note):
+            self.init(
+                note: note,
+                categories: categories,
+                category: note.category,
+                onSave: onSave,
+                placeholder: placeholder
+            )
+        case .create(let category):
+            self.init(
+                note: nil,
+                categories: categories,
+                category: category,
+                onSave: onSave,
+                placeholder: placeholder
+            )
+        }
     }
 
-    
-    init (
-        note: Note,
-        categories: [Category],
-        onSave: @escaping (Note) -> Void,
-        placeholder: String = "Write something down..."
-    ) {
-        self.init(
-            note: note,
-            categories: categories,
-            category: note.category,
-            onSave: onSave,
-            placeholder: placeholder
-        )
-    }
-    
     private init(
         note: Note?,
         categories: [Category],

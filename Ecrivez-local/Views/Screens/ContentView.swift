@@ -113,7 +113,7 @@ struct ContentView: View {
                 }) {
                     if let note = selectedNote {
                         NoteEditorView(
-                            note: note,
+                            mode: .edit(note),
                             categories: categories,
                             onSave: { updatedNote in
                             selectedNote = updatedNote
@@ -180,7 +180,7 @@ struct ContentView: View {
             content: {
                 if let selectedCategory = selectedCategory {
                     NoteEditorView(
-                        category: selectedCategory,
+                        mode: .create(selectedCategory),
                         categories: categories,
                         onSave: { newNote in
                     notes.append(newNote)
