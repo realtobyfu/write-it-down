@@ -4,8 +4,6 @@ import CoreLocation
 import MapKit
 import UIKit
 
-
-
 struct ContentView: View {
     @State private var notes: [Note] = []
     @State private var showingNoteEditor = false
@@ -14,7 +12,7 @@ struct ContentView: View {
     @State private var showingAddNoteView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
-
+    
     @State private var categories: [Category] = [
         Category(symbol: "book", colorName: "green"),
         Category(symbol: "fork.knife", colorName: "blue"),
@@ -114,7 +112,10 @@ struct ContentView: View {
                     selectedNote = nil
                 }) {
                     if let note = selectedNote {
-                        NoteEditorView(note: note, onSave: { updatedNote in
+                        NoteEditorView(
+                            note: note,
+                            categories: categories,
+                            onSave: { updatedNote in
                             selectedNote = updatedNote
                         })
                         .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
@@ -125,28 +126,14 @@ struct ContentView: View {
 
                 ZStack {
                     // Horizontal Bar of Pop-up Bubbles
-                    if showBubbles {
-                        HStack(spacing: 20) {
-                            ForEach(categories, id: \.self) { category in
-                                Button(action: {
-                                    selectedCategory = category
-                                    showingAddNoteView = true
-                                    showBubbles = false
-                                }) {
-                                    Circle()
-                                        .fill(category.color)
-                                        .frame(width: 45, height: 45)
-                                        .overlay(
-                                            Image(systemName: category.symbol)
-                                                .foregroundColor(.white)
-                                                .font(.headline)
-                                        )
-                                }
-                            }
+                    BubbleMenuView(
+                        showBubbles: $showBubbles,
+                        selectedCategory: $selectedCategory,
+                        categories: categories,
+                        onCategorySelected: {
+                            showingAddNoteView = true
                         }
-                        .offset(y: -100)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0.5))
-                    }
+                    )
 
                     // Plus Button
                     HStack {
@@ -188,9 +175,14 @@ struct ContentView: View {
                 }
             }
         }
-        .sheet(isPresented: $showingAddNoteView, content: {
-            if let selectedCategory = selectedCategory {
-                NoteEditorView(category: selectedCategory, onSave: { newNote in
+        .sheet(
+            isPresented: $showingAddNoteView,
+            content: {
+                if let selectedCategory = selectedCategory {
+                    NoteEditorView(
+                        category: selectedCategory,
+                        categories: categories,
+                        onSave: { newNote in
                     notes.append(newNote)
                 })
             }
