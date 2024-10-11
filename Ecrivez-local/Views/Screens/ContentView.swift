@@ -1,4 +1,5 @@
 import SwiftUI
+import RichTextKit
 import PhotosUI
 import CoreLocation
 import MapKit
@@ -14,12 +15,12 @@ struct ContentView: View {
     @State private var selectedCategory: Category?
     
     @State private var categories: [Category] = [
-        Category(symbol: "book", colorName: "green"),
-        Category(symbol: "fork.knife", colorName: "blue"),
-        Category(symbol: "sun.min", colorName: "yellow"),
-        Category(symbol: "movieclapper", colorName: "pink"),
-        Category(symbol: "clapperboard", colorName: "brown"),
-        Category(symbol: "paperplane", colorName: "gray")
+        Category(symbol: "book", colorName: "green", name: "Book"),
+        Category(symbol: "fork.knife", colorName: "blue", name: "Cooking"),
+        Category(symbol: "sun.min", colorName: "yellow", name: "Day"),
+        Category(symbol: "movieclapper", colorName: "pink", name: "Movie"),
+        Category(symbol: "message.badge.filled.fill", colorName: "brown", name: "Message"),
+        Category(symbol: "list.bullet", colorName: "gray", name: "List")
     ]
 
     var body: some View {
@@ -27,66 +28,17 @@ struct ContentView: View {
             VStack {
                 List {
                     ForEach(notes) { note in
-                        VStack {
-                            HStack {
-                                // Image Scrolling
-                                if !note.images.isEmpty {
-                                    ScrollView(.horizontal) {
-                                        HStack {
-                                            ForEach(note.images, id: \.self) { image in
-                                                Image(uiImage: image)
-                                                    .resizable()
-                                                    .frame(width: 50, height: 50)
-                                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                VStack(alignment: .leading) {
-                                    // Category Symbol on top of the text
-                                    Image(systemName: note.category.symbol)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .padding(.bottom, 10)
-
-                                    // Construct NSAttributedString with font and color
-                                    let attributedText = NSAttributedString(
-                                        string: note.attributedText.string, // Extract string from the note's attributed text
-                                        attributes: [
-                                            .font: UIFont.systemFont(ofSize: 18), // Set the font size to 24
-                                            .foregroundColor: UIColor.white // Set text color to white
-                                        ]
-                                    )
-
-                                    // Display the attributed text using AttributedTextView
-                                    AttributedTextView(attributedText: attributedText)
-                                        .onTapGesture {
-                                            selectedNote = note
-                                            showingNoteEditor = true
-                                        }
-                                        .foregroundColor(.white) // Ensure text is white if applicable
-                                }
-                                Spacer()
-                                
-                                if deleteMode {
-                                    Button(action: {
-                                        if let index = notes.firstIndex(where: { $0.id == note.id }) {
-                                            notes.remove(at: index)
-                                        }
-                                    }) {
-                                        Image(systemName: "minus.circle")
-                                            .foregroundColor(.red)
-                                    }
+                        NoteView(
+                            note: note,
+                            selectedNote: $selectedNote,
+                            showingNoteEditor: $showingNoteEditor,
+                            deleteMode: $deleteMode,
+                            onDelete: {
+                                if let index = notes.firstIndex(where: { $0.id == note.id }) {
+                                    notes.remove(at: index)
                                 }
                             }
-                            .padding()
-                        }
-                        .background(note.category.color) // Apply the note color to the background
-                        .cornerRadius(20)
-                        .padding(.vertical, 2)
-                        .listRowSeparator(.hidden)
-                        .foregroundColor(.white)
+                        )
                     }
                 }
                 .padding(.bottom, showBubbles ? 100 : 0)

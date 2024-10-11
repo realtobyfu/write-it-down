@@ -1,5 +1,5 @@
 //
-//  CategorySettingsView.swift
+//  CategoryEditorView.swift
 //  Ecrivez-local
 //
 //  Created by Tobias Fu on 9/17/24.
@@ -10,15 +10,32 @@ import SwiftUI
 struct CategoryEditorView: View {
     @Binding var category: Category
 
-    let availableSymbols = ["book", "fork.knife", "sun.min", "movieclapper", "clapperboard", "paperplane"]
+    let colorMapping: [String: Color] = [
+        "green": .green,
+        "blue": .blue,
+        "yellow": .yellow,
+        "pink": .pink,
+        "brown": .brown,
+        "gray": .gray,
+        "red": .red,
+        "purple": .purple,
+        "orange": .orange,
+        "teal": .teal,
+        "indigo": .indigo
+    ]
+
+    let availableSymbols = ["book", "fork.knife", "sun.min", "movieclapper", "message.badge.filled.fill", "list.bullet", "paperplane"]
     let availableColors = ["green", "blue", "yellow", "pink", "brown", "gray", "red", "purple", "orange", "teal", "indigo"]
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Edit \(category.symbol.capitalized)")
-                .font(.title2)
-                .padding(.bottom, 20)
-
+        VStack(alignment: .leading, spacing: 20) {
+            // Edit Category Name
+            Text("Category Name")
+                .font(.headline)
+            TextField("Enter category name", text: $category.name)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.bottom, 10)
+            
             // Symbol selection
             Text("Select Icon")
                 .font(.headline)
@@ -42,7 +59,7 @@ struct CategoryEditorView: View {
                 .padding(.vertical, 10)
             }
 
-            Divider().padding(.vertical, 20)
+            Divider().padding(.vertical, 10)
 
             // Color selection
             Text("Select Color")
@@ -54,7 +71,7 @@ struct CategoryEditorView: View {
                             category.colorName = colorName
                         }) {
                             Circle()
-                                .fill(Color(colorName))
+                                .fill(colorMapping[colorName] ?? .black)
                                 .frame(width: 40, height: 40)
                                 .overlay(
                                     Circle().stroke(category.colorName == colorName ? Color.blue : Color.clear, lineWidth: 3)
@@ -64,7 +81,20 @@ struct CategoryEditorView: View {
                 }
                 .padding(.vertical, 10)
             }
+
+            Spacer()
         }
         .padding()
+        .navigationTitle("Edit Category")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+
+struct CategoryEditorView_Previews: PreviewProvider {
+    @State static var sampleCategory = Category(symbol: "book", colorName: "green", name: "Sample Category")
+
+    static var previews: some View {
+        CategoryEditorView(category: $sampleCategory)
     }
 }

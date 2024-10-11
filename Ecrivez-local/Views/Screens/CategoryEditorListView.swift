@@ -1,6 +1,6 @@
 
 //
-//  CategorySettingsView.swift
+//  CategoryEditorListView.swift
 //  Ecrivez-local
 //
 //  Created by Tobias Fu on 9/17/24.
@@ -15,7 +15,7 @@ struct CategoryEditorListView: View {
     var body: some View {
         VStack(alignment: .leading) {
             List {
-                ForEach(categories, id: \.self) { category in
+                ForEach(categories) { category in
                     NavigationLink(
                         destination: CategoryEditorView(category: $categories[categories.firstIndex(of: category)!])
                     ) {
@@ -27,7 +27,7 @@ struct CategoryEditorListView: View {
                                     Image(systemName: category.symbol)
                                         .foregroundColor(.white)
                                 )
-                            Text(category.symbol.capitalized)
+                            Text(category.name)
                                 .font(.headline)
                                 .padding(.leading, 10)
 
@@ -44,14 +44,14 @@ struct CategoryEditorListView: View {
 
 struct CategoryEditorListView_Previews: PreviewProvider {
     @State static var categories: [Category] = [
-        Category(symbol: "book", colorName: "green"),
-        Category(symbol: "fork.knife", colorName: "blue"),
-        Category(symbol: "sun.min", colorName: "yellow"),
-        Category(symbol: "movieclapper", colorName: "pink"),
-        Category(symbol: "clapperboard", colorName: "brown"),
-        Category(symbol: "paperplane", colorName: "gray")
+        Category(symbol: "book", colorName: "green", name: "Book"),
+        Category(symbol: "fork.knife", colorName: "blue", name: "Cooking"),
+        Category(symbol: "sun.min", colorName: "yellow", name: "Day"),
+        Category(symbol: "movieclapper", colorName: "pink", name: "Movie"),
+        Category(symbol: "message.badge.filled.fill", colorName: "brown", name: "Message"),
+        Category(symbol: "list.bullet", colorName: "gray", name: "List")
     ]
-    
+
     static var previews: some View {
         CategoryEditorListView(categories: $categories)
     }

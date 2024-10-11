@@ -12,7 +12,7 @@ struct Category: Hashable, Codable, Identifiable {
     var id = UUID()
     var symbol: String
     var colorName: String
-//    var name: String
+    var name: String
 
     var color: Color {
         switch colorName {
