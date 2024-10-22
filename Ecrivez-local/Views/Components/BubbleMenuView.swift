@@ -29,7 +29,7 @@ struct BubbleMenuView: View {
                                 .fill(category.color)
                                 .frame(width: 45, height: 45)
                                 .overlay(
-                                    Image(systemName: category.symbol)
+                                    Image(systemName: category.symbol!)
                                         .foregroundColor(.white)
                                 )
                         }

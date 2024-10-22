@@ -11,7 +11,7 @@ struct DateView: View {
     @Binding var selectedDate: Date?
 
     var body: some View {
-        VStack {
+        HStack {
             if let selectedDate = selectedDate {
                 // Display the selected date and provide an option to clear it
                 Text("Selected Date: \(selectedDate, formatter: dateFormatter)")
@@ -20,14 +20,17 @@ struct DateView: View {
                 Button(action: {
                     self.selectedDate = nil // Clear the date
                 }) {
-                    Text("Clear Date")
+                    Text("-")
                 }
-            } else {
-                // Allow the user to select a date
-                DatePicker("Select Date", selection: Binding($selectedDate, Date()), displayedComponents: .date)
-                    .datePickerStyle(CompactDatePickerStyle())
-                    .labelsHidden()
             }
+
+            // DatePicker for optional date with default value fallback
+            DatePicker("Select Date", selection: Binding(
+                get: { selectedDate ?? Date() }, // If nil, return the current date
+                set: { newValue in selectedDate = newValue } // Set the new value
+            ), displayedComponents: .date)
+                .datePickerStyle(CompactDatePickerStyle())
+                .labelsHidden()
         }
     }
 

@@ -8,7 +8,14 @@
 import SwiftUI
 
 struct CategoryEditorView: View {
-    @Binding var category: Category
+    @ObservedObject var category: Category
+    
+    @State private var name: String
+    @State private var symbol: String
+    @State private var colorString: String
+    
+    @Environment(\.presentationMode) var presentationMode
+    var onSave: () -> Void  // No need to pass the `Category` back, we just save it
 
     let colorMapping: [String: Color] = [
         "green": .green,
@@ -26,13 +33,21 @@ struct CategoryEditorView: View {
 
     let availableSymbols = ["book", "fork.knife", "sun.min", "movieclapper", "message.badge.filled.fill", "list.bullet", "paperplane"]
     let availableColors = ["green", "blue", "yellow", "pink", "brown", "gray", "red", "purple", "orange", "teal", "indigo"]
+    
+    init(category: Category, onSave: @escaping () -> Void) {
+        self.category = category
+        self.onSave = onSave
+        _name = State(initialValue: category.name ?? "")
+        _symbol = State(initialValue: category.symbol ?? "")
+        _colorString = State(initialValue: category.colorString ?? "")
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             // Edit Category Name
             Text("Category Name")
                 .font(.headline)
-            TextField("Enter category name", text: $category.name)
+            TextField("Enter category name", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom, 10)
             
@@ -43,15 +58,15 @@ struct CategoryEditorView: View {
                 HStack(spacing: 20) {
                     ForEach(availableSymbols, id: \.self) { symbol in
                         Button(action: {
-                            category.symbol = symbol
+                            self.symbol = symbol
                         }) {
                             Image(systemName: symbol)
                                 .font(.largeTitle)
-                                .foregroundColor(category.symbol == symbol ? .blue : .primary)
+                                .foregroundColor(self.symbol == symbol ? .blue : .primary)
                                 .padding()
                                 .background(
                                     Circle()
-                                        .stroke(category.symbol == symbol ? Color.blue : Color.clear, lineWidth: 2)
+                                        .stroke(self.symbol == symbol ? Color.blue : Color.clear, lineWidth: 2)
                                 )
                         }
                     }
@@ -66,15 +81,15 @@ struct CategoryEditorView: View {
                 .font(.headline)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 20) {
-                    ForEach(availableColors, id: \.self) { colorName in
+                    ForEach(availableColors, id: \.self) { colorString in
                         Button(action: {
-                            category.colorName = colorName
+                            self.colorString = colorString
                         }) {
                             Circle()
-                                .fill(colorMapping[colorName] ?? .black)
+                                .fill(colorMapping[colorString] ?? .black)
                                 .frame(width: 40, height: 40)
                                 .overlay(
-                                    Circle().stroke(category.colorName == colorName ? Color.blue : Color.clear, lineWidth: 3)
+                                    Circle().stroke(self.colorString == colorString ? Color.blue : Color.clear, lineWidth: 3)
                                 )
                         }
                     }
@@ -83,6 +98,27 @@ struct CategoryEditorView: View {
             }
 
             Spacer()
+            
+            Text("* existing notes will not be changed")
+
+            // Confirm Button
+            Button(action: {
+                // Update the existing category
+                category.name = self.name
+                category.symbol = self.symbol
+                category.colorString = self.colorString
+                onSave()
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                Text("Confirm")
+                    .bold()
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+
         }
         .padding()
         .navigationTitle("Edit Category")
@@ -91,10 +127,10 @@ struct CategoryEditorView: View {
 }
 
 
-struct CategoryEditorView_Previews: PreviewProvider {
-    @State static var sampleCategory = Category(symbol: "book", colorName: "green", name: "Sample Category")
-
-    static var previews: some View {
-        CategoryEditorView(category: $sampleCategory)
-    }
-}
+//struct CategoryEditorView_Previews: PreviewProvider {
+//    @State static var sampleCategory = Category(symbol: "book", colorString: "green", name: "Sample Category")
+//
+//    static var previews: some View {
+//        CategoryEditorView(category: sampleCategory)
+//    }
+//}

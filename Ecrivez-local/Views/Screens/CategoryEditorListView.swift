@@ -9,25 +9,30 @@
 import SwiftUI
 
 struct CategoryEditorListView: View {
-    @Binding var categories: [Category]
-    @State private var selectedCategory: Category?
-
+    @Environment(\.managedObjectContext) private var context
+    var categories: FetchedResults<Category>
+    
     var body: some View {
         VStack(alignment: .leading) {
             List {
-                ForEach(categories) { category in
+                ForEach(categories.indices, id: \.self) { index in
                     NavigationLink(
-                        destination: CategoryEditorView(category: $categories[categories.firstIndex(of: category)!])
+                        destination: CategoryEditorView(
+                            category: categories[index],
+                            onSave: {
+                                saveContext()
+                            }
+                        )
                     ) {
                         HStack {
                             Circle()
-                                .fill(category.color)
+                                .fill(categories[index].color)
                                 .frame(width: 45, height: 45)
                                 .overlay(
-                                    Image(systemName: category.symbol)
+                                    Image(systemName: categories[index].symbol!)
                                         .foregroundColor(.white)
                                 )
-                            Text(category.name)
+                            Text(categories[index].name!)
                                 .font(.headline)
                                 .padding(.leading, 10)
 
@@ -40,19 +45,12 @@ struct CategoryEditorListView: View {
         }
         .navigationTitle("Categories")
     }
-}
 
-struct CategoryEditorListView_Previews: PreviewProvider {
-    @State static var categories: [Category] = [
-        Category(symbol: "book", colorName: "green", name: "Book"),
-        Category(symbol: "fork.knife", colorName: "blue", name: "Cooking"),
-        Category(symbol: "sun.min", colorName: "yellow", name: "Day"),
-        Category(symbol: "movieclapper", colorName: "pink", name: "Movie"),
-        Category(symbol: "message.badge.filled.fill", colorName: "brown", name: "Message"),
-        Category(symbol: "list.bullet", colorName: "gray", name: "List")
-    ]
-
-    static var previews: some View {
-        CategoryEditorListView(categories: $categories)
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            print("Error saving context: \(error)")
+        }
     }
 }

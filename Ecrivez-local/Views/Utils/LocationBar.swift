@@ -49,7 +49,7 @@ struct LocationBar: View {
         geocoder.reverseGeocodeLocation(location) { placemarks, error in
             if let error = error {
                 print("Error reverse geocoding location: \(error)")
-                locationString = "Unknown location"
+                locationString = ""
             } else if let placemark = placemarks?.first {
                 locationString = [
                     placemark.locality,
@@ -57,7 +57,7 @@ struct LocationBar: View {
                     placemark.country
                 ].compactMap { $0 }.joined(separator: ", ")
             } else {
-                locationString = "Unknown location"
+                locationString = ""
             }
         }
     }

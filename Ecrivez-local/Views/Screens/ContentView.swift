@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 import RichTextKit
 import PhotosUI
 import CoreLocation
@@ -6,22 +7,30 @@ import MapKit
 import UIKit
 
 struct ContentView: View {
-    @State private var notes: [Note] = []
+    
+    // MARK: - CoreData
+    @Environment(\.managedObjectContext) private var context
+    
+    // Fetching Notes and Categories from CoreData
+    // after doing this, we can use notes as a normal Swift array
+    @FetchRequest(
+        entity: Note.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Note.id, ascending: false)]
+    ) var notes: FetchedResults<Note>
+    
+    @FetchRequest(
+        entity: Category.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
+    ) var categories: FetchedResults<Category>
+
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var deleteMode = false
     @State private var showingAddNoteView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
-    
-    @State private var categories: [Category] = [
-        Category(symbol: "book", colorName: "green", name: "Book"),
-        Category(symbol: "fork.knife", colorName: "blue", name: "Cooking"),
-        Category(symbol: "sun.min", colorName: "yellow", name: "Day"),
-        Category(symbol: "movieclapper", colorName: "pink", name: "Movie"),
-        Category(symbol: "message.badge.filled.fill", colorName: "brown", name: "Message"),
-        Category(symbol: "list.bullet", colorName: "gray", name: "List")
-    ]
+
+    @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
     var body: some View {
         NavigationView {
@@ -31,15 +40,11 @@ struct ContentView: View {
                         NoteView(
                             note: note,
                             selectedNote: $selectedNote,
-                            showingNoteEditor: $showingNoteEditor,
-                            deleteMode: $deleteMode,
-                            onDelete: {
-                                if let index = notes.firstIndex(where: { $0.id == note.id }) {
-                                    notes.remove(at: index)
-                                }
-                            }
+                            showingNoteEditor: $showingNoteEditor
                         )
                     }
+                    .onMove(perform: moveNote)
+                    .onDelete(perform: deleteNote)
                 }
                 .padding(.bottom, showBubbles ? 100 : 0)
                 .listStyle(PlainListStyle())
@@ -55,21 +60,16 @@ struct ContentView: View {
                 .navigationTitle("Ideas")
                 
                 .sheet(isPresented: $showingNoteEditor, onDismiss: {
-                    // Update the notes array before clearing selectedNote
-                    if let updatedNote = selectedNote {
-                        if let index = notes.firstIndex(where: { $0.id == updatedNote.id }) {
-                            notes[index] = updatedNote
-                        }
-                    }
                     selectedNote = nil
                 }) {
                     if let note = selectedNote {
                         NoteEditorView(
                             mode: .edit(note),
-                            categories: categories,
-                            onSave: { updatedNote in
-                            selectedNote = updatedNote
-                        })
+                            categories: Array(categories),
+                            onSave: {
+                                saveContext()
+                            }
+                        )
                         .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
                     }
                 }
@@ -81,7 +81,7 @@ struct ContentView: View {
                     BubbleMenuView(
                         showBubbles: $showBubbles,
                         selectedCategory: $selectedCategory,
-                        categories: categories,
+                        categories: Array(categories),
                         onCategorySelected: {
                             showingAddNoteView = true
                         }
@@ -114,7 +114,7 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        NavigationLink(destination: SettingsView(categories: $categories)) {
+                        NavigationLink(destination: SettingsView(categories: _categories)) {
                             Image(systemName: "gear")
                                 .font(.system(size: 26))
                                 .foregroundColor(.white)
@@ -127,18 +127,45 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: scenePhase) { newPhase in
+            if newPhase == .background {
+                saveContext() // Save context when app goes to background
+            }
+        }
         .sheet(
             isPresented: $showingAddNoteView,
             content: {
                 if let selectedCategory = selectedCategory {
                     NoteEditorView(
                         mode: .create(selectedCategory),
-                        categories: categories,
-                        onSave: { newNote in
-                    notes.append(newNote)
-                })
+                        categories: Array(categories),
+                        onSave: {
+                            saveContext()
+                        }
+                    )
+                }
             }
-        })
+        )
+    }
+    
+    private func deleteNote(at offsets: IndexSet) {
+        for index in offsets {
+            let noteToDelete = notes[index]
+            context.delete(noteToDelete)
+        }
+        saveContext()
+    }
+    
+    private func moveNote(from source: IndexSet, to destination: Int) {
+        // Perform any reordering logic if needed (typically for display purposes)
+    }
+    
+    // Helper function to save context
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            print("Error saving context: \(error)")
+        }
     }
 }
-
