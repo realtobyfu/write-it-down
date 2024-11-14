@@ -8,32 +8,38 @@
 import SwiftUI
 import MapKit
 
+import SwiftUI
+import MapKit
+
 class LocationSearchViewModel: NSObject, ObservableObject {
-    @Published var searchText: String = ""
-    @Published var searchResults: [MKLocalSearchCompletion] = []
+    @Published var searchText = ""
+    @Published var landmarks: [MKMapItem] = []
+    var region: MKCoordinateRegion = MKCoordinateRegion()
     
-    private var searchCompleter: MKLocalSearchCompleter
-    
-    override init() {
-        self.searchCompleter = MKLocalSearchCompleter()
-        super.init() // Call to NSObject's initializer
-        self.searchCompleter.delegate = self  // Setting self as delegate
-        self.searchCompleter.resultTypes = .address
-    }
-    
-    func updateSearchResults() {
-        searchCompleter.queryFragment = searchText
-    }
-    
-}
-
-
-extension LocationSearchViewModel: MKLocalSearchCompleterDelegate {
-    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        self.searchResults = completer.results
-    }
-    
-    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-        print("Failed to find search results: \(error.localizedDescription)")
+    func search() {
+        let request = MKLocalSearch.Request()
+        request.naturalLanguageQuery = searchText
+        request.region = region
+        
+        let search = MKLocalSearch(request: request)
+        search.start { response, error in
+            if let response = response {
+                DispatchQueue.main.async {
+                    self.landmarks = response.mapItems
+                }
+            } else {
+                print("Error searching for landmarks: \(error?.localizedDescription ?? "Unknown error")")
+            }
+        }
     }
 }
+
+//extension LocationSearchViewModel: MKLocalSearchCompleterDelegate {
+//    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
+//        self.searchResults = completer.results
+//    }
+//    
+//    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
+//        print("Failed to find search results: \(error.localizedDescription)")
+//    }
+//}

@@ -6,39 +6,45 @@
 //
 
 import SwiftUI
+import MapKit
 import CoreLocation
 
 struct LocationView: View {
-    @Binding var location: CLLocation? // Make it a binding so it can be updated
-    @State private var showingLocationPicker = false
+    @Binding var location: CLLocationCoordinate2D
+
+    @State private var region: MKCoordinateRegion
+
+    init(location: Binding<CLLocationCoordinate2D>) {
+        _location = location
+        _region = State(initialValue: MKCoordinateRegion(
+            center: location.wrappedValue,
+            latitudinalMeters: 1000,
+            longitudinalMeters: 1000
+        ))
+    }
 
     var body: some View {
         VStack {
-            if let location = location {
-                // LocationBar is clickable and opens the location picker
-                LocationBar(location: location)
-                    .padding(.leading, 5)
-                    .padding(.bottom, 25)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .onTapGesture {
-                        showingLocationPicker.toggle() // Open the location picker
-                    }
-            } else {
-                // Show the button only if no location is set
-                Button(action: {
-                    showingLocationPicker.toggle()
-                }) {
-                    HStack {
-                        Image(systemName: "location.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.purple)
-                        Text("Select Location")
-                    }
-                }
+            Text("Location")
+                .font(.headline)
+
+            Map(coordinateRegion: $region, annotationItems: [location]) { item in
+                MapPin(coordinate: item)
+            }
+            .onChange(of: region.center) { newCenter in
+                location = newCenter
             }
         }
-        .sheet(isPresented: $showingLocationPicker) {
-            LocationPickerView(location: $location)
-        }
+        .frame(height: 200)
+        .cornerRadius(10)
+        .padding()
     }
 }
+
+
+extension CLLocationCoordinate2D: @retroactive Identifiable {
+    public var id: String {
+        "\(latitude),\(longitude)"
+    }
+}
+

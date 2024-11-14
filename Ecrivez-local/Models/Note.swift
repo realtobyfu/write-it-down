@@ -42,20 +42,17 @@ extension Note {
 
     var location: CLLocation? {
         get {
-            // Safely unwrap both latitude and longitude as NSDecimalNumber and convert them to Double
-            if let latitude = self.locationLatitude as? NSDecimalNumber,
-               let longitude = self.locationLongitude as? NSDecimalNumber {
-                return CLLocation(latitude: latitude.doubleValue, longitude: longitude.doubleValue)
+            if let latitudeValue = self.locationLatitude as? NSDecimalNumber,
+               let longitudeValue = self.locationLongitude as? NSDecimalNumber {
+                return CLLocation(latitude: latitudeValue.doubleValue, longitude: longitudeValue.doubleValue)
             }
             return nil
         }
         set {
             if let newLocation = newValue {
-                // If newLocation is not nil, set latitude and longitude using NSDecimalNumber
                 self.locationLatitude = NSDecimalNumber(value: newLocation.coordinate.latitude)
                 self.locationLongitude = NSDecimalNumber(value: newLocation.coordinate.longitude)
             } else {
-                // If newLocation is nil, set both attributes to nil
                 self.locationLatitude = nil
                 self.locationLongitude = nil
             }

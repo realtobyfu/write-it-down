@@ -16,14 +16,13 @@ struct LocationBar: View {
     var body: some View {
         HStack {
             Text("📍")
-                .font(.title)
-                .foregroundColor(.white)
+                .font(.headline)
             Text(locationString) // Display the location string
                 .font(.headline)
                 .foregroundColor(.black)
             Spacer()
         }
-        .padding(5)
+        .padding(4)
         .cornerRadius(30)
         .overlay(
             GeometryReader { geometry in

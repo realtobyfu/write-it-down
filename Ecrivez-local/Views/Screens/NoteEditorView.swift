@@ -7,15 +7,15 @@ struct NoteEditorView: View {
 
     @State private var selectedDate: Date?
     @State private var attributedText: NSAttributedString
-//    @State private var selectedImages: [UIImage]
-    @State private var location: CLLocation?
+    @State private var location = CLLocationCoordinate2D(latitude: 0, longitude: 0)  // Using CLLocationCoordinate2D
     @State private var weather: String
     @State private var category: Category
 
     var note: Note?
     var onSave: () -> Void
+
     @Environment(\.presentationMode) var presentationMode
-    @Environment(\.managedObjectContext) private var context  // Add the Core Data context here
+    @Environment(\.managedObjectContext) private var context  // Core Data context
 
     @State private var tapped: Bool = false
     @State private var showingImagePicker = false
@@ -63,12 +63,13 @@ struct NoteEditorView: View {
         self.onSave = onSave
 
         _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
-        _location = State(initialValue: note?.location)
-        _weather = State(initialValue: "")
+        if let noteLocation = note?.location {
+            _location = State(initialValue: noteLocation.coordinate)
+        }
+        _weather = State(initialValue: "")  // Weather can be fetched or updated
         _tapped = State(initialValue: note != nil)
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
-
         self.categories = categories
     }
 
@@ -98,15 +99,11 @@ struct NoteEditorView: View {
                 )
                 #endif
 
-//                // Image Selection View
-//                ImageSelectionView(selectedImages: selectedImages)
-
-                Spacer(minLength: 50)
-
-                // Location and Weather Views
+                // Location Picker View
                 HStack {
                     LocationView(location: $location)
                     
+                    // Displaying selected date or date picker
                     DateView(selectedDate: $selectedDate)
                         .padding(.leading, 5)
 
@@ -196,18 +193,20 @@ struct NoteEditorView: View {
                 // Update existing note
                 existingNote.attributedText = attributedText
                 existingNote.date = selectedDate
-//                existingNote.images = selectedImages
-                existingNote.location = location
+                
+                // Convert CLLocationCoordinate2D to CLLocation
+                existingNote.location = CLLocation(latitude: location.latitude, longitude: location.longitude)
                 existingNote.category = category
             } else {
                 // Create new note in Core Data context
                 let newNote = Note(context: context)
                 newNote.id = UUID()
                 newNote.attributedText = attributedText
-//                newNote.images = selectedImages
                 newNote.category = category
                 newNote.date = selectedDate
-                newNote.location = location
+                
+                // Convert CLLocationCoordinate2D to CLLocation
+                newNote.location = CLLocation(latitude: location.latitude, longitude: location.longitude)
             }
 
             // Save the context

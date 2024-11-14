@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// this is the date bar to be called by
+// NoteView to display the date
 struct DateBar: View {
     var date: Date
     

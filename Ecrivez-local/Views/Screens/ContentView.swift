@@ -15,7 +15,7 @@ struct ContentView: View {
     // after doing this, we can use notes as a normal Swift array
     @FetchRequest(
         entity: Note.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Note.id, ascending: false)]
+        sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
     ) var notes: FetchedResults<Note>
     
     @FetchRequest(
@@ -53,8 +53,16 @@ struct ContentView: View {
                         Button(action: {
                             deleteMode.toggle()
                         }) {
-                            Text(deleteMode ? "Done" : "Edit")
+                            Text(deleteMode ? "done" : "filter")
                         }
+                        .overlay(
+                            GeometryReader { geometry in
+                                RoundedRectangle(cornerRadius: 30)
+                                    .stroke(Color.blue, lineWidth: 1)
+                                    .frame(width: geometry.size.width, height: geometry.size.height)
+                            }
+                        )
+
                     }
                 }
                 .navigationTitle("Ideas")
@@ -157,7 +165,18 @@ struct ContentView: View {
     }
     
     private func moveNote(from source: IndexSet, to destination: Int) {
-        // Perform any reordering logic if needed (typically for display purposes)
+        // this converts the FetchedResults to a mutable array
+        var reorderedNotes = notes.map { $0 }
+        
+        // Reorder notes in the local array
+        reorderedNotes.move(fromOffsets: source, toOffset: destination)
+        
+        // Update the `index` of each note based on its new position
+        for (newIndex, note) in reorderedNotes.enumerated() {
+            note.index = Int16(newIndex)
+        }
+        
+        saveContext()
     }
     
     // Helper function to save context

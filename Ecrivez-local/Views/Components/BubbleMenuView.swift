@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct BubbleMenuView: View {
     @Binding var showBubbles: Bool
     @Binding var selectedCategory: Category?

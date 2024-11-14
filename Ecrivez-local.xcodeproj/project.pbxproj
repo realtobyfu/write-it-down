@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3109912CB62FA500DB73B9 /* NoteView.swift */; };
-		3E3109942CBA389D00DB73B9 /* DataPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3109932CBA389D00DB73B9 /* DataPersistence.swift */; };
 		3E51FF382C64597400D317B7 /* DateBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E51FF372C64597400D317B7 /* DateBar.swift */; };
 		3E5888602CA9C57500765779 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E58885F2CA9C57500765779 /* RichTextKit */; };
 		3E7146312C9A0FFD00F5ACE0 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146302C9A0FFB00F5ACE0 /* Category.swift */; };
@@ -22,6 +21,8 @@
 		3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */; };
 		3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */; };
 		3E7B74492CC82DEB00569AE7 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B74482CC82DE800569AE7 /* DataController.swift */; };
+		3E7B744B2CCD9F2900569AE7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B744A2CCD9F2400569AE7 /* README.md */; };
+		3E7D31352CD5ED730030EAC4 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */; };
 		3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */; };
 		3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70242C87B07F0001BD86 /* MapView.swift */; };
 		3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70282C87B8280001BD86 /* LocationBar.swift */; };
@@ -41,7 +42,6 @@
 
 /* Begin PBXFileReference section */
 		3E3109912CB62FA500DB73B9 /* NoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteView.swift; sourceTree = "<group>"; };
-		3E3109932CBA389D00DB73B9 /* DataPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataPersistence.swift; sourceTree = "<group>"; };
 		3E51FF372C64597400D317B7 /* DateBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateBar.swift; sourceTree = "<group>"; };
 		3E7146302C9A0FFB00F5ACE0 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		3E7146322C9A102100F5ACE0 /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
@@ -54,6 +54,9 @@
 		3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorListView.swift; sourceTree = "<group>"; };
 		3E7B743E2CC5467800569AE7 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		3E7B74482CC82DE800569AE7 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
+		3E7B744A2CCD9F2400569AE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		3E7D31332CD5E6480030EAC4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchViewModel.swift; sourceTree = "<group>"; };
 		3E8E70242C87B07F0001BD86 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		3E8E70282C87B8280001BD86 /* LocationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationBar.swift; sourceTree = "<group>"; };
@@ -133,6 +136,7 @@
 		3E8E70492C88FDDA0001BD86 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */,
 				3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */,
 			);
 			path = ViewModels;
@@ -141,7 +145,6 @@
 		3EC53C712C62DD1C00CED78A /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				3E3109932CBA389D00DB73B9 /* DataPersistence.swift */,
 				3E8E70242C87B07F0001BD86 /* MapView.swift */,
 				3E8E70282C87B8280001BD86 /* LocationBar.swift */,
 				3E51FF372C64597400D317B7 /* DateBar.swift */,
@@ -153,6 +156,7 @@
 		3ED060242C4EE7ED00392BDC = {
 			isa = PBXGroup;
 			children = (
+				3E7B744A2CCD9F2400569AE7 /* README.md */,
 				3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */,
 				3ED0602F2C4EE7ED00392BDC /* Ecrivez-local */,
 				3ED0602E2C4EE7ED00392BDC /* Products */,
@@ -170,6 +174,7 @@
 		3ED0602F2C4EE7ED00392BDC /* Ecrivez-local */ = {
 			isa = PBXGroup;
 			children = (
+				3E7D31332CD5E6480030EAC4 /* Info.plist */,
 				3ED060302C4EE7ED00392BDC /* Ecrivez_localApp.swift */,
 				3E7B74482CC82DE800569AE7 /* DataController.swift */,
 				3E71462F2C9A0FF300F5ACE0 /* Models */,
@@ -261,6 +266,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E7B744B2CCD9F2900569AE7 /* README.md in Resources */,
 				3ED060382C4EE7EF00392BDC /* Preview Assets.xcassets in Resources */,
 				3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */,
 			);
@@ -292,7 +298,6 @@
 				3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */,
 				3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */,
 				3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */,
-				3E3109942CBA389D00DB73B9 /* DataPersistence.swift in Sources */,
 				3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */,
 				3E7146332C9A102100F5ACE0 /* Note.swift in Sources */,
 				3E7146312C9A0FFD00F5ACE0 /* Category.swift in Sources */,
@@ -300,6 +305,7 @@
 				3E51FF382C64597400D317B7 /* DateBar.swift in Sources */,
 				3EC53C732C62DD4000CED78A /* WeatherBar.swift in Sources */,
 				3EFCE23A2C5ACD37000F748A /* NoteEditorView.swift in Sources */,
+				3E7D31352CD5ED730030EAC4 /* LocationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,7 +442,8 @@
 				DEVELOPMENT_TEAM = KUXA576FBM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Ecrivez needs to know your location to add it to the notes.";
+				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Write-It-Down needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -466,7 +473,8 @@
 				DEVELOPMENT_TEAM = KUXA576FBM;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Ecrivez needs to know your location to add it to the notes.";
+				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Write-It-Down needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

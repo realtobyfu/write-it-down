@@ -11,26 +11,32 @@ struct DateView: View {
     @Binding var selectedDate: Date?
 
     var body: some View {
-        HStack {
-            if let selectedDate = selectedDate {
-                // Display the selected date and provide an option to clear it
-                Text("Selected Date: \(selectedDate, formatter: dateFormatter)")
-                    .padding()
-
-                Button(action: {
-                    self.selectedDate = nil // Clear the date
-                }) {
-                    Text("-")
-                }
+        
+        VStack {
+            if (selectedDate == nil) {
+                Text("select date")
+                    .foregroundColor(.black)
+                    .font(.subheadline)
             }
-
-            // DatePicker for optional date with default value fallback
-            DatePicker("Select Date", selection: Binding(
-                get: { selectedDate ?? Date() }, // If nil, return the current date
-                set: { newValue in selectedDate = newValue } // Set the new value
-            ), displayedComponents: .date)
+            HStack {
+                if let selectedDate = selectedDate {
+                    
+                    Button(action: {
+                        self.selectedDate = nil // Clear the date
+                    }) {
+                        Image(systemName: "minus.circle")
+                            .foregroundColor(.blue)
+                    }
+                }
+                
+                // DatePicker for optional date with default value fallback
+                DatePicker("Select Date", selection: Binding(
+                    get: { selectedDate ?? Date() }, // If nil, return the current date
+                    set: { newValue in selectedDate = newValue } // Set the new value
+                ), displayedComponents: .date)
                 .datePickerStyle(CompactDatePickerStyle())
                 .labelsHidden()
+            }
         }
     }
 

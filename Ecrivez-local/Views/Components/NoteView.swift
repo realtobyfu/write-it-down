@@ -51,18 +51,7 @@ struct NoteView: View {
     var body: some View {
         VStack {
             HStack {
-//                if !note.images.isEmpty {
-//                    ScrollView(.horizontal) {
-//                        HStack {
-//                            ForEach(note.images, id: \.self) { image in
-//                                Image(uiImage: image)
-//                                    .resizable()
-//                                    .frame(width: 50, height: 50)
-//                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-//                            }
-//                        }
-//                    }
-//                }
+
                 
                 VStack(alignment: .leading) {
                     HStack {
@@ -82,7 +71,7 @@ struct NoteView: View {
                     }
                     .font(.headline)
                     .foregroundColor(.white)
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 3)
                     
                     AttributedTextView(attributedText: adjustedAttributedText, dynamicHeight: $dynamicHeight)
                         .frame(height: dynamicHeight) // Use the dynamically calculated height
