@@ -14,13 +14,13 @@ import MapKit
 class LocationSearchViewModel: NSObject, ObservableObject {
     @Published var searchText = ""
     @Published var landmarks: [MKMapItem] = []
-    var region: MKCoordinateRegion = MKCoordinateRegion()
-    
+    @Published var region: MKCoordinateRegion = MKCoordinateRegion()
+
     func search() {
         let request = MKLocalSearch.Request()
         request.naturalLanguageQuery = searchText
         request.region = region
-        
+
         let search = MKLocalSearch(request: request)
         search.start { response, error in
             if let response = response {

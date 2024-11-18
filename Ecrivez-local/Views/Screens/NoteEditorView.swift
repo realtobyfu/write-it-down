@@ -7,7 +7,10 @@ struct NoteEditorView: View {
 
     @State private var selectedDate: Date?
     @State private var attributedText: NSAttributedString
-    @State private var location = CLLocationCoordinate2D(latitude: 0, longitude: 0)  // Using CLLocationCoordinate2D
+
+    // Make location optional
+    @State private var location: CLLocationCoordinate2D?
+
     @State private var weather: String
     @State private var category: Category
 
@@ -20,6 +23,7 @@ struct NoteEditorView: View {
     @State private var tapped: Bool = false
     @State private var showingImagePicker = false
     @State private var showingWeatherPicker = false
+    @State private var showingLocationPicker = false  // State to control the presentation of LocationPickerView
     @FocusState private var isTextEditorFocused: Bool
 
     // RichTextKit context
@@ -63,9 +67,7 @@ struct NoteEditorView: View {
         self.onSave = onSave
 
         _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
-        if let noteLocation = note?.location {
-            _location = State(initialValue: noteLocation.coordinate)
-        }
+        _location = State(initialValue: note?.location?.coordinate)  // Make location optional
         _weather = State(initialValue: "")  // Weather can be fetched or updated
         _tapped = State(initialValue: note != nil)
         _category = State(initialValue: category)
@@ -101,8 +103,26 @@ struct NoteEditorView: View {
 
                 // Location Picker View
                 HStack {
-                    LocationView(location: $location)
-                    
+                    if let location = location {
+                        // Display the location bar if location is selected
+                        LocationSelectionBar(location: location)
+                            .onTapGesture {
+                                showingLocationPicker.toggle()
+                            }
+                    } else {
+                        // Show a button to select location if none is selected
+                        Button(action: {
+                            showingLocationPicker.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "location.circle.fill")
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.purple)
+                                Text("Select Location")
+                            }
+                        }
+                    }
+                    Spacer()
                     // Displaying selected date or date picker
                     DateView(selectedDate: $selectedDate)
                         .padding(.leading, 5)
@@ -149,6 +169,9 @@ struct NoteEditorView: View {
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $showingLocationPicker) {
+                LocationPickerView(location: $location)
+            }
         }
     }
 
@@ -193,20 +216,16 @@ struct NoteEditorView: View {
                 // Update existing note
                 existingNote.attributedText = attributedText
                 existingNote.date = selectedDate
-                
-                // Convert CLLocationCoordinate2D to CLLocation
-                existingNote.location = CLLocation(latitude: location.latitude, longitude: location.longitude)
                 existingNote.category = category
+                existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
             } else {
-                // Create new note in Core Data context
+                // Create new note
                 let newNote = Note(context: context)
                 newNote.id = UUID()
                 newNote.attributedText = attributedText
                 newNote.category = category
                 newNote.date = selectedDate
-                
-                // Convert CLLocationCoordinate2D to CLLocation
-                newNote.location = CLLocation(latitude: location.latitude, longitude: location.longitude)
+                newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
             }
 
             // Save the context

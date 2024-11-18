@@ -1,3 +1,9 @@
+HomeScreen:
+![screenshot](screenshot.png)
+
+Editor View:
+![editor](screenshot-1.png)
+
 # Write-It-Down App
 
 Write-It-Down is a SwiftUI-based note-taking application designed to help users capture ideas, thoughts, and memories effortlessly. The app features rich text editing, image support, and location tagging, providing a versatile platform for creative expression and daily organization.
@@ -11,8 +17,12 @@ Write-It-Down is a SwiftUI-based note-taking application designed to help users 
 
 
 ## Working Log
+
+### 2024-11-18
+- UI updates, new category selection functionality
+- Map View in Location Picker
+
 ### 2024-10-22 - CoreData Integration
-- **Notes:**
   - Integrated the application with CoreData for data persistence
   - Now the data is managed by DataController that is a NSManagedObjectContext
 

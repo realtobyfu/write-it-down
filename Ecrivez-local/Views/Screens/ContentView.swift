@@ -12,7 +12,6 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var context
     
     // Fetching Notes and Categories from CoreData
-    // after doing this, we can use notes as a normal Swift array
     @FetchRequest(
         entity: Note.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
@@ -25,48 +24,49 @@ struct ContentView: View {
 
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
-    @State private var deleteMode = false
     @State private var showingAddNoteView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
 
     @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
+    // Filtered notes based on the selected category
+    var filteredNotes: [Note] {
+        if let category = selectedCategory {
+            return notes.filter { $0.category == category }
+        } else {
+            return Array(notes)
+        }
+    }
+
     var body: some View {
         NavigationView {
             VStack {
+                // Category selection view at the top
+                CategoryFilterView(
+                    selectedCategory: $selectedCategory,
+                    categories: Array(categories)
+                )
+
                 List {
-                    ForEach(notes) { note in
+                    ForEach(filteredNotes) { note in
                         NoteView(
                             note: note,
                             selectedNote: $selectedNote,
                             showingNoteEditor: $showingNoteEditor
                         )
                     }
-                    .onMove(perform: moveNote)
                     .onDelete(perform: deleteNote)
+                    .moveDisabled(selectedCategory != nil) // Disable moving when a category is selected
                 }
-                .padding(.bottom, showBubbles ? 100 : 0)
                 .listStyle(PlainListStyle())
+                .navigationTitle("Ideas")
                 .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button(action: {
-                            deleteMode.toggle()
-                        }) {
-                            Text(deleteMode ? "done" : "filter")
-                        }
-                        .overlay(
-                            GeometryReader { geometry in
-                                RoundedRectangle(cornerRadius: 30)
-                                    .stroke(Color.blue, lineWidth: 1)
-                                    .frame(width: geometry.size.width, height: geometry.size.height)
-                            }
-                        )
-
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        EditButton()
+                            .disabled(selectedCategory != nil) // Disable EditButton when a category is selected
                     }
                 }
-                .navigationTitle("Ideas")
-                
                 .sheet(isPresented: $showingNoteEditor, onDismiss: {
                     selectedNote = nil
                 }) {
@@ -85,7 +85,7 @@ struct ContentView: View {
                 Spacer()
 
                 ZStack {
-                    // Horizontal Bar of Pop-up Bubbles
+                    // Horizontal Bar of Pop-up Bubbles for adding notes
                     BubbleMenuView(
                         showBubbles: $showBubbles,
                         selectedCategory: $selectedCategory,
@@ -95,7 +95,7 @@ struct ContentView: View {
                         }
                     )
 
-                    // Plus Button
+                    // Plus Button to show/hide BubbleMenuView
                     HStack {
                         Spacer()
                         Button(action: {
@@ -107,9 +107,10 @@ struct ContentView: View {
                                 .font(.system(size: 52))
                                 .foregroundColor(.red)
                         }
-                        .frame(alignment: .center)
                         Spacer()
                     }
+
+                    // Additional Navigation Buttons
                     HStack {
                         NavigationLink(destination: FeedView()) {
                             Image(systemName: "text.bubble")
@@ -158,20 +159,19 @@ struct ContentView: View {
     
     private func deleteNote(at offsets: IndexSet) {
         for index in offsets {
-            let noteToDelete = notes[index]
+            let noteToDelete = filteredNotes[index]
             context.delete(noteToDelete)
         }
         saveContext()
     }
     
     private func moveNote(from source: IndexSet, to destination: Int) {
-        // this converts the FetchedResults to a mutable array
+        guard selectedCategory == nil else { return } // Prevent moving when a category is selected
+
         var reorderedNotes = notes.map { $0 }
         
-        // Reorder notes in the local array
         reorderedNotes.move(fromOffsets: source, toOffset: destination)
         
-        // Update the `index` of each note based on its new position
         for (newIndex, note) in reorderedNotes.enumerated() {
             note.index = Int16(newIndex)
         }
@@ -185,6 +185,74 @@ struct ContentView: View {
             try context.save()
         } catch {
             print("Error saving context: \(error)")
+        }
+    }
+}
+
+// CategoryFilterView displays category bubbles for filtering notes
+struct CategoryFilterView: View {
+    @Binding var selectedCategory: Category?
+    var categories: [Category]
+
+    @State private var isExpanded: Bool = false // Default to collapsed
+
+    var body: some View {
+        VStack {
+            // Toggle button to expand/collapse the view
+            HStack {
+                Text("Categories")
+                    .font(.headline)
+                    .foregroundColor(.blue)
+                Spacer()
+                Button(action: {
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
+                }) {
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding(.horizontal)
+
+            // Display categories if expanded
+            if isExpanded {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        // "All" button to reset the filter
+                        Button(action: {
+                            selectedCategory = nil
+                        }) {
+                            Text("All")
+                                .padding(10)
+                                .background(selectedCategory == nil ? Color.blue : Color.gray)
+                                .foregroundColor(.white)
+                                .cornerRadius(15)
+                        }
+                        Spacer()
+                        // Category bubbles
+                        ForEach(categories, id: \.self) { category in
+                            Button(action: {
+                                selectedCategory = category
+                            }) {
+                                Circle()
+                                    .fill(category.color)
+                                    .frame(width: 30, height: 30)
+//                                    .overlay(
+//                                        Image(systemName: category.symbol ?? "circle")
+//                                            .foregroundColor(.white)
+//                                    )
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .transition(.slide) // Smooth transition for expand/collapse
+            }
         }
     }
 }
