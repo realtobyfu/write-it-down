@@ -1,4 +1,5 @@
 (11/18): home screen and note editor
+
 <img src="screenshot.png" alt="HomeScreen" style="width:33%;"> <img src="screenshot-1.png" alt="Editor View" style="width:33%;">
 
 # Write-It-Down App
