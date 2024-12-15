@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
+    @State private var showingAuthView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
 
@@ -57,28 +58,35 @@ struct ContentView: View {
                         )
                     }
                     .onDelete(perform: deleteNote)
+                    .onMove(perform: moveNote)
                     .moveDisabled(selectedCategory != nil) // Disable moving when a category is selected
                 }
                 .listStyle(PlainListStyle())
                 .navigationTitle("Ideas")
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        EditButton()
-                            .disabled(selectedCategory != nil) // Disable EditButton when a category is selected
+                        Button(action: {
+                            showingAuthView = true
+                        }) {
+                            Image(systemName: "person.crop.circle")
+                                .font(.system(size: 24))
+                        }
                     }
                 }
                 .sheet(isPresented: $showingNoteEditor, onDismiss: {
                     selectedNote = nil
                 }) {
                     if let note = selectedNote {
-                        NoteEditorView(
-                            mode: .edit(note),
-                            categories: Array(categories),
-                            onSave: {
-                                saveContext()
-                            }
-                        )
-                        .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
+                        ZStack {
+                            NoteEditorView(
+                                mode: .edit(note),
+                                categories: Array(categories),
+                                onSave: {
+                                    saveContext()
+                                }
+                            )
+                            .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
+                        }
                     }
                 }
 
@@ -123,7 +131,7 @@ struct ContentView: View {
                         
                         Spacer()
                         
-                        NavigationLink(destination: SettingsView(categories: _categories)) {
+                        NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gear")
                                 .font(.system(size: 26))
                                 .foregroundColor(.white)
@@ -155,6 +163,9 @@ struct ContentView: View {
                 }
             }
         )
+        .sheet(isPresented: $showingAuthView) {
+            AuthenticationView()
+        }
     }
     
     private func deleteNote(at offsets: IndexSet) {

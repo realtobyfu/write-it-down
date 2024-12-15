@@ -33,13 +33,3 @@ class LocationSearchViewModel: NSObject, ObservableObject {
         }
     }
 }
-
-//extension LocationSearchViewModel: MKLocalSearchCompleterDelegate {
-//    func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-//        self.searchResults = completer.results
-//    }
-//    
-//    func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
-//        print("Failed to find search results: \(error.localizedDescription)")
-//    }
-//}

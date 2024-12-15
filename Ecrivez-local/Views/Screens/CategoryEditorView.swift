@@ -99,8 +99,6 @@ struct CategoryEditorView: View {
 
             Spacer()
             
-            Text("* existing notes will not be changed")
-
             // Confirm Button
             Button(action: {
                 // Update the existing category

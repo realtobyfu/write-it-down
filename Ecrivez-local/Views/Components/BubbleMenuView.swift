@@ -16,26 +16,28 @@ struct BubbleMenuView: View {
     var body: some View {
         ZStack {
             if showBubbles {
-                HStack(spacing: 20) {
-                    ForEach(categories, id: \.self) { category in
-                        Button(action: {
-                            selectedCategory = category
-                            showBubbles = false
-                            onCategorySelected()
-                        }) {
-                            Circle()
-                                .fill(category.color)
-                                .frame(width: 45, height: 45)
-                                .overlay(
-                                    Image(systemName: category.symbol!)
-                                        .foregroundColor(.white)
-                                )
+                ScrollView(.horizontal, showsIndicators: false) { // Add scrolling
+                    HStack(spacing: 20) {
+                        ForEach(categories.sorted(by: {$0.index < $1.index }), id: \.self) { category in
+                            Button(action: {
+                                selectedCategory = category
+                                showBubbles = false
+                                onCategorySelected()
+                            }) {
+                                Circle()
+                                    .fill(category.color)
+                                    .frame(width: 45, height: 45)
+                                    .overlay(
+                                        Image(systemName: category.symbol ?? "circle")
+                                            .foregroundColor(.white)
+                                    )
+                            }
                         }
                     }
+                    .padding(.horizontal, 10)
                 }
                 .offset(y: -100)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6))
-                .padding(.horizontal, 10)
             }
 
             HStack {

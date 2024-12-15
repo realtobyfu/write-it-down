@@ -87,7 +87,7 @@ struct NoteEditorView: View {
                 categorySelectionView
 
                 RichTextEditor(text: $attributedText, context: contextRT)
-                    .frame(height: 200)
+//                    .frame(height: 200)
                     .padding(8)
                     .background(Color.white)
                     .focused($isTextEditorFocused)
@@ -134,10 +134,10 @@ struct NoteEditorView: View {
                             .fixedSize(horizontal: true, vertical: false)
                     }
 
-                    Spacer()
+//                    Spacer()
                 }
             }
-            .padding()
+            .padding([.leading, .trailing])
             .navigationBarTitle("Edit Note", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") {
                 saveNote()
@@ -190,22 +190,47 @@ struct NoteEditorView: View {
 
             Spacer()
 
-            ForEach(categories.filter { $0.name != self.category.name }, id: \.self) { categoryItem in
-                Button(action: {
-                    self.category = categoryItem
-                }) {
-                    Circle()
-                        .fill(categoryItem.color)
-                        .frame(width: 35, height: 35)
-                        .overlay(
-                            Image(systemName: categoryItem.symbol!)
-                                .foregroundColor(.white)
-                                .font(.body)
-                        )
+            if categories.count > 6 {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 17) {
+                        ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.category.name }, id: \.self) { categoryItem in
+                            Button(action: {
+                                self.category = categoryItem
+                            }) {
+                                Circle()
+                                    .fill(categoryItem.color)
+                                    .frame(width: 35, height: 35)
+                                    .overlay(
+                                        Image(systemName: categoryItem.symbol!)
+                                            .foregroundColor(.white)
+                                            .font(.body)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .frame(height: 55) // Adjust if needed
+            } else {
+                // If 6 or fewer, just show them inline as before
+                ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.category.name }, id: \.self) { categoryItem in
+                    Button(action: {
+                        self.category = categoryItem
+                    }) {
+                        Circle()
+                            .fill(categoryItem.color)
+                            .frame(width: 35, height: 35)
+                            .overlay(
+                                Image(systemName: categoryItem.symbol!)
+                                    .foregroundColor(.white)
+                                    .font(.body)
+                            )
+                    }
                 }
             }
 
-            Spacer()
+
+//            Spacer()
         }
         .padding(.vertical, 5)
     }
