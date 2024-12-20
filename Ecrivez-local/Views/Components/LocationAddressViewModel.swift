@@ -7,22 +7,20 @@
 import SwiftUI
 import CoreLocation
 
+@MainActor
 class LocationAddressViewModel: ObservableObject {
     @Published var address: String = ""
 
     func fetchAddress(from location: CLLocationCoordinate2D) {
         let geocoder = CLGeocoder()
         let cllocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
-        geocoder.reverseGeocodeLocation(cllocation) { placemarks, error in
-            if let placemark = placemarks?.first {
-                DispatchQueue.main.async {
-                    self.address = [placemark.name, placemark.locality, placemark.administrativeArea, placemark.country].compactMap { $0 }.joined(separator: ", ")
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.address = "Unknown location"
-                }
-            }
+        geocoder.reverseGeocodeLocation(cllocation) { [weak self] placemarks, error in
+            guard let self = self else { return }
+            self.address = placemarks?.first.map {
+                [$0.name, $0.locality, $0.administrativeArea, $0.country]
+                .compactMap { $0 }
+                .joined(separator: ", ")
+            } ?? "Unknown location"
         }
     }
 }

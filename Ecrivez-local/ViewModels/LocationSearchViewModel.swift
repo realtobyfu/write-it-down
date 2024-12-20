@@ -8,9 +8,7 @@
 import SwiftUI
 import MapKit
 
-import SwiftUI
-import MapKit
-
+@MainActor
 class LocationSearchViewModel: NSObject, ObservableObject {
     @Published var searchText = ""
     @Published var landmarks: [MKMapItem] = []
@@ -22,14 +20,10 @@ class LocationSearchViewModel: NSObject, ObservableObject {
         request.region = region
 
         let search = MKLocalSearch(request: request)
-        search.start { response, error in
-            if let response = response {
-                DispatchQueue.main.async {
-                    self.landmarks = response.mapItems
-                }
-            } else {
-                print("Error searching for landmarks: \(error?.localizedDescription ?? "Unknown error")")
-            }
+        search.start { [weak self] response, error in
+            guard let self = self else { return }
+            // Since the class is @MainActor, no extra DispatchQueue.main.async is strictly needed.
+            self.landmarks = response?.mapItems ?? []
         }
     }
 }

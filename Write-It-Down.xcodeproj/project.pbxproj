@@ -10,7 +10,6 @@
 		3E252DA62CEBAB390053506C /* screenshot.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E252DA52CEBAB390053506C /* screenshot.png */; };
 		3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3109912CB62FA500DB73B9 /* NoteView.swift */; };
 		3E51FF382C64597400D317B7 /* DateBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E51FF372C64597400D317B7 /* DateBar.swift */; };
-		3E5888602CA9C57500765779 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E58885F2CA9C57500765779 /* RichTextKit */; };
 		3E62226E2D0E87EC00155143 /* AuthenticationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E62226D2D0E87E800155143 /* AuthenticationView.swift */; };
 		3E7146312C9A0FFD00F5ACE0 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146302C9A0FFB00F5ACE0 /* Category.swift */; };
 		3E7146332C9A102100F5ACE0 /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146322C9A102100F5ACE0 /* Note.swift */; };
@@ -21,6 +20,7 @@
 		3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146442C9A756A00F5ACE0 /* UserSettings.swift */; };
 		3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */; };
 		3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */; };
+		3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C2E2D15441200FCD000 /* RichTextKit */; };
 		3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */; };
 		3E7B74492CC82DEB00569AE7 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B74482CC82DE800569AE7 /* DataController.swift */; };
 		3E7B744B2CCD9F2900569AE7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B744A2CCD9F2400569AE7 /* README.md */; };
@@ -89,7 +89,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3E5888602CA9C57500765779 /* RichTextKit in Frameworks */,
+				3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -254,7 +254,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 3ED060282C4EE7ED00392BDC /* Build configuration list for PBXProject "Ecrivez-local" */;
+			buildConfigurationList = 3ED060282C4EE7ED00392BDC /* Build configuration list for PBXProject "Write-It-Down" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -264,7 +264,7 @@
 			);
 			mainGroup = 3ED060242C4EE7ED00392BDC;
 			packageReferences = (
-				3E58885E2CA9C57500765779 /* XCRemoteSwiftPackageReference "RichTextKit" */,
+				3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */,
 			);
 			productRefGroup = 3ED0602E2C4EE7ED00392BDC /* Products */;
 			projectDirPath = "";
@@ -475,7 +475,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Ecrivez-local";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -506,7 +506,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Ecrivez-local";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -514,7 +514,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3ED060282C4EE7ED00392BDC /* Build configuration list for PBXProject "Ecrivez-local" */ = {
+		3ED060282C4EE7ED00392BDC /* Build configuration list for PBXProject "Write-It-Down" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3ED060392C4EE7EF00392BDC /* Debug */,
@@ -535,20 +535,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		3E58885E2CA9C57500765779 /* XCRemoteSwiftPackageReference "RichTextKit" */ = {
+		3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/danielsaidi/RichTextKit";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.1.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		3E58885F2CA9C57500765779 /* RichTextKit */ = {
+		3E730C2E2D15441200FCD000 /* RichTextKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 3E58885E2CA9C57500765779 /* XCRemoteSwiftPackageReference "RichTextKit" */;
+			package = 3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */;
 			productName = RichTextKit;
 		};
 /* End XCSwiftPackageProductDependency section */

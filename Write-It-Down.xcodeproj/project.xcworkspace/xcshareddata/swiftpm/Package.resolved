@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/danielsaidi/RichTextKit",
       "state" : {
-        "revision" : "f0ecceb71ff3cb12a3143eed13b8b62fea7c34e5",
-        "version" : "1.0.0"
+        "revision" : "c1f94420b6f3cd5aa2aa20e916fe4f44540c9ec8",
+        "version" : "1.1.1"
       }
     }
   ],

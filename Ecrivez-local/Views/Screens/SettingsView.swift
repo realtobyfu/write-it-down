@@ -1,19 +1,5 @@
 import SwiftUI
 import CoreData
-import CloudKit
-
-func isICloudContainerAvailable() -> Bool {
-    let container = CKContainer.default()
-    var isAvailable = false
-    container.accountStatus { status, error in
-        if status == .available {
-            isAvailable = true
-        } else {
-            isAvailable = false
-        }
-    }
-    return isAvailable
-}
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
