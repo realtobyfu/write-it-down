@@ -9,6 +9,8 @@ struct CategoryEditorListView: View {
     ) var categories: FetchedResults<Category>
 
     @State private var showingAddCategoryView = false
+    @State private var newCategory: Category? = nil
+
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -48,8 +50,8 @@ struct CategoryEditorListView: View {
             
             // "+" Button
             Button(action: {
+                newCategory = Category(context: context)
                 showingAddCategoryView = true
-                deleteUnnamedCategories()
             }) {
                 Image(systemName: "plus")
                     .font(.system(size: 24))
@@ -64,13 +66,16 @@ struct CategoryEditorListView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .center)
             .sheet(isPresented: $showingAddCategoryView) {
-                // Present a view to add a new category
-                CategoryEditorView(
-                    category: Category(context: context),
-                    onSave: {
-                        saveContext()
-                    }
-                )
+                if let newCategory = newCategory {
+                    CategoryEditorView(
+                        category: newCategory,
+                        onSave: {
+                            saveContext()
+                            self.newCategory = nil
+                            showingAddCategoryView = false
+                        }
+                    )
+                }
             }
         }
         .navigationTitle("Categories")
