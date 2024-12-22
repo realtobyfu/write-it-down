@@ -14,7 +14,7 @@ struct Profile: Codable {
 final class AuthenticationViewModel {
 
   // MARK: - Fields Bound to UI
-  var phoneNumber: String = ""
+  var email: String = ""
   var code: String = ""
   var username: String = ""     // If user is new, ask for username
 
@@ -38,17 +38,18 @@ final class AuthenticationViewModel {
 
   // MARK: - Step 1: Send OTP
     private func sendOTP() async {
-    guard !phoneNumber.isEmpty else {
-      showError("Please enter your phone number.")
+    guard !email.isEmpty else {
+      showError("Please enter your email.")
       return
     }
 
     do {
-      try await SupabaseManager.shared.client.auth.signInWithOTP(phone: phoneNumber)
+      try await SupabaseManager.shared.client.auth.signInWithOTP(email: email)
       isVerifyingCode = true
-      showSuccess("OTP sent! Check your phone.")
+      showSuccess("OTP sent! Check your email.")
     } catch {
-        print("Phone Number used:", phoneNumber)
+//        print("Phone Number used:", email)
+        print(error.localizedDescription)
       showError("Failed to send OTP: \(error.localizedDescription)")
     }
   }
@@ -62,9 +63,9 @@ final class AuthenticationViewModel {
 
     do {
         let session = try await SupabaseManager.shared.client.auth.verifyOTP(
-        phone: phoneNumber,
+        email: email,
         token: code,
-        type: .sms
+        type: .signup
       )
 //       session.user is the newly authenticated user
       let userId = session.user.id // This is a String
