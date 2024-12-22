@@ -21,6 +21,13 @@
 		3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */; };
 		3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */; };
 		3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C2E2D15441200FCD000 /* RichTextKit */; };
+		3E730C322D15471D00FCD000 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C312D15471D00FCD000 /* Auth */; };
+		3E730C342D15471D00FCD000 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C332D15471D00FCD000 /* Functions */; };
+		3E730C362D15471D00FCD000 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C352D15471D00FCD000 /* PostgREST */; };
+		3E730C382D15471D00FCD000 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C372D15471D00FCD000 /* Realtime */; };
+		3E730C3A2D15471D00FCD000 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C392D15471D00FCD000 /* Storage */; };
+		3E730C3C2D15471D00FCD000 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C3B2D15471D00FCD000 /* Supabase */; };
+		3E730C3E2D15473F00FCD000 /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E730C3D2D15473900FCD000 /* SupabaseManager.swift */; };
 		3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */; };
 		3E7B74492CC82DEB00569AE7 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B74482CC82DE800569AE7 /* DataController.swift */; };
 		3E7B744B2CCD9F2900569AE7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B744A2CCD9F2400569AE7 /* README.md */; };
@@ -37,7 +44,8 @@
 		3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060322C4EE7ED00392BDC /* ContentView.swift */; };
 		3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060342C4EE7EF00392BDC /* Assets.xcassets */; };
 		3ED060382C4EE7EF00392BDC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */; };
-		3EEFE07F2CF94DD600212852 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEFE07E2CF94DD100212852 /* AuthViewModel.swift */; };
+		3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */; };
+		3EEFE07F2CF94DD600212852 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */; };
 		3EF9F7972C5D1FFC00CD8F31 /* WeatherPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */; };
 		3EFCE2312C5A90F2000F748A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2302C5A90F2000F748A /* SettingsView.swift */; };
 		3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2352C5ACC48000F748A /* ImagePicker.swift */; };
@@ -59,6 +67,7 @@
 		3E7146442C9A756A00F5ACE0 /* UserSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserSettings.swift; sourceTree = "<group>"; };
 		3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorView.swift; sourceTree = "<group>"; };
 		3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorListView.swift; sourceTree = "<group>"; };
+		3E730C3D2D15473900FCD000 /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
 		3E7B743E2CC5467800569AE7 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
 		3E7B74482CC82DE800569AE7 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
 		3E7B744A2CCD9F2400569AE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -77,7 +86,8 @@
 		3ED060322C4EE7ED00392BDC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3ED060342C4EE7EF00392BDC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		3EEFE07E2CF94DD100212852 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastModifier.swift; sourceTree = "<group>"; };
+		3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPicker.swift; sourceTree = "<group>"; };
 		3EFCE2302C5A90F2000F748A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		3EFCE2352C5ACC48000F748A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -89,6 +99,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3E730C3C2D15471D00FCD000 /* Supabase in Frameworks */,
+				3E730C3A2D15471D00FCD000 /* Storage in Frameworks */,
+				3E730C362D15471D00FCD000 /* PostgREST in Frameworks */,
+				3E730C342D15471D00FCD000 /* Functions in Frameworks */,
+				3E730C322D15471D00FCD000 /* Auth in Frameworks */,
+				3E730C382D15471D00FCD000 /* Realtime in Frameworks */,
 				3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -134,6 +150,7 @@
 		3E7146432C9A6DD800F5ACE0 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */,
 				3E982BF62CEA8FB7004AB1A9 /* LocationAddressViewModel.swift */,
 				3E3109912CB62FA500DB73B9 /* NoteView.swift */,
 				3E7146362C9A16A700F5ACE0 /* AttributedTextView.swift */,
@@ -147,7 +164,8 @@
 		3E8E70492C88FDDA0001BD86 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
-				3EEFE07E2CF94DD100212852 /* AuthViewModel.swift */,
+				3E730C3D2D15473900FCD000 /* SupabaseManager.swift */,
+				3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */,
 				3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */,
 				3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */,
 			);
@@ -265,6 +283,7 @@
 			mainGroup = 3ED060242C4EE7ED00392BDC;
 			packageReferences = (
 				3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */,
+				3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			productRefGroup = 3ED0602E2C4EE7ED00392BDC /* Products */;
 			projectDirPath = "";
@@ -302,6 +321,7 @@
 				3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */,
 				3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */,
 				3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */,
+				3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */,
 				3ED060312C4EE7ED00392BDC /* Ecrivez_localApp.swift in Sources */,
 				3E7146372C9A16AB00F5ACE0 /* AttributedTextView.swift in Sources */,
 				3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */,
@@ -316,10 +336,11 @@
 				3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */,
 				3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */,
 				3E7146492C9A8F8100F5ACE0 /* CategoryEditorListView.swift in Sources */,
+				3E730C3E2D15473F00FCD000 /* SupabaseManager.swift in Sources */,
 				3E7146332C9A102100F5ACE0 /* Note.swift in Sources */,
 				3E7146312C9A0FFD00F5ACE0 /* Category.swift in Sources */,
 				3E71463D2C9A178500F5ACE0 /* ImageSelectionView.swift in Sources */,
-				3EEFE07F2CF94DD600212852 /* AuthViewModel.swift in Sources */,
+				3EEFE07F2CF94DD600212852 /* AuthenticationModel.swift in Sources */,
 				3E51FF382C64597400D317B7 /* DateBar.swift in Sources */,
 				3EC53C732C62DD4000CED78A /* WeatherBar.swift in Sources */,
 				3EFCE23A2C5ACD37000F748A /* NoteEditorView.swift in Sources */,
@@ -461,6 +482,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Write-It-Down";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Write-It-Down needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -472,7 +495,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Ecrivez-local";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.write-it-down";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -492,6 +515,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Write-It-Down";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Write-It-Down needs to know your location to add it to the notes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -503,7 +528,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Ecrivez-local";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.write-it-down";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -543,6 +568,14 @@
 				minimumVersion = 1.1.1;
 			};
 		};
+		3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -550,6 +583,36 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */;
 			productName = RichTextKit;
+		};
+		3E730C312D15471D00FCD000 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		3E730C332D15471D00FCD000 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		3E730C352D15471D00FCD000 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		3E730C372D15471D00FCD000 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		3E730C392D15471D00FCD000 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		3E730C3B2D15471D00FCD000 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 
