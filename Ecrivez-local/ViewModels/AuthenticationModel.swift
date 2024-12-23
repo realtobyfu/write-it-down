@@ -35,6 +35,19 @@ final class AuthenticationViewModel {
             Task { await verifyCode(onSuccess: onSuccess) }
         }
     }
+    
+
+    func registerNewUserWithEmail(email: String, password:String) async throws {
+        let regAuthResponse  = try await SupabaseManager.shared.client.auth.signUp(email: email, password: password)
+        
+        guard let session = regAuthResponse.session else {
+            print("no session when registering user")
+            throw NSError()
+        }
+        return
+    }
+    
+    
 
   // MARK: - Step 1: Send OTP
     private func sendOTP() async {
