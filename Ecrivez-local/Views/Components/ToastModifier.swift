@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+// Toast Modifier can be called to notify the user about updates in the app state
+// i.e. "Logged-in successfully"
+
 struct ToastState: Identifiable {
   let id = UUID()
 
