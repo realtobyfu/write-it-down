@@ -14,9 +14,9 @@
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="imagesData" optional="YES" attributeType="Transformable"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="is_public" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="locationLatitude" optional="YES" attributeType="Decimal"/>
         <attribute name="locationLongitude" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="shared" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="category" maxCount="1" deletionRule="No Action" destinationEntity="Category" inverseName="note" inverseEntity="Category"/>
     </entity>
 </model>

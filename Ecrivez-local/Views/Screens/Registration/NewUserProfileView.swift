@@ -9,9 +9,10 @@ import SwiftUI
 import Supabase
 
 struct NewUserProfileView: View {
-    /// These come from the parent (UserView) so the user doesn't need to type them again
-    let userId: UUID?
+    /// The userId and userEmail from the parent (UserView)
+    let userId: String
     let userEmail: String
+    @Binding var userProfile: Profile?
 
     @State private var username: String = ""
     @State private var displayName: String = ""
@@ -24,7 +25,6 @@ struct NewUserProfileView: View {
             Text("Create your Profile")
                 .font(.headline)
 
-            // Show the user's email in read-only format (optional)
             Text("Email: \(userEmail)")
                 .foregroundColor(.secondary)
 
@@ -60,6 +60,7 @@ struct NewUserProfileView: View {
     }
 
     private func saveProfile() async {
+        
         guard !username.isEmpty else {
             errorMessage = "Please enter a username."
             return
@@ -69,22 +70,29 @@ struct NewUserProfileView: View {
         defer { isSaving = false }
 
         do {
-            // Build a Profile object with the userId and userEmail from the parent
+            // The Profile struct's `id` is a String (matching the user's ID from Supabase)
             let newProfile = Profile(
-                id: userId!,
+                id: userId,
                 username: username,
                 email: userEmail,
                 display_name: displayName
             )
 
             // Insert into "profiles"
-            let response = try await SupabaseManager.shared.client
+            try await SupabaseManager.shared.client
                 .from("profiles")
                 .insert([newProfile], returning: .representation)
-                .single()  // we expect a single row back
+                .single()
                 .execute()
+            
+            // TODO: authenticate this / sync from the server?
+            userProfile = newProfile
+//            userProfile = savedProfile
 
-            // You could also navigate away, store the profile in state, etc.
+
+            // You might call back into UserView to refresh or navigate
+            // e.g. pop or dismiss this view if it's in a sheet.
+
         } catch {
             errorMessage = "Failed to create profile: \(error.localizedDescription)"
         }

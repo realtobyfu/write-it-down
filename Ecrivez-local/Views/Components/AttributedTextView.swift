@@ -15,6 +15,7 @@ struct AttributedTextView: UIViewRepresentable {
     
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
+        
         textView.isSelectable = false
         textView.isEditable = false
         textView.isScrollEnabled = false

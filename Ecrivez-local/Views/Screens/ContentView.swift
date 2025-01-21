@@ -28,6 +28,8 @@ struct ContentView: View {
     @State private var showingAuthView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
+    
+    @State private var isAuthenticated = false
 
     @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
@@ -63,16 +65,7 @@ struct ContentView: View {
                 }
                 .listStyle(PlainListStyle())
                 .navigationTitle("Ideas")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            showingAuthView = true
-                        }) {
-                            Image(systemName: "person.crop.circle")
-                                .font(.system(size: 24))
-                        }
-                    }
-                }
+                
                 .sheet(isPresented: $showingNoteEditor, onDismiss: {
                     selectedNote = nil
                 }) {
@@ -143,7 +136,35 @@ struct ContentView: View {
                     }
                 }
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showingAuthView = true
+                    }) {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 24))
+                    }
+                }
+            }
+
+
+            .sheet(isPresented: $showingAuthView) {
+                if isAuthenticated {
+                    // Now that the user is authenticated, show the user profile logic
+                    UserView()
+                } else {
+                    // Show the auth flow
+                    AuthenticationView(isAuthenticated: $isAuthenticated)
+                }
+            }
+            .onAppear {
+                // If user is not authenticated, present the sheet
+                if !isAuthenticated {
+                    showingAuthView = true
+                }
+            }
         }
+
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
                 saveContext() // Save context when app goes to background
@@ -164,7 +185,13 @@ struct ContentView: View {
             }
         )
         .sheet(isPresented: $showingAuthView) {
-            AuthenticationView()
+            if isAuthenticated {
+                // If user is now authenticated, show some user-related view
+                UserView()
+            } else {
+                // If user is still not authenticated, show the auth flow
+                AuthenticationView(isAuthenticated: $isAuthenticated)
+            }
         }
     }
     

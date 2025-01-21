@@ -10,7 +10,6 @@ struct NoteEditorView: View {
 
     // Make location optional
     @State private var location: CLLocationCoordinate2D?
-
     @State private var weather: String
     @State private var category: Category
 
