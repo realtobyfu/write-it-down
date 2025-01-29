@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var context
     
     // Fetching Notes and Categories from CoreData
+    // similar to state, when changes, causes the view body to recompute
     @FetchRequest(
         entity: Note.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
@@ -22,6 +23,12 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
 
+    // @State: after making the new struct when something inside the struct changes, the State variables will restore the old values from the older struct
+    // allowing the values to live after the stuct's lifetime
+    // @State stores the value in the "view tree" (hierarchy of objects and storing values) and restore it from the view tree
+    //@FetchRequest (from database), @Environment (from the environment ) etc... applied to all property wrappers
+    
+    // just a optional for note
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
@@ -29,7 +36,7 @@ struct ContentView: View {
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
     
-    @State private var isAuthenticated = false
+    @Binding var isAuthenticated: Bool
 
     @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
@@ -55,14 +62,18 @@ struct ContentView: View {
                     ForEach(filteredNotes) { note in
                         NoteView(
                             note: note,
-                            selectedNote: $selectedNote,
-                            showingNoteEditor: $showingNoteEditor
+                            buttonTapped: {
+                                selectedNote = note
+                                showingNoteEditor = true
+                            }
                         )
+                        .listRowSeparator(.hidden)
                     }
                     .onDelete(perform: deleteNote)
                     .onMove(perform: moveNote)
                     .moveDisabled(selectedCategory != nil) // Disable moving when a category is selected
                 }
+                
                 .listStyle(PlainListStyle())
                 .navigationTitle("Ideas")
                 
@@ -74,11 +85,12 @@ struct ContentView: View {
                             NoteEditorView(
                                 mode: .edit(note),
                                 categories: Array(categories),
+                                isAuthenticated: isAuthenticated,
                                 onSave: {
                                     saveContext()
                                 }
                             )
-                            .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
+//                            .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
                         }
                     }
                 }
@@ -136,6 +148,7 @@ struct ContentView: View {
                     }
                 }
             }
+            
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
@@ -146,23 +159,12 @@ struct ContentView: View {
                     }
                 }
             }
-
-
-            .sheet(isPresented: $showingAuthView) {
-                if isAuthenticated {
-                    // Now that the user is authenticated, show the user profile logic
-                    UserView()
-                } else {
-                    // Show the auth flow
-                    AuthenticationView(isAuthenticated: $isAuthenticated)
-                }
-            }
-            .onAppear {
-                // If user is not authenticated, present the sheet
-                if !isAuthenticated {
-                    showingAuthView = true
-                }
-            }
+//            .onAppear {
+//                // If user is not authenticated, present the sheet
+//                if !isAuthenticated {
+//                    showingAuthView = true
+//                }
+//            }
         }
 
         .onChange(of: scenePhase) { newPhase in
@@ -172,11 +174,15 @@ struct ContentView: View {
         }
         .sheet(
             isPresented: $showingAddNoteView,
+            onDismiss: {
+                selectedCategory = nil
+            },
             content: {
                 if let selectedCategory = selectedCategory {
                     NoteEditorView(
                         mode: .create(selectedCategory),
                         categories: Array(categories),
+                        isAuthenticated: isAuthenticated,
                         onSave: {
                             saveContext()
                         }

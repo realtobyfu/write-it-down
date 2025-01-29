@@ -12,10 +12,14 @@ struct NoteEditorView: View {
     @State private var location: CLLocationCoordinate2D?
     @State private var weather: String
     @State private var category: Category
-
+    
+//    @State var isPublic: Bool = false
+//    
     var note: Note?
     var onSave: () -> Void
+    var isAuthenticated: Bool
 
+    
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.managedObjectContext) private var context  // Core Data context
 
@@ -27,7 +31,7 @@ struct NoteEditorView: View {
 
     // RichTextKit context
     @State private var contextRT = RichTextContext()  // Renamed to avoid conflict with Core Data context
-
+    
     enum Mode {
         case edit(Note)
         case create(Category)
@@ -36,11 +40,14 @@ struct NoteEditorView: View {
     init(
         mode: Mode,
         categories: [Category],
+        isAuthenticated: Bool,
         onSave: @escaping () -> Void
     ) {
+        
         switch mode {
         case .edit(let note):
             self.init(
+                isAuthenticated : isAuthenticated,
                 note: note,
                 categories: categories,
                 category: note.category!,
@@ -48,6 +55,7 @@ struct NoteEditorView: View {
             )
         case .create(let category):
             self.init(
+                isAuthenticated : isAuthenticated,
                 note: nil,
                 categories: categories,
                 category: category,
@@ -57,6 +65,7 @@ struct NoteEditorView: View {
     }
 
     private init(
+        isAuthenticated : Bool,
         note: Note?,
         categories: [Category],
         category: Category,
@@ -72,6 +81,7 @@ struct NoteEditorView: View {
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
         self.categories = categories
+        self.isAuthenticated = isAuthenticated
     }
 
     var body: some View {
@@ -86,7 +96,6 @@ struct NoteEditorView: View {
                 categorySelectionView
 
                 RichTextEditor(text: $attributedText, context: contextRT)
-//                    .frame(height: 200)
                     .padding(8)
                     .background(Color.white)
                     .focused($isTextEditorFocused)

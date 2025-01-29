@@ -49,7 +49,6 @@
 		3ED060382C4EE7EF00392BDC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */; };
 		3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */; };
 		3EEF1B732D19BE50005F7C9C /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B722D19BE45005F7C9C /* RegistrationView.swift */; };
-		3EEF1B752D19BF14005F7C9C /* CheckEmailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B742D19BF09005F7C9C /* CheckEmailView.swift */; };
 		3EEF1B772D19BFD1005F7C9C /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B762D19BFC8005F7C9C /* ProfileView.swift */; };
 		3EEFE07F2CF94DD600212852 /* AuthenticationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */; };
 		3EF9F7972C5D1FFC00CD8F31 /* WeatherPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */; };
@@ -97,7 +96,6 @@
 		3ED060372C4EE7EF00392BDC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastModifier.swift; sourceTree = "<group>"; };
 		3EEF1B722D19BE45005F7C9C /* RegistrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationView.swift; sourceTree = "<group>"; };
-		3EEF1B742D19BF09005F7C9C /* CheckEmailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckEmailView.swift; sourceTree = "<group>"; };
 		3EEF1B762D19BFC8005F7C9C /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationModel.swift; sourceTree = "<group>"; };
 		3EF9F7962C5D1FFC00CD8F31 /* WeatherPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherPicker.swift; sourceTree = "<group>"; };
@@ -128,7 +126,6 @@
 			isa = PBXGroup;
 			children = (
 				3E61F2CD2D35A1DD00781812 /* Registration */,
-				3EEF1B742D19BF09005F7C9C /* CheckEmailView.swift */,
 				3EEF1B722D19BE45005F7C9C /* RegistrationView.swift */,
 				3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */,
 				3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */,
@@ -362,7 +359,6 @@
 				3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */,
 				3EA5DB5F2C6D6957002F4827 /* DateView.swift in Sources */,
 				3E8E70292C87B8280001BD86 /* LocationBar.swift in Sources */,
-				3EEF1B752D19BF14005F7C9C /* CheckEmailView.swift in Sources */,
 				3E7146472C9A782000F5ACE0 /* CategoryEditorView.swift in Sources */,
 				3E05DF0F2D39A61C00ECA2DA /* NewUserProfileView.swift in Sources */,
 				3E7146452C9A756E00F5ACE0 /* UserSettings.swift in Sources */,

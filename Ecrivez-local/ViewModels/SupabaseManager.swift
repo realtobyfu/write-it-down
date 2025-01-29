@@ -21,7 +21,6 @@ class SupabaseManager: ObservableObject {
         self.client = SupabaseClient(supabaseURL: supabaseUrl, supabaseKey: supabaseKey)
 //        self.client.auth.store = AuthStorageKeychain()
 
-
     }
 }
 

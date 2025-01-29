@@ -15,10 +15,11 @@ struct NoteApp: App {
     // optional: show a message indicating the user is logged in
     // go to the home screen
     @StateObject private var dataController = DataController()
+    @State private var isAuthenticated = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(isAuthenticated: $isAuthenticated)
                 .environment(\.managedObjectContext, dataController.container.viewContext)
             
                 .onOpenURL { url in
@@ -49,8 +50,10 @@ struct NoteApp: App {
         // 4) Now let Supabase parse the session
         Task {
             do {
-                try await SupabaseManager.shared.client.auth.session
+                try await SupabaseManager.shared.client.auth.session(from: url)
                 print("Successfully parsed session from Supabase")
+                
+                isAuthenticated = true
             } catch {
                 print("Failed to parse session from url: \(error)")
             }

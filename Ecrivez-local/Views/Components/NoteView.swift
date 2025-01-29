@@ -9,8 +9,13 @@ import CoreLocation
 
 struct NoteView: View {
     let note: Note
-    @Binding var selectedNote: Note?
-    @Binding var showingNoteEditor: Bool
+    
+    /// leaking too much info from the parent
+    ///
+//    @Binding var selectedNote: Note?
+//    @Binding var showingNoteEditor: Bool
+    
+    let buttonTapped: () -> Void
     
     @State private var dynamicHeight: CGFloat = .zero
     @State private var locationString: String = ""
@@ -18,8 +23,7 @@ struct NoteView: View {
     var body: some View {
         // Wrap the entire cell in a Button
         Button {
-            selectedNote = note
-            showingNoteEditor = true
+            buttonTapped()
         } label: {
             // Cell content
             VStack {
