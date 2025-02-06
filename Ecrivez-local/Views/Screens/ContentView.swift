@@ -82,7 +82,7 @@ struct ContentView: View {
                 }) {
                     if let note = selectedNote {
                         ZStack {
-                            NoteEditorView(
+                            NoteEditorView.init(
                                 mode: .edit(note),
                                 categories: Array(categories),
                                 isAuthenticated: isAuthenticated,
@@ -90,7 +90,6 @@ struct ContentView: View {
                                     saveContext()
                                 }
                             )
-//                            .frame(maxHeight: UIScreen.main.bounds.height / 1.5)
                         }
                     }
                 }
@@ -125,7 +124,7 @@ struct ContentView: View {
 
                     // Additional Navigation Buttons
                     HStack {
-                        NavigationLink(destination: FeedView()) {
+                        NavigationLink(destination: FeedView(isAuthenticated: isAuthenticated)) {
                             Image(systemName: "text.bubble")
                                 .font(.system(size: 30))
                                 .foregroundColor(.blue)

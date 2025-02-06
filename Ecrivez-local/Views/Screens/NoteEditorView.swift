@@ -12,13 +12,13 @@ struct NoteEditorView: View {
     @State private var location: CLLocationCoordinate2D?
     @State private var weather: String
     @State private var category: Category
+    @State var isPublic: Bool = false
     
-//    @State var isPublic: Bool = false
-//    
-    var note: Note?
-    var onSave: () -> Void
-    var isAuthenticated: Bool
-
+    // should not be "var" because inside a view,
+    // you won't be able to change it meaningfully inside a view
+    let note: Note?
+    let onSave: () -> Void
+    let isAuthenticated: Bool
     
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.managedObjectContext) private var context  // Core Data context
@@ -30,7 +30,7 @@ struct NoteEditorView: View {
     @FocusState private var isTextEditorFocused: Bool
 
     // RichTextKit context
-    @State private var contextRT = RichTextContext()  // Renamed to avoid conflict with Core Data context
+    @StateObject private var contextRT = RichTextContext()  // Renamed to avoid conflict with Core Data context
     
     enum Mode {
         case edit(Note)
@@ -71,6 +71,7 @@ struct NoteEditorView: View {
         category: Category,
         onSave: @escaping () -> Void
     ) {
+        
         self.note = note
         self.onSave = onSave
 
@@ -80,6 +81,8 @@ struct NoteEditorView: View {
         _tapped = State(initialValue: note != nil)
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
+        _isPublic = State(initialValue: note?.shared ?? false)
+
         self.categories = categories
         self.isAuthenticated = isAuthenticated
     }
@@ -97,7 +100,8 @@ struct NoteEditorView: View {
 
                 RichTextEditor(text: $attributedText, context: contextRT)
                     .padding(8)
-                    .background(Color.white)
+//                    .background(Color.background)
+                    .foregroundStyle(Color.background)
                     .focused($isTextEditorFocused)
 
                 #if os(iOS)
@@ -108,6 +112,11 @@ struct NoteEditorView: View {
                     formatSheet: { $0 }
                 )
                 #endif
+                
+                if isAuthenticated {
+                    Toggle("Make Public", isOn: $isPublic)
+                        .padding(.vertical, 8)
+                }
 
                 // Location Picker View
                 HStack {
@@ -142,9 +151,24 @@ struct NoteEditorView: View {
                             .fixedSize(horizontal: true, vertical: false)
                     }
 
-//                    Spacer()
                 }
             }
+            
+            // check if the note is in the already, if so mark it as public
+            //
+//            .task {
+//                do {
+//                    let response = SupabaseManager.shared.client
+//                       .from("public_notes")
+//                        .select()
+//                        .eq("note", value: note?.id)
+//                        .single()
+//                    
+//                    if response {}
+//                } catch {
+//                    print("error")
+//                }
+//            }
             .padding([.leading, .trailing])
             .navigationBarTitle("Edit Note", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") {
@@ -250,7 +274,14 @@ struct NoteEditorView: View {
                 existingNote.attributedText = attributedText
                 existingNote.date = selectedDate
                 existingNote.category = category
+                existingNote.shared = isPublic
                 existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+                
+                if existingNote.shared {
+                    Task {
+                        await updateSupabase(note: existingNote)
+                    }
+                }
             } else {
                 // Create new note
                 let newNote = Note(context: context)
@@ -259,8 +290,14 @@ struct NoteEditorView: View {
                 newNote.category = category
                 newNote.date = selectedDate
                 newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+                
+                if newNote.shared && isAuthenticated {
+                    Task {
+                        await updateSupabase(note: newNote)
+                    }
+                }
             }
-
+            
             // Save the context
             do {
                 try context.save()
@@ -272,5 +309,179 @@ struct NoteEditorView: View {
             presentationMode.wrappedValue.dismiss()
             onSave()
         }
+    }
+}
+
+@MainActor
+func updateSupabase(note: Note) async {
+    
+    do {
+        let user = try await SupabaseManager.shared.client.auth.user()
+        
+        print("ID of the user: \(user.id)")
+        
+        let response = try await SupabaseManager.shared.client
+            .from("public_notes")
+            .select()
+            .eq("id", value: note.id)
+            .execute()
+        
+        print("Successfully got the response: \(response.status)")
+
+//        // status 200 when the note is and is not in db
+//        let existInDB = (201..<300).contains(response.status)
+//        
+//        if existInDB {
+//            print("Note exists in DB already: \(note.attributedText.string)")
+//        }
+                
+        // check if the note is in db,
+        // store it as a boolean
+        if !note.shared {
+            let _ = try await SupabaseManager.shared.client
+                .from("public_notes")
+                .delete()
+                .eq("id", value: note.id)
+                .execute()
+            
+            print("Deleted Note, ID: \(String(describing: note.id))")
+        } else {
+            print("Note longitude (before uploading): \(String(describing: note.locationLongitude))")
+            print("Note latitude (before uploading): \(String(describing: note.locationLatitude))")
+            
+            let supaNote = SupabaseNote(
+                id: note.id ?? UUID(),
+                owner_id: user.id, category_id: note.category?.id,
+                content: note.attributedText.string,
+                date: note.date,
+                locationLongitude: note.locationLatitude?.doubleValue,
+                locationLatitude: note.locationLongitude?.doubleValue,
+                colorString: note.category?.colorString ?? "",
+                symbol: note.category?.symbol ?? ""
+            )
+            
+
+//            if existInDB {
+                try await SupabaseManager.shared.client
+                    .from("public_notes")
+                    .update(supaNote)
+                    .eq("id", value: note.id)
+                    .execute()
+                print("Updated Note: \(String(describing: note.id))")
+//
+//            } else {
+//                try await SupabaseManager.shared.client
+//                    .from("public_notes")
+//                    .insert(supaNote)
+//                    .execute()
+//                print("Created Note: \(String(describing: note.id))")
+//            }
+            
+        }
+
+    } catch {
+        print("error: (\(error))")
+    }
+}
+
+//struct SupabaseCategory: Codable {
+//    let id: UUID
+//    let name: String
+//    let symbol: String
+//    let colorString: String
+//    
+//    init (id: UUID, name: String, symbol: String, colorString: String)
+//}
+//
+struct SupabaseNote: Codable, Identifiable {
+    // Matching your DB columns:
+    let id: UUID        // or Int
+    let owner_id: UUID
+    
+    let category_id: UUID?    // if using a separate categories table
+    let content: String       // either plain text or base64
+    
+    // optional attributes
+    var date: Date? = nil
+    var locationLongitude: Double? = nil
+    var locationLatitude: Double? = nil
+    
+    // temporary solution: store the color string inside note in db
+    let colorString: String
+    let symbol: String
+    
+    var profiles: ProfileData? = nil
+    
+    struct ProfileData: Codable {
+        let username: String?
+    }
+
+    
+    // MARK: - Custom Keys
+    private enum CodingKeys: String, CodingKey {
+        case id, owner_id, category_id
+        case content, date, locationLongitude, locationLatitude
+        case colorString, symbol
+        case profiles
+    }
+    
+    // MARK: - Custom Decoder (for the "YYYY-MM-DD" date)
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Required fields
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.owner_id = try container.decode(UUID.self, forKey: .owner_id)
+        self.category_id = try container.decodeIfPresent(UUID.self, forKey: .category_id)
+        self.content = try container.decode(String.self, forKey: .content)
+        self.colorString = try container.decode(String.self, forKey: .colorString)
+        self.symbol = try container.decode(String.self, forKey: .symbol)
+        
+        // Date stored as "YYYY-MM-DD" in Supabase
+        if let dateString = try container.decodeIfPresent(String.self, forKey: .date) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            self.date = formatter.date(from: dateString)
+        } else {
+            self.date = nil
+        }
+        
+        // Optional floats for location
+        self.locationLongitude = try container.decodeIfPresent(Double.self, forKey: .locationLongitude)
+        self.locationLatitude = try container.decodeIfPresent(Double.self, forKey: .locationLatitude)
+        
+        self.profiles = try container.decodeIfPresent(ProfileData.self, forKey: .profiles)
+    }
+    
+    init(id: UUID,
+         owner_id: UUID,
+         category_id: UUID?,
+         content: String,
+//         created_at: String?,
+         date: Date?,
+         locationLongitude: Double?,
+         locationLatitude: Double?,
+         colorString: String,
+         symbol: String
+    ) {
+        self.id = id
+        self.owner_id = owner_id
+        self.category_id = category_id
+        self.content = content
+        
+        if let lat = locationLatitude, let lon = locationLongitude {
+            self.locationLatitude = lat
+            self.locationLongitude = lon
+        }
+
+        if date != nil {
+            self.date = date
+        }
+        
+        self.colorString = colorString
+        self.symbol = symbol
+        
+        print("locationLatitude: \(String(describing: self.locationLatitude))")
+        print("locationLongitude: \(String(describing: self.locationLongitude))")
     }
 }

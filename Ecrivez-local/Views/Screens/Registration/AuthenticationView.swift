@@ -19,7 +19,7 @@ struct AuthenticationView: View {
             VStack(spacing: 20) {
                 Spacer()
                     .frame(height: 15)
-                Text("Create an Account to share your notes!")
+                Text("Create an Account / Log In to share your notes and to DM other users!")
                     .font(.custom(
                         "AmericanTypewriter",
                         fixedSize: 20))

@@ -9,7 +9,7 @@ import Foundation
 
 struct Profile: Codable, Identifiable {
     let id: String
-    let created_at: String?
+//    let created_at: String?
     var username: String?
     var email: String?
     var display_name: String?
@@ -17,7 +17,7 @@ struct Profile: Codable, Identifiable {
     
     init(id: String, username: String? = nil, email: String? = nil, display_name: String? = nil, profile_photo_url: String? = nil) {
         self.id = id
-        self.created_at = nil
+//        self.created_at = nil
         self.username = username
         self.email = email
         self.display_name = display_name

@@ -9,18 +9,32 @@ import CoreLocation
 
 @MainActor
 class LocationAddressViewModel: ObservableObject {
-    @Published var address: String = ""
-
-    func fetchAddress(from location: CLLocationCoordinate2D) {
-        let geocoder = CLGeocoder()
-        let cllocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
-        geocoder.reverseGeocodeLocation(cllocation) { [weak self] placemarks, error in
-            guard let self = self else { return }
-            self.address = placemarks?.first.map {
-                [$0.name, $0.locality, $0.administrativeArea, $0.country]
-                .compactMap { $0 }
-                .joined(separator: ", ")
-            } ?? "Unknown location"
+    @Published var address: String = "Loading..."
+    
+    func fetchAddress(from coordinate: CLLocationCoordinate2D) {
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        
+        CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+            // If no placemarks or there's an error, show "Unknown"
+            guard let placemark = placemarks?.first, error == nil else {
+                DispatchQueue.main.async {
+                    self.address = "Unknown"
+                }
+                return
+            }
+            
+            // Extract city, state, and country; handle nil values gracefully
+            let city = placemark.locality ?? "City"
+            let state = placemark.administrativeArea ?? "State"
+            let country = placemark.country ?? "Country"
+            
+            // Combine them into a single string
+            let combinedAddress = "\(city), \(state), \(country)"
+            
+            // Update published property on main thread
+            DispatchQueue.main.async {
+                self.address = combinedAddress
+            }
         }
     }
 }

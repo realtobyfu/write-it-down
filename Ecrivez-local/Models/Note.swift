@@ -42,8 +42,8 @@ extension Note {
 
     var location: CLLocation? {
         get {
-            if let latitudeValue = self.locationLatitude as? NSDecimalNumber,
-               let longitudeValue = self.locationLongitude as? NSDecimalNumber {
+            if let latitudeValue = self.locationLatitude,
+               let longitudeValue = self.locationLongitude {
                 return CLLocation(latitude: latitudeValue.doubleValue, longitude: longitudeValue.doubleValue)
             }
             return nil

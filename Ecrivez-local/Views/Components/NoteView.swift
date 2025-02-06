@@ -13,6 +13,7 @@ struct NoteView: View {
     /// leaking too much info from the parent
     ///
 //    @Binding var selectedNote: Note?
+//  }
 //    @Binding var showingNoteEditor: Bool
     
     let buttonTapped: () -> Void
@@ -30,7 +31,7 @@ struct NoteView: View {
                 HStack {
                     VStack(alignment: .leading) {
                         headerView
-                        
+
                         AttributedTextView(
                             attributedText: adjustedAttributedText,
                             dynamicHeight: $dynamicHeight
@@ -63,6 +64,7 @@ struct NoteView: View {
             if let symbol = note.category?.symbol {
                 Image(systemName: symbol)
             }
+            Spacer()
             if let noteDate = note.date {
                 Image(systemName: "calendar")
                 Text(formatDate(noteDate))
@@ -81,6 +83,7 @@ struct NoteView: View {
     
     private var adjustedAttributedText: NSAttributedString {
         let mutable = NSMutableAttributedString(attributedString: note.attributedText)
+        
         let newFontSize: CGFloat = 18
         let newTextColor: UIColor = .white
         

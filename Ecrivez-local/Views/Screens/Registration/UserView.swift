@@ -65,6 +65,7 @@ struct UserView: View {
                 .single()
                 .execute()
                 .value
+            
 
             // If found, assign it to `profile`
             self.profile = fetchedProfile
