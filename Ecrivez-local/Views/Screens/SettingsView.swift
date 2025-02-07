@@ -20,7 +20,7 @@ struct SettingsView: View {
                 Text("Suggest a Feature")
             }
             
-            NavigationLink(destination: CategoryEditorListView()) {
+            NavigationLink(destination: DonationView()) {
                 Text("Support the developer ")
                 Image(systemName: "dollarsign.arrow.circlepath")
                     .font(.system(size: 24))

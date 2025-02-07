@@ -101,16 +101,11 @@ struct CategoryEditorView: View {
             
             // Confirm Button
             Button(action: {
-                
-                // UpdateDB - WIP
-                
                 // Update the existing category
                 category.name = self.name
                 category.symbol = self.symbol
                 category.colorString = self.colorString
-                
-//                checkAndUpdateDB(category)
-                
+                                
                 onSave()
                 presentationMode.wrappedValue.dismiss()
             }) {
@@ -130,21 +125,6 @@ struct CategoryEditorView: View {
     }
 }
 
-
-//func checkAndUpdateDB (category: Category) async {
-//    do {
-//        let response = try await SupabaseManager.shared.client
-//            .from("public_categories")
-//            .select()
-//            .eq("id", value: category.id)
-//            .single()
-//            .execute()
-//        let existInDB = (response.status == 200)
-//    } catch {
-//        print("Unexpected error: \(error).")
-//    }
-//
-//}
 
 //struct CategoryEditorView_Previews: PreviewProvider {
 //    @State static var sampleCategory = Category(symbol: "book", colorString: "green", name: "Sample Category")

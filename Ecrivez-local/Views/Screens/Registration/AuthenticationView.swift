@@ -5,34 +5,27 @@
 //  Created by Tobias Fu on 12/14/24.
 //
 import SwiftUI
-import Supabase
 
 struct AuthenticationView: View {
+    @ObservedObject var authVM: AuthViewModel
     
-    @Binding var isAuthenticated: Bool
-    @State var email = ""
-    @State var isLoading = false
-    @State var result: Result<Void, Error>?
+    @State private var result: Result<Void, Error>?
 
     var body: some View {
         Form {
             VStack(spacing: 20) {
-                Spacer()
-                    .frame(height: 15)
-                Text("Create an Account / Log In to share your notes and to DM other users!")
-                    .font(.custom(
-                        "AmericanTypewriter",
-                        fixedSize: 20))
-                    .padding(.horizontal, 10)
-                Text("Enter email to receive a magic link!")
-                    .font(.custom(
-                        "AmericanTypewriter",
-                        fixedSize: 20))
+                Spacer().frame(height: 15)
+                
+                Text("Create an Account to share your notes!")
+                    .font(.custom("AmericanTypewriter", fixedSize: 20))
                     .padding(.horizontal, 10)
                 
+                Text("Enter email to receive a magic link!")
+                    .font(.custom("AmericanTypewriter", fixedSize: 20))
+                    .padding(.horizontal, 10)
                 
                 Section {
-                    TextField("Email", text: $email)
+                    TextField("Email", text: $authVM.email)
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -43,7 +36,7 @@ struct AuthenticationView: View {
                         signInButtonTapped()
                     }
                     
-                    if isLoading {
+                    if authVM.isLoading {
                         ProgressView()
                     }
                 }
@@ -60,31 +53,22 @@ struct AuthenticationView: View {
                 }
             }
         }
-//        .onOpenURL(perform: { url in
-//            Task {
-//                do {
-//                    try await SupabaseManager.shared.client.auth.session(from: url)
-//                } catch {
-//                    self.result = .failure(error)
-//                }
-//            }
-//        })
     }
 
-  func signInButtonTapped() {
-    Task {
-      isLoading = true
-      defer { isLoading = false }
-        
-      do {
-          try await SupabaseManager.shared.client.auth.signInWithOTP(
-            email: email,
-            redirectTo: URL(string: "com.tobiasfu.write-it-down://login-callback")
-        )
-        result = .success(())
-      } catch {
-        result = .failure(error)
-      }
+    private func signInButtonTapped() {
+        Task {
+            // Start spinner
+            authVM.isLoading = true
+            do {
+                try await authVM.signIn()
+                // If no error is thrown, we consider signIn success
+                result = .success(())
+            } catch {
+                // If signIn() rethrows, handle here
+                result = .failure(error)
+            }
+            // Stop spinner
+            authVM.isLoading = false
+        }
     }
-  }
 }

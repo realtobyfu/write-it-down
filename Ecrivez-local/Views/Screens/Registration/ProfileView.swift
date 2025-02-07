@@ -11,6 +11,8 @@ import Storage
 
 struct ProfileView: View {
     
+    @ObservedObject var authVM: AuthViewModel
+    
     @State private var isEditing = false
     
     // The user’s profile that we’re displaying or editing
@@ -124,6 +126,11 @@ struct ProfileView: View {
                 }
                 .padding(.top, 10)
             }
+            
+            Button ("Log out") {
+                authVM.signOut()
+            }
+            .buttonStyle(.borderedProminent)
 
             // Show any error messages
             if let errorMessage {

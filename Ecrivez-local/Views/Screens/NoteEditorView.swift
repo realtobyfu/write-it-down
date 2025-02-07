@@ -81,7 +81,7 @@ struct NoteEditorView: View {
         _tapped = State(initialValue: note != nil)
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
-        _isPublic = State(initialValue: note?.shared ?? false)
+        _isPublic = State(initialValue: note?.isPublic ?? false)
 
         self.categories = categories
         self.isAuthenticated = isAuthenticated
@@ -269,18 +269,17 @@ struct NoteEditorView: View {
 
     private func saveNote() {
         if !attributedText.string.isEmpty {
+            
             if let existingNote = note {
                 // Update existing note
                 existingNote.attributedText = attributedText
                 existingNote.date = selectedDate
                 existingNote.category = category
-                existingNote.shared = isPublic
+                existingNote.isPublic = isPublic
                 existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
                 
-                if existingNote.shared {
-                    Task {
-                        await updateSupabase(note: existingNote)
-                    }
+                Task {
+                    await updateSupabase(note: existingNote)
                 }
             } else {
                 // Create new note
@@ -291,7 +290,7 @@ struct NoteEditorView: View {
                 newNote.date = selectedDate
                 newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
                 
-                if newNote.shared && isAuthenticated {
+                if newNote.isPublic && isAuthenticated {
                     Task {
                         await updateSupabase(note: newNote)
                     }
@@ -320,32 +319,17 @@ func updateSupabase(note: Note) async {
         
         print("ID of the user: \(user.id)")
         
-        let response = try await SupabaseManager.shared.client
-            .from("public_notes")
-            .select()
-            .eq("id", value: note.id)
-            .execute()
         
-        print("Successfully got the response: \(response.status)")
-
-//        // status 200 when the note is and is not in db
-//        let existInDB = (201..<300).contains(response.status)
-//        
-//        if existInDB {
-//            print("Note exists in DB already: \(note.attributedText.string)")
-//        }
-                
-        // check if the note is in db,
-        // store it as a boolean
-        if !note.shared {
-            let _ = try await SupabaseManager.shared.client
-                .from("public_notes")
-                .delete()
-                .eq("id", value: note.id)
-                .execute()
-            
-            print("Deleted Note, ID: \(String(describing: note.id))")
-        } else {
+        let existInDB = await checkExistInDB(note: note)
+//        if !note.isPublic {
+//            let _ = try await SupabaseManager.shared.client
+//                .from("public_notes")
+//                .delete()
+//                .eq("id", value: note.id)
+//                .execute()
+//            
+//            print("Deleted Note, ID: \(String(describing: note.id))")
+//        } else {
             print("Note longitude (before uploading): \(String(describing: note.locationLongitude))")
             print("Note latitude (before uploading): \(String(describing: note.locationLatitude))")
             
@@ -360,29 +344,55 @@ func updateSupabase(note: Note) async {
                 symbol: note.category?.symbol ?? ""
             )
             
-
-//            if existInDB {
+            if existInDB {
+                if !note.isPublic {
+                    let _ = try await SupabaseManager.shared.client
+                        .from("public_notes")
+                        .delete()
+                        .eq("id", value: note.id)
+                        .execute()
+        
+                    print("Deleted Note, ID: \(String(describing: note.id))")
+                } else {
+                    try await SupabaseManager.shared.client
+                        .from("public_notes")
+                        .update(supaNote)
+                        .eq("id", value: note.id)
+                        .execute()
+                    print("Updated Note: \(String(describing: note.id))")
+                }
+            } else {
                 try await SupabaseManager.shared.client
                     .from("public_notes")
-                    .update(supaNote)
-                    .eq("id", value: note.id)
+                    .insert(supaNote)
                     .execute()
-                print("Updated Note: \(String(describing: note.id))")
-//
-//            } else {
-//                try await SupabaseManager.shared.client
-//                    .from("public_notes")
-//                    .insert(supaNote)
-//                    .execute()
-//                print("Created Note: \(String(describing: note.id))")
-//            }
-            
-        }
+                print("Created Note: \(String(describing: note.id))")
+            }
+//        }
 
     } catch {
         print("error: (\(error))")
     }
 }
+
+
+@MainActor
+func removeFromSupabase(note: Note) async {
+    guard let noteID = note.id else { return }
+    do {
+        try await SupabaseManager.shared.client
+            .from("public_notes")
+            .delete()
+            .eq("id", value: noteID)
+            .execute()
+        print("Deleted note \(noteID) from Supabase.")
+    } catch {
+        print("Error deleting from Supabase: \(error)")
+    }
+}
+
+
+
 
 //struct SupabaseCategory: Codable {
 //    let id: UUID

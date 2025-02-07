@@ -61,7 +61,7 @@ struct FeedView: View {
     
             )
         }
-        .navigationTitle("Public Feed")
+//        .navigationTitle("Public Feed")
 
     }
     

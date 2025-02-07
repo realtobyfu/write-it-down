@@ -46,7 +46,7 @@ struct PublicNoteView: View {
         .cornerRadius(20)
         .padding(.vertical, 2)
         .listRowSeparator(.hidden)
-        .foregroundColor(.white)
+        .foregroundColor(.stroke)
         .onAppear {
             reverseGeocodeIfNeeded()
         }
@@ -71,28 +71,7 @@ struct PublicNoteView: View {
         .foregroundColor(.white)
     }
     
-//    private var footerView: some View {
-//        HStack {
-//            Spacer()
-//
-//            // Date if present
-//            if let noteDate = note.date {
-//                Image(systemName: "calendar")
-//                Text(formatDate(noteDate))
-//            }
-//            
-//            // If we have location text
-//            if !locationString.isEmpty {
-//                Image(systemName: "mappin")
-//                Text(locationString)
-//            }
-//
-//        }
-//        .font(.headline)
-//        .foregroundColor(.white)
-//        .padding(.top, 3)
-//    }
-    
+
     // MARK: - Helper Computed Properties
     
     /// Converts plain text into an NSAttributedString.

@@ -8,10 +8,14 @@
 // MARK: - PublicNoteDetailView
 
 import SwiftUI
+import CoreLocation
 
 struct PublicNoteDetailView: View {
     let note: SupabaseNote
     let isAuthenticated: Bool
+    
+    
+    @State private var locationString: String = ""
 
     // MARK: - Like State
     @State private var hasLiked = false
@@ -45,6 +49,15 @@ struct PublicNoteDetailView: View {
                     Spacer(minLength: 100)
                 }
             }
+            .background(backgroundColor)
+            .cornerRadius(20)
+
+            .listRowSeparator(.hidden)
+            .foregroundColor(.stroke)
+            .onAppear {
+                reverseGeocodeIfNeeded()
+            }
+
             .navigationTitle("Note Detail")
             .navigationBarTitleDisplayMode(.inline)
             
@@ -52,57 +65,71 @@ struct PublicNoteDetailView: View {
             VStack {
                 Spacer()
                 HStack {
-                    // MARK: Like Button (bottom-left)
-                    Button(action: toggleLike) {
-                        // Heart icon + pop animation
-                        Image(systemName: hasLiked ? "heart.fill" : "heart")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 24, height: 24)
-                            .foregroundColor(hasLiked ? .red : .blue)
-                            .scaleEffect(animateLike ? 1.2 : 1.0)
-                            .padding()
-                            .background(
-                                Circle()
-                                    .fill(Color.white)
-                                    .overlay(
+                    VStack (spacing: 5) {
+                        // MARK: DM Button (bottom-right)
+                        if isAuthenticated {
+                            
+                            HStack(spacing: 5) {
+                                Button(action: {
+                                    print("DM button tapped!")
+                                    // Insert your DM logic here
+                                }) {
+                                    Image(systemName: "paperplane.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .background(
+                                            Circle()
+                                                .fill(Color.brown)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(Color.white, lineWidth: 2)
+                                                )
+                                                .shadow(radius: 4)
+                                        )
+                                    Text("message")
+                                        .padding(.leading, 8)
+                                        .foregroundStyle(.stroke)
+                                }
+                                
+                            }
+                            .padding(.bottom, 10)
+                        }
+                        
+                        
+                        HStack(spacing: 5){
+                            
+                            // MARK: Like Button (bottom-left)
+                            Button(action: toggleLike) {
+                                // Heart icon + pop animation
+                                Image(systemName: hasLiked ? "heart.fill" : "heart")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(hasLiked ? .red : .blue)
+                                    .scaleEffect(animateLike ? 1.2 : 1.0)
+                                    .padding()
+                                    .background(
                                         Circle()
-                                            .stroke(hasLiked ? .red : .blue, lineWidth: 2)
+                                            .fill(Color.white)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(hasLiked ? .red : .blue, lineWidth: 2)
+                                            )
+                                            .shadow(radius: hasLiked ? 0 : 4)
                                     )
-                                    .shadow(radius: hasLiked ? 0 : 4)
-                            )
+                            }
+                            Text("like")
+                                .foregroundStyle(.stroke)
+                                .padding(.leading, 8)
+                        }
+                        
+                        
                     }
                     .padding(.leading, 30)
-                    
                     Spacer()
-                    
-                    // MARK: DM Button (bottom-right)
-                    if isAuthenticated {
-                        Button(action: {
-                            print("DM button tapped!")
-                            // Insert your DM logic here
-                        }) {
-                            HStack {
-                                Image(systemName: "paperplane.fill")
-                                    .font(.system(size: 16))
-                                Text("DM")
-                                    .font(.system(size: 16))
-                            }
-                            .foregroundColor(.white)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 16)
-                            .background(
-                                Capsule()
-                                    .fill(Color.brown)
-                                    .overlay(
-                                        Capsule()
-                                            .stroke(Color.white, lineWidth: 2)
-                                    )
-                                    .shadow(radius: 4)
-                            )
-                        }
-                        .padding(.trailing, 30)
-                    }
                 }
                 .padding(.bottom, 30)
             }
@@ -182,4 +209,72 @@ struct PublicNoteDetailView: View {
         //   print("Error toggling like: \(error)")
         // }
     }
+}
+
+extension PublicNoteDetailView {
+    private var headerView: some View {
+        HStack {
+            // Symbol
+            Image(systemName: note.symbol)
+            
+            Spacer()
+            
+            // Date if present
+            if let date = note.date {
+                Image(systemName: "calendar")
+                Text(formatDate(date))
+            }
+            
+            // Location if present
+            if !locationString.isEmpty {
+                Image(systemName: "mappin")
+                Text(locationString)
+            }
+        }
+        .font(.headline)
+        .foregroundColor(.white)
+    }
+    
+    private func formatDate(_ date: Date) -> String {
+        let df = DateFormatter()
+        df.dateFormat = "MM/dd/yy"
+        return df.string(from: date)
+    }
+    
+    /// Convert colorString -> SwiftUI Color
+    private var backgroundColor: Color {
+        switch note.colorString {
+            case "green":   return .green
+            case "blue":    return .blue
+            case "yellow":  return .yellow
+            case "pink":    return .pink
+            case "brown":   return .brown
+            case "gray":    return .gray
+            case "red":     return .red
+            case "purple":  return .purple
+            case "orange":  return .orange
+            case "teal":    return .teal
+            case "indigo":  return .indigo
+            default:        return .black
+        }
+    }
+
+    /// Reverse geocode location if lat/lon exist
+    private func reverseGeocodeIfNeeded() {
+        guard let lat = note.locationLatitude, let lon = note.locationLongitude else {
+            locationString = ""
+            return
+        }
+        let location = CLLocation(latitude: Double(lat), longitude: Double(lon))
+        CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
+            if let placemark = placemarks?.first, error == nil {
+                let locality = placemark.locality ?? ""
+                // Only show the location if non-empty
+                if !locality.isEmpty {
+                    locationString = locality
+                }
+            }
+        }
+    }
+
 }

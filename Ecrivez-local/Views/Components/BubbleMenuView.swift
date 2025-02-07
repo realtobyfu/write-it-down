@@ -37,27 +37,31 @@ struct BubbleMenuView: View {
                     }
                     .padding(.horizontal, 10)
                     .padding(.top, 5)
+//                    .padding(.bottom, 75)
+
                     .background(Color.background)
 
                 }
-                .offset(y: -75)
+                .padding(.top, 8)
+                .padding(.bottom, 15)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6))
+                .background(Color.background)
             }
 
 
-            HStack {
-                Spacer()
-                Button(action: {
-                    withAnimation {
-                        showBubbles.toggle()
-                    }
-                }) {
-                    Image(systemName: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
-                        .font(.system(size: 52))
-                        .foregroundColor(.red)
-                }
-                Spacer()
-            }
+//            HStack {
+//                Spacer()
+//                Button(action: {
+//                    withAnimation {
+//                        showBubbles.toggle()
+//                    }
+//                }) {
+//                    Image(systemName: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
+//                        .font(.system(size: 52))
+//                        .foregroundColor(.red)
+//                }
+//                Spacer()
+//            }
         }
     }
 }

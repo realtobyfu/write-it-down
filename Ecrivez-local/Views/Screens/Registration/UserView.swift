@@ -9,6 +9,8 @@ import SwiftUI
 import Supabase
 
 struct UserView: View {
+    
+    @ObservedObject var authVM: AuthViewModel
     @State private var profile: Profile?
     @State private var isLoading = true
     @State private var errorMessage: String?
@@ -24,7 +26,7 @@ struct UserView: View {
             }
             else if let profile = profile {
                 // We found a matching row in "profiles"
-                ProfileView(editedProfile: profile)
+                ProfileView(authVM: authVM, editedProfile: profile)
             }
             else {
                 // No profile row, so let them create one if we have a valid userId
