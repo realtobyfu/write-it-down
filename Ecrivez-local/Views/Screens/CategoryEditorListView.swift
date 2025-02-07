@@ -8,6 +8,7 @@ struct CategoryEditorListView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.index, ascending: true)]
     ) var categories: FetchedResults<Category>
 
+    
     @State private var showingAddCategoryView = false
     @State private var newCategory: Category? = nil
 

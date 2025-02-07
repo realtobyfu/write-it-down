@@ -1,135 +1,130 @@
-//
-//  NoteView.swift
-//  Ecrivez-local
-//
-//  Created by Tobias Fu on 10/8/24.
-//
+    //
+    //  NoteView.swift
+    //  Ecrivez-local
+    //
+    //  Created by Tobias Fu on 10/8/24.
+    //
 import SwiftUI
-import UIKit
 import CoreLocation
-
-
 
 struct NoteView: View {
     let note: Note
-    @Binding var selectedNote: Note?
-    @Binding var showingNoteEditor: Bool
-//    @Binding var deleteMode: Bool
-//    var onDelete: (() -> Void)? = nil // Optional delete callback
+    
+    /// leaking too much info from the parent
+    ///
+//    @Binding var selectedNote: Note?
+//  }
+//    @Binding var showingNoteEditor: Bool
+    
+    let buttonTapped: () -> Void
     
     @State private var dynamicHeight: CGFloat = .zero
-
-    @State private var locationString: String = "." // State to store the location string
+    @State private var locationString: String = ""
     
-    // Computed property to adjust the attributed text
+    var body: some View {
+        // Wrap the entire cell in a Button
+        Button {
+            buttonTapped()
+        } label: {
+            // Cell content
+            VStack {
+                HStack {
+                    VStack(alignment: .leading) {
+                        headerView
+
+                        AttributedTextView(
+                            attributedText: adjustedAttributedText,
+                            dynamicHeight: $dynamicHeight
+                        )
+                        .frame(height: dynamicHeight)
+                    }
+                    Spacer()
+                }
+                .padding()
+            }
+            .background(note.category?.color ?? .gray)
+            .cornerRadius(20)
+            .padding(.vertical, 2)
+            .listRowSeparator(.hidden) // So the row separator doesn't overlay
+            .foregroundColor(.white)
+            .onAppear {
+                reverseGeocodeIfNeeded()
+            }
+        }
+        // Make the button look/act like a tap gesture (no default button styling)
+        .buttonStyle(.plain)
+        // Ensure the entire rectangle is the tap target
+        .contentShape(Rectangle())
+    }
+    
+    // MARK: - Subviews
+    
+    private var headerView: some View {
+        HStack {
+            if let symbol = note.category?.symbol {
+                Image(systemName: symbol)
+            }
+            Spacer()
+            if let noteDate = note.date {
+                Image(systemName: "calendar")
+                Text(formatDate(noteDate))
+            }
+            if !locationString.isEmpty {
+                Image(systemName: "mappin")
+                Text(locationString)
+            }
+        }
+        .font(.headline)
+        .foregroundColor(.white)
+        .padding(.bottom, 3)
+    }
+    
+    // MARK: - Helper Functions
+    
     private var adjustedAttributedText: NSAttributedString {
-        let mutableAttributedText = NSMutableAttributedString(attributedString: note.attributedText)
+        let mutable = NSMutableAttributedString(attributedString: note.attributedText)
+        
         let newFontSize: CGFloat = 18
         let newTextColor: UIColor = .white
         
-        mutableAttributedText.enumerateAttributes(
-            in: NSRange(location: 0, length: mutableAttributedText.length),
+        mutable.enumerateAttributes(
+            in: NSRange(location: 0, length: mutable.length),
             options: []
         ) { attributes, range, _ in
-            var modifiedAttributes = attributes
-            
+            var modified = attributes
             if let font = attributes[.font] as? UIFont {
-                let fontDescriptor = font.fontDescriptor
-                let newFont = UIFont(descriptor: fontDescriptor, size: newFontSize)
-                modifiedAttributes[.font] = newFont
+                let newFont = UIFont(
+                    descriptor: font.fontDescriptor,
+                    size: newFontSize
+                )
+                modified[.font] = newFont
             } else {
-                modifiedAttributes[.font] = UIFont.systemFont(ofSize: newFontSize)
+                modified[.font] = UIFont.systemFont(ofSize: newFontSize)
             }
-            
-            modifiedAttributes[.foregroundColor] = newTextColor
-            mutableAttributedText.setAttributes(modifiedAttributes, range: range)
+            modified[.foregroundColor] = newTextColor
+            mutable.setAttributes(modified, range: range)
         }
-        
-        return mutableAttributedText
+        return mutable
     }
     
-    var body: some View {
-        VStack {
-            HStack {
-
-                
-                VStack(alignment: .leading) {
-                    HStack {
-                        Image(systemName: note.category!.symbol!)
-                        Spacer(minLength: 5)
-                        
-                        if let noteDate = note.date {
-                            Image(systemName: "calendar")
-                            Text(formatDate(noteDate))
-                        }
-                        
-                        if locationString != "" {
-                            Image(systemName: "mappin") // Display the pin icon
-                        }
-                        // displays the location here
-                        Text(locationString)
-                    }
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.bottom, 3)
-                    
-                    AttributedTextView(attributedText: adjustedAttributedText, dynamicHeight: $dynamicHeight)
-                        .frame(height: dynamicHeight) // Use the dynamically calculated height
-                        .onTapGesture {
-                            selectedNote = note
-                            showingNoteEditor = true
-                        }
+    private func reverseGeocodeIfNeeded() {
+        if let loc = note.location {
+            let geocoder = CLGeocoder()
+            geocoder.reverseGeocodeLocation(loc) { placemarks, error in
+                if error == nil, let placemark = placemarks?.first {
+                    locationString = placemark.locality ?? ""
+                } else {
+                    locationString = ""
                 }
-                Spacer()
-                
-//                if deleteMode {
-//                    Button(action: {
-//                        onDelete?()
-//                    }) {
-//                        Image(systemName: "minus.circle")
-//                            .foregroundColor(.red)
-//                    }
-//                }
             }
-            .padding()
-        }
-        .background(note.category!.color)
-        .cornerRadius(20)
-        .padding(.vertical, 2)
-        .listRowSeparator(.hidden)
-        .foregroundColor(.white)
-        .onAppear {
-            // Reverse geocode location when the view appears
-            if let location = note.location {
-                reverseGeocodeLocation(location)
-            } else {
-                locationString = ""
-            }
-        }
-    }
-    
-    private func reverseGeocodeLocation(_ location: CLLocation) {
-        let geocoder = CLGeocoder()
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            if let error = error {
-                print("Error reverse geocoding location: \(error)")
-                locationString = ""
-            } else if let placemark = placemarks?.first {
-                // Only use the locality
-                locationString = placemark.locality ?? ""
-                print("Reverse geocoded location: \(locationString)") // Debugging
-            } else {
-                locationString = ""
-                print("No placemark found")
-            }
-            // empty string if no location or unable to decode
+        } else {
+            locationString = ""
         }
     }
     
     private func formatDate(_ date: Date) -> String {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd/yy" // Format for MM/DD/YY
+        dateFormatter.dateFormat = "MM/dd/yy"
         return dateFormatter.string(from: date)
     }
-
 }

@@ -5,71 +5,78 @@
 ////  Created by Tobias Fu on 12/23/24.
 ////
 //
-import Foundation
 import SwiftUI
 import Supabase
 
-struct ProfileView: View {
-    let email: String
-    @State private var username: String = ""
+struct UserView: View {
+    
+    @ObservedObject var authVM: AuthViewModel
+    @State private var profile: Profile?
+    @State private var isLoading = true
     @State private var errorMessage: String?
+    
+    // Store user ID and email in state so we can pass them to NewUserProfileView
+    @State private var userId: String = ""       // <-- Changed to String
+    @State private var userEmail: String = ""
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Welcome!")
-                .font(.title)
-            
-            Text("Your account (\(email)) is now confirmed. Choose a username:")
-            
-            TextField("Username", text: $username)
-                .padding()
-                .background(Color(UIColor.secondarySystemBackground))
-                .cornerRadius(8)
-
-            if let errorMessage = errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
+        NavigationStack {
+            if isLoading {
+                ProgressView("Loading profile...")
             }
-
-            Button("Save Username") {
-                Task {
-                    await saveProfile()
+            else if let profile = profile {
+                // We found a matching row in "profiles"
+                ProfileView(authVM: authVM, editedProfile: profile)
+            }
+            else {
+                // No profile row, so let them create one if we have a valid userId
+                if !userId.isEmpty {
+                    // Pass a binding for `profile`
+                    NewUserProfileView(
+                        userId: userId,
+                        userEmail: userEmail,
+                        userProfile: $profile  // <-- here's the binding
+                    )
+                } else {
+                    Text("Error: Missing user session.")
+                        .foregroundColor(.red)
                 }
             }
-            .foregroundColor(.white)
-            .padding()
-            .background(Color.green)
-            .cornerRadius(8)
-
-            Spacer()
         }
-        .padding()
+        .task {
+            await loadUserProfile()
+        }
     }
     
-    func getInitialProfile() async {
+    private func loadUserProfile() async {
         do {
-            
-        }
-    }
-
-    private func saveProfile() async {
-        guard !username.isEmpty else {
-            errorMessage = "Please enter a username."
-            return
-        }
-
-        // Example: Insert row into "profiles" table
-        do {
+            // 1) Get current user session (async call)
             let session = try await SupabaseManager.shared.client.auth.session
-            let userId = session.user.id
-            let newProfile = Profile(id: userId, username: username, email: email)
-
-            _ = try await SupabaseManager.shared.client.database
+            let user = session.user
+            // Fill in state for userId and userEmail
+            self.userId = user.id.uuidString
+            self.userEmail = user.email ?? ""
+            
+            // 2) Query "profiles" by id == userId
+            // Attempt to decode a single Profile. .value requires typed generics.
+            // If no row is found, .value typically throws an error (status 406).
+            let fetchedProfile: Profile = try await SupabaseManager.shared.client
                 .from("profiles")
-                .insert([newProfile], returning: .representation)
+                .select()
+                .eq("id", value: userId)
+                .single()
                 .execute()
+                .value
+            
+
+            // If found, assign it to `profile`
+            self.profile = fetchedProfile
+
         } catch {
-            errorMessage = "Failed to save profile: \(error.localizedDescription)"
+            // "No row returned" typically triggers an error with code 406
+            // So that means the user has no existing profile -> self.profile remains nil
+            self.errorMessage = "Error: \(error.localizedDescription)"
         }
+        self.isLoading = false
     }
 }

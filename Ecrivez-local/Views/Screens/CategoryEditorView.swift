@@ -105,6 +105,7 @@ struct CategoryEditorView: View {
                 category.name = self.name
                 category.symbol = self.symbol
                 category.colorString = self.colorString
+                                
                 onSave()
                 presentationMode.wrappedValue.dismiss()
             }) {
