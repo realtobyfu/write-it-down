@@ -181,6 +181,7 @@ extension ProfileView {
             isEditing = false
             selectedImageData = nil
         } catch {
+            print("Caught error message in updating profile")
             errorMessage = "Error updating profile: \(error.localizedDescription)"
         }
     }

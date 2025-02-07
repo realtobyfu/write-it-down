@@ -24,8 +24,10 @@ struct DonationView: View {
                 .font(.subheadline)
                 .padding()
             LottieView(animation: .named("smiley"))
-              .currentProgress(animationProgress)
-//              .frame(width: 1400, height: 1400)
+                .resizable()
+                .configure(\.contentMode, to: .scaleAspectFill)
+                .currentProgress(animationProgress)
+                .frame(width: 250, height: 250)
             
             Slider(value: $animationProgress, in: 0...1)
             .padding()

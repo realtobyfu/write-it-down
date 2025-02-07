@@ -24,7 +24,7 @@
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
             uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA"
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             nameForDebugger = "SupabaseNoteCreation"
             ignoreCount = "0"
             continueAfterRunningActions = "No"

@@ -49,6 +49,7 @@ struct PublicNoteDetailView: View {
                     Spacer(minLength: 100)
                 }
             }
+            .foregroundStyle(.stroke)
             .background(backgroundColor)
             .cornerRadius(20)
 
@@ -58,7 +59,7 @@ struct PublicNoteDetailView: View {
                 reverseGeocodeIfNeeded()
             }
 
-            .navigationTitle("Note Detail")
+//            .navigationTitle("Note Detail")
             .navigationBarTitleDisplayMode(.inline)
             
             // MARK: - Overlay: Like & DM Buttons
