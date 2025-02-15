@@ -13,6 +13,7 @@ struct NoteEditorView: View {
     @State private var weather: String
     @State private var category: Category
     @State var isPublic: Bool = false
+    @State var isAnnonymous: Bool = false
     
     // should not be "var" because inside a view,
     // you won't be able to change it meaningfully inside a view
@@ -113,10 +114,16 @@ struct NoteEditorView: View {
                 )
                 #endif
                 
+                if isPublic {
+                    Toggle("Annonymous Post?", isOn: $isAnnonymous)
+                        .padding(.vertical, 0)
+                }
+                
                 if isAuthenticated {
                     Toggle("Make Public", isOn: $isPublic)
                         .padding(.vertical, 8)
                 }
+                
 
                 // Location Picker View
                 HStack {
@@ -276,6 +283,7 @@ struct NoteEditorView: View {
                 existingNote.date = selectedDate
                 existingNote.category = category
                 existingNote.isPublic = isPublic
+                existingNote.isAnnonymous = isAnnonymous
                 existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
                 
                 Task {
@@ -288,6 +296,7 @@ struct NoteEditorView: View {
                 newNote.attributedText = attributedText
                 newNote.category = category
                 newNote.date = selectedDate
+                newNote.isAnnonymous = isAnnonymous
                 newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
                 
                 if newNote.isPublic && isAuthenticated {
@@ -341,7 +350,8 @@ func updateSupabase(note: Note) async {
                 locationLongitude: note.locationLatitude?.doubleValue,
                 locationLatitude: note.locationLongitude?.doubleValue,
                 colorString: note.category?.colorString ?? "",
-                symbol: note.category?.symbol ?? ""
+                symbol: note.category?.symbol ?? "",
+                isAnnonymous: note.isAnnonymous
             )
             
             if existInDB {
@@ -416,6 +426,8 @@ struct SupabaseNote: Codable, Identifiable {
     var locationLongitude: Double? = nil
     var locationLatitude: Double? = nil
     
+    var isAnnonymous: Bool?
+    
     // temporary solution: store the color string inside note in db
     let colorString: String
     let symbol: String
@@ -431,10 +443,11 @@ struct SupabaseNote: Codable, Identifiable {
     private enum CodingKeys: String, CodingKey {
         case id, owner_id, category_id
         case content, date, locationLongitude, locationLatitude
+        case isAnnonymous
         case colorString, symbol
         case profiles
     }
-    
+
     // MARK: - Custom Decoder (for the "YYYY-MM-DD" date)
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -456,6 +469,9 @@ struct SupabaseNote: Codable, Identifiable {
             self.date = nil
         }
         
+        
+        self.isAnnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnnonymous)
+
         // Optional floats for location
         self.locationLongitude = try container.decodeIfPresent(Double.self, forKey: .locationLongitude)
         self.locationLatitude = try container.decodeIfPresent(Double.self, forKey: .locationLatitude)
@@ -472,7 +488,8 @@ struct SupabaseNote: Codable, Identifiable {
          locationLongitude: Double?,
          locationLatitude: Double?,
          colorString: String,
-         symbol: String
+         symbol: String,
+         isAnnonymous: Bool
     ) {
         self.id = id
         self.owner_id = owner_id
@@ -488,6 +505,7 @@ struct SupabaseNote: Codable, Identifiable {
             self.date = date
         }
         
+        self.isAnnonymous = isAnnonymous
         self.colorString = colorString
         self.symbol = symbol
         

@@ -71,7 +71,7 @@ struct FeedView: View {
             // and the columns are: id (uuid), content(text), date, etc.
             publicNotes = try await SupabaseManager.shared.client
                 .from("public_notes")
-                .select("id, owner_id, category_id, content, date, locationLongitude, locationLatitude, colorString, symbol, profiles (username)")
+                .select("id, owner_id, category_id, content, date, locationLongitude, locationLatitude, colorString, symbol, isAnnonymous, profiles (username)")
                 .execute()
                 .value
         } catch {

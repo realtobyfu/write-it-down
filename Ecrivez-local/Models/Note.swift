@@ -59,3 +59,21 @@ extension Note {
         }
     }
 }
+
+extension Note {
+    func toSupabaseNote(ownerID: UUID) -> SupabaseNote {
+        return SupabaseNote(
+            id: self.id ?? UUID(),
+            owner_id: ownerID,
+            category_id: self.category?.id,
+            content: self.attributedText.string,
+            date: self.date,
+            locationLongitude: self.locationLongitude?.doubleValue,
+            locationLatitude: self.locationLatitude?.doubleValue,
+            colorString: self.category?.colorString ?? "",
+            symbol: self.category?.symbol ?? "",
+            isAnnonymous: self.isAnnonymous
+        )
+    }
+}
+

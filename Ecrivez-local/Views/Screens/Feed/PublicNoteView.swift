@@ -62,10 +62,12 @@ struct PublicNoteView: View {
             
             Spacer()
             
-            if let userName = note.profiles?.username {
+            if note.isAnnonymous == true {
+                Text("@Anonymous")
+            } else if let userName = note.profiles?.username {
                 Text("@\(userName)")
             }
-            
+
         }
         .font(.headline)
         .foregroundColor(.white)

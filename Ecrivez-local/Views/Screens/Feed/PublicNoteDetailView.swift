@@ -14,7 +14,6 @@ struct PublicNoteDetailView: View {
     let note: SupabaseNote
     let isAuthenticated: Bool
     
-    
     @State private var locationString: String = ""
 
     // MARK: - Like State
@@ -28,6 +27,9 @@ struct PublicNoteDetailView: View {
         ZStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
+                    headerView
+                        .padding(.vertical, 15)
+                    
                     // The note content (plain text for now)
                     Text(note.content)
                         .font(.body)
@@ -45,13 +47,16 @@ struct PublicNoteDetailView: View {
                     Text("Likes: \(likeCount)")
                         .font(.headline)
                         .padding(.horizontal)
-                    
+
                     Spacer(minLength: 100)
                 }
+                
             }
-            .foregroundStyle(.stroke)
+            .foregroundStyle(.white)
             .background(backgroundColor)
             .cornerRadius(20)
+            .padding(.horizontal, 10)
+            .padding(.bottom, 30)
 
             .listRowSeparator(.hidden)
             .foregroundColor(.stroke)
@@ -66,9 +71,9 @@ struct PublicNoteDetailView: View {
             VStack {
                 Spacer()
                 HStack {
-                    VStack (spacing: 5) {
-                        // MARK: DM Button (bottom-right)
-                        if isAuthenticated {
+                    if isAuthenticated {
+                        VStack (spacing: 5) {
+                            // MARK: DM Button (bottom-right)
                             
                             HStack(spacing: 5) {
                                 Button(action: {
@@ -94,43 +99,40 @@ struct PublicNoteDetailView: View {
                                         .padding(.leading, 8)
                                         .foregroundStyle(.stroke)
                                 }
-                                
                             }
                             .padding(.bottom, 10)
-                        }
-                        
-                        
-                        HStack(spacing: 5){
                             
-                            // MARK: Like Button (bottom-left)
-                            Button(action: toggleLike) {
-                                // Heart icon + pop animation
-                                Image(systemName: hasLiked ? "heart.fill" : "heart")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(hasLiked ? .red : .blue)
-                                    .scaleEffect(animateLike ? 1.2 : 1.0)
-                                    .padding()
-                                    .background(
-                                        Circle()
-                                            .fill(Color.white)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(hasLiked ? .red : .blue, lineWidth: 2)
-                                            )
-                                            .shadow(radius: hasLiked ? 0 : 4)
-                                    )
+                            
+                            HStack(spacing: 5){
+                                
+                                // MARK: Like Button (bottom-left)
+                                Button(action: toggleLike) {
+                                    // Heart icon + pop animation
+                                    Image(systemName: hasLiked ? "heart.fill" : "heart")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(hasLiked ? .red : .blue)
+                                        .scaleEffect(animateLike ? 1.2 : 1.0)
+                                        .padding()
+                                        .background(
+                                            Circle()
+                                                .fill(Color.white)
+                                                .overlay(
+                                                    Circle()
+                                                        .stroke(hasLiked ? .red : .blue, lineWidth: 2)
+                                                )
+                                                .shadow(radius: hasLiked ? 0 : 4)
+                                        )
+                                }
+                                Text("like")
+                                    .foregroundStyle(.stroke)
+                                    .padding(.leading, 8)
                             }
-                            Text("like")
-                                .foregroundStyle(.stroke)
-                                .padding(.leading, 8)
                         }
-                        
-                        
+                        .padding(.leading, 30)
+                        Spacer()
                     }
-                    .padding(.leading, 30)
-                    Spacer()
                 }
                 .padding(.bottom, 30)
             }
@@ -226,12 +228,19 @@ extension PublicNoteDetailView {
                 Text(formatDate(date))
             }
             
-            // Location if present
-            if !locationString.isEmpty {
-                Image(systemName: "mappin")
-                Text(locationString)
+            VStack {
+                // Location if present
+                if !locationString.isEmpty {
+                    Image(systemName: "mappin")
+                    Text(locationString)
+                }
+                if let userName = note.profiles?.username {
+                    Text("@\(userName)")
+                }
             }
         }
+        .padding(.horizontal, 10)
+
         .font(.headline)
         .foregroundColor(.white)
     }
