@@ -16,6 +16,8 @@ extension Note {
             guard let data = self.attributedTextData else {
                 return NSAttributedString(string: "")
             }
+            
+            // decodeRTF
             do {
                 return try NSAttributedString(
                     data: data,
@@ -23,19 +25,19 @@ extension Note {
                     documentAttributes: nil
                 )
             } catch {
-                print("Error decoding attributedTextData: \(error)")
-                return NSAttributedString(string: "")
+                print("Decode RTF error: \(error)")
+                return NSAttributedString()
             }
         }
         set {
             do {
-                self.attributedTextData = try newValue.data(
+                let rtfData = try newValue.data(
                     from: NSRange(location: 0, length: newValue.length),
-                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
-                )
+                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
+                self.attributedTextData = rtfData
             } catch {
-                print("Error encoding attributedText: \(error)")
-                self.attributedTextData = Data()
+                print("Encode RTF error: \(error)")
+                self.attributedTextData = nil
             }
         }
     }
@@ -62,11 +64,19 @@ extension Note {
 
 extension Note {
     func toSupabaseNote(ownerID: UUID) -> SupabaseNote {
+        
+        // Convert the raw RTF Data into a base64 string
+        let rtfString = self.attributedTextData?.base64EncodedString()
+        
         return SupabaseNote(
             id: self.id ?? UUID(),
             owner_id: ownerID,
             category_id: self.category?.id,
+            // Plain text for quick reads/fallback
             content: self.attributedText.string,
+            // Full RTF as base64
+            rtf_content: rtfString,
+            
             date: self.date,
             locationLongitude: self.locationLongitude?.doubleValue,
             locationLatitude: self.locationLatitude?.doubleValue,
@@ -76,4 +86,3 @@ extension Note {
         )
     }
 }
-

@@ -114,12 +114,13 @@ struct NoteEditorView: View {
                 )
                 #endif
                 
-                if isPublic {
-                    Toggle("Annonymous Post?", isOn: $isAnnonymous)
-                        .padding(.vertical, 0)
-                }
                 
                 if isAuthenticated {
+                    if isPublic {
+                        Toggle("Annonymous Post?", isOn: $isAnnonymous)
+                            .padding(.vertical, 0)
+                    }
+
                     Toggle("Make Public", isOn: $isPublic)
                         .padding(.vertical, 8)
                 }
@@ -327,7 +328,13 @@ func updateSupabase(note: Note) async {
         let user = try await SupabaseManager.shared.client.auth.user()
         
         print("ID of the user: \(user.id)")
-        
+        // 1) Convert local RichTextKit to RTF
+        let rtfData = try note.attributedText.data(
+            from: NSRange(location: 0, length: note.attributedText.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+        )
+        let base64RTF = rtfData.base64EncodedString()
+
         
         let existInDB = await checkExistInDB(note: note)
 //        if !note.isPublic {
@@ -345,7 +352,8 @@ func updateSupabase(note: Note) async {
             let supaNote = SupabaseNote(
                 id: note.id ?? UUID(),
                 owner_id: user.id, category_id: note.category?.id,
-                content: note.attributedText.string,
+                content: note.attributedText.string,  // plain text
+                rtf_content: base64RTF,              // fully styled
                 date: note.date,
                 locationLongitude: note.locationLatitude?.doubleValue,
                 locationLatitude: note.locationLongitude?.doubleValue,
@@ -402,114 +410,3 @@ func removeFromSupabase(note: Note) async {
 }
 
 
-
-
-//struct SupabaseCategory: Codable {
-//    let id: UUID
-//    let name: String
-//    let symbol: String
-//    let colorString: String
-//    
-//    init (id: UUID, name: String, symbol: String, colorString: String)
-//}
-//
-struct SupabaseNote: Codable, Identifiable {
-    // Matching your DB columns:
-    let id: UUID        // or Int
-    let owner_id: UUID
-    
-    let category_id: UUID?    // if using a separate categories table
-    let content: String       // either plain text or base64
-    
-    // optional attributes
-    var date: Date? = nil
-    var locationLongitude: Double? = nil
-    var locationLatitude: Double? = nil
-    
-    var isAnnonymous: Bool?
-    
-    // temporary solution: store the color string inside note in db
-    let colorString: String
-    let symbol: String
-    
-    var profiles: ProfileData? = nil
-    
-    struct ProfileData: Codable {
-        let username: String?
-    }
-
-    
-    // MARK: - Custom Keys
-    private enum CodingKeys: String, CodingKey {
-        case id, owner_id, category_id
-        case content, date, locationLongitude, locationLatitude
-        case isAnnonymous
-        case colorString, symbol
-        case profiles
-    }
-
-    // MARK: - Custom Decoder (for the "YYYY-MM-DD" date)
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Required fields
-        self.id = try container.decode(UUID.self, forKey: .id)
-        self.owner_id = try container.decode(UUID.self, forKey: .owner_id)
-        self.category_id = try container.decodeIfPresent(UUID.self, forKey: .category_id)
-        self.content = try container.decode(String.self, forKey: .content)
-        self.colorString = try container.decode(String.self, forKey: .colorString)
-        self.symbol = try container.decode(String.self, forKey: .symbol)
-        
-        // Date stored as "YYYY-MM-DD" in Supabase
-        if let dateString = try container.decodeIfPresent(String.self, forKey: .date) {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            self.date = formatter.date(from: dateString)
-        } else {
-            self.date = nil
-        }
-        
-        
-        self.isAnnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnnonymous)
-
-        // Optional floats for location
-        self.locationLongitude = try container.decodeIfPresent(Double.self, forKey: .locationLongitude)
-        self.locationLatitude = try container.decodeIfPresent(Double.self, forKey: .locationLatitude)
-        
-        self.profiles = try container.decodeIfPresent(ProfileData.self, forKey: .profiles)
-    }
-    
-    init(id: UUID,
-         owner_id: UUID,
-         category_id: UUID?,
-         content: String,
-//         created_at: String?,
-         date: Date?,
-         locationLongitude: Double?,
-         locationLatitude: Double?,
-         colorString: String,
-         symbol: String,
-         isAnnonymous: Bool
-    ) {
-        self.id = id
-        self.owner_id = owner_id
-        self.category_id = category_id
-        self.content = content
-        
-        if let lat = locationLatitude, let lon = locationLongitude {
-            self.locationLatitude = lat
-            self.locationLongitude = lon
-        }
-
-        if date != nil {
-            self.date = date
-        }
-        
-        self.isAnnonymous = isAnnonymous
-        self.colorString = colorString
-        self.symbol = symbol
-        
-        print("locationLatitude: \(String(describing: self.locationLatitude))")
-        print("locationLongitude: \(String(describing: self.locationLongitude))")
-    }
-}

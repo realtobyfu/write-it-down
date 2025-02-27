@@ -31,8 +31,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "345"
-            endingLineNumber = "345"
+            startingLineNumber = "352"
+            endingLineNumber = "352"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -63,8 +63,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "310"
-            endingLineNumber = "310"
+            startingLineNumber = "311"
+            endingLineNumber = "311"
             landmarkName = "saveNote()"
             landmarkType = "7">
          </BreakpointContent>
@@ -79,8 +79,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "311"
-            endingLineNumber = "311"
+            startingLineNumber = "312"
+            endingLineNumber = "312"
             landmarkName = "saveNote()"
             landmarkType = "7">
          </BreakpointContent>
@@ -95,8 +95,8 @@
             filePath = "Ecrivez-local/Models/Note.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "20"
-            endingLineNumber = "20"
+            startingLineNumber = "22"
+            endingLineNumber = "22"
             landmarkName = "attributedText"
             landmarkType = "24">
          </BreakpointContent>
@@ -111,8 +111,8 @@
             filePath = "Ecrivez-local/Models/Note.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "26"
-            endingLineNumber = "26"
+            startingLineNumber = "28"
+            endingLineNumber = "28"
             landmarkName = "attributedText"
             landmarkType = "24">
          </BreakpointContent>
@@ -127,8 +127,8 @@
             filePath = "Ecrivez-local/Models/Note.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "32"
-            endingLineNumber = "32"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
             landmarkName = "attributedText"
             landmarkType = "24">
          </BreakpointContent>
@@ -143,8 +143,8 @@
             filePath = "Ecrivez-local/Models/Note.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "37"
-            endingLineNumber = "37"
+            startingLineNumber = "39"
+            endingLineNumber = "39"
             landmarkName = "attributedText"
             landmarkType = "24">
          </BreakpointContent>
@@ -159,8 +159,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "344"
-            endingLineNumber = "344"
+            startingLineNumber = "351"
+            endingLineNumber = "351"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
