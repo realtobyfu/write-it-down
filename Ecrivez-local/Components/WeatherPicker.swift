@@ -15,7 +15,7 @@ struct WeatherPicker: View {
     let weatherOptions = ["☀️ Sunny", "⛅ Partly Cloudy", "🌩️ Stormy", "☁️ Cloudy", "🌧 Rainy", "❄️ Snowy"]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 Spacer()
 

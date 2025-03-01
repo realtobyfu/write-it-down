@@ -6,13 +6,6 @@
 //
 import SwiftUI
 import CoreData
-import Boutique
-
-struct CurrentUser: Codable, Equatable {
-    let userId: String
-    let accessToken: String
-    let refreshToken: String
-}
 
 
 

@@ -49,7 +49,7 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Category selection view at the top
                 CategoryFilterView(
@@ -219,17 +219,27 @@ struct ContentView: View {
 
         for index in offsets {
             let noteToDelete = filteredNotes[index]
-            context.delete(noteToDelete)
             
             
             let existInDB = await checkExistInDB(note: noteToDelete)
             
             if existInDB {
-                
+                do {
+                    let _ = try await SupabaseManager.shared.client
+                        .from("public_notes")
+                        .delete()
+                        .eq("id", value: noteToDelete.id)
+                        .execute()
+                    
+                    print("Deleted Note, ID: \(String(describing: noteToDelete.id))")
+                } catch {
+                    print("Error deleting note from Supabase: \(error)")
+                }
             }
+            
+            context.delete(noteToDelete)
         }
-        
-
+    
         saveContext()
     }
     

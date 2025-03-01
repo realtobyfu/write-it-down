@@ -6,22 +6,21 @@
 //
 
 import Foundation
+import CoreLocation
 
 struct SupabaseNote: Codable, Identifiable {
     let id: UUID
     let owner_id: UUID
+    
     let category_id: UUID?
-    
-    // Keep your plain text field if you want:
     let content: String
-    
-    // New optional RTF field (Base64-encoded string):
     var rtf_content: String?
     
-    var date: Date? = nil
-    var locationLongitude: Double? = nil
-    var locationLatitude: Double? = nil
-    var isAnnonymous: Bool?
+    var date: Date?
+    var locationLongitude: String?
+    var locationLatitude: String?
+    
+    var isAnnonymous: Bool?  // <-- This was already declared
     
     let colorString: String
     let symbol: String
@@ -33,14 +32,15 @@ struct SupabaseNote: Codable, Identifiable {
     }
     
     private enum CodingKeys: String, CodingKey {
-        case id, owner_id, category_id, content
-        case rtf_content        // new!
+        case id, owner_id, category_id
+        case content, rtf_content
         case date, locationLongitude, locationLatitude
-        case isAnnonymous, colorString, symbol
+        case isAnnonymous
+        case colorString, symbol
         case profiles
     }
     
-    // Decoder
+    // MARK: - Decoder for fetching from DB
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(UUID.self, forKey: .id)
@@ -50,7 +50,6 @@ struct SupabaseNote: Codable, Identifiable {
         self.content = try container.decode(String.self, forKey: .content)
         self.rtf_content = try container.decodeIfPresent(String.self, forKey: .rtf_content)
         
-        // ... existing date / location / isAnnonymous
         if let dateString = try container.decodeIfPresent(String.self, forKey: .date) {
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy-MM-dd"
@@ -58,9 +57,10 @@ struct SupabaseNote: Codable, Identifiable {
         } else {
             self.date = nil
         }
+        
+        self.locationLongitude = try container.decodeIfPresent(String.self, forKey: .locationLongitude)
+        self.locationLatitude = try container.decodeIfPresent(String.self, forKey: .locationLatitude)
         self.isAnnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnnonymous)
-        self.locationLongitude = try container.decodeIfPresent(Double.self, forKey: .locationLongitude)
-        self.locationLatitude = try container.decodeIfPresent(Double.self, forKey: .locationLatitude)
         
         self.colorString = try container.decode(String.self, forKey: .colorString)
         self.symbol = try container.decode(String.self, forKey: .symbol)
@@ -68,31 +68,28 @@ struct SupabaseNote: Codable, Identifiable {
         self.profiles = try container.decodeIfPresent(ProfileData.self, forKey: .profiles)
     }
     
-    // Convenience init for "update/insert" usage
+    // MARK: - Convenience init for uploading to DB
     init(id: UUID,
          owner_id: UUID,
          category_id: UUID?,
          content: String,
-         rtf_content: String?,      // new param
+         rtf_content: String?,
          date: Date?,
-         locationLongitude: Double?,
-         locationLatitude: Double?,
+         locationLatitude: String?,
+         locationLongitude: String?,
          colorString: String,
          symbol: String,
-         isAnnonymous: Bool
+         isAnnonymous: Bool?
     ) {
         self.id = id
         self.owner_id = owner_id
         self.category_id = category_id
-        
         self.content = content
         self.rtf_content = rtf_content
-        
         self.date = date
-        if let lat = locationLatitude, let lon = locationLongitude {
-            self.locationLatitude = lat
-            self.locationLongitude = lon
-        }
+        
+        self.locationLongitude = locationLongitude
+        self.locationLatitude = locationLatitude
         self.isAnnonymous = isAnnonymous
         
         self.colorString = colorString
@@ -102,3 +99,19 @@ struct SupabaseNote: Codable, Identifiable {
     }
 }
 
+
+extension SupabaseNote {
+    var location: CLLocation? {
+//        print(CLLocation(latitude: Double(locationLatitude), longitude: Double(locationLatitude)))
+        guard
+            let latString = locationLatitude,
+            let lonString = locationLongitude,
+            let lat = Double(latString),
+            let lon = Double(lonString)
+        else {
+            print("cannot find the location")
+            return nil
+        }
+        return CLLocation(latitude: lat, longitude: lon)
+    }
+}

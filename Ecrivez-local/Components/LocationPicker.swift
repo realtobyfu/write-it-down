@@ -9,7 +9,7 @@ struct LocationPickerView: View {
     @StateObject private var searchViewModel = LocationSearchViewModel()
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
                 // Search bar
                 HStack {

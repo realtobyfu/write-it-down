@@ -13,13 +13,13 @@ import CoreLocation
 struct FeedView: View {
     @State private var publicNotes: [SupabaseNote] = []
     @State private var isLoading = true
-    
+    @State private var currentUserID: UUID?
+
     let isAuthenticated: Bool
     
     @Environment(\.dismiss) private var dismiss
-    
+        
     var body: some View {
-        NavigationStack {
             Group {
                 if isLoading {
                     ProgressView("Loading public notes...")
@@ -30,7 +30,7 @@ struct FeedView: View {
                 } else {
                     List(publicNotes) { note in
                         NavigationLink {
-                            PublicNoteDetailView(note: note, isAuthenticated: isAuthenticated)
+                            PublicNoteDetailView(note: note, isAuthenticated: isAuthenticated, currentUserID: currentUserID)
                         } label: {
                             PublicNoteView(note: note)
                         }
@@ -60,9 +60,13 @@ struct FeedView: View {
                 alignment: .bottomLeading
     
             )
+        .task {
+            if let user = try? await SupabaseManager.shared.client.auth.user() {
+                currentUserID = user.id
+            }
         }
-//        .navigationTitle("Public Feed")
-
+        .navigationTitle("Public Feed")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func loadPublicNotes() async {
