@@ -83,13 +83,13 @@ struct NoteEditorView: View {
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
         _isPublic = State(initialValue: note?.isPublic ?? false)
-
+        
         self.categories = categories
         self.isAuthenticated = isAuthenticated
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
 
                 #if os(macOS)
@@ -355,8 +355,8 @@ func updateSupabase(note: Note) async {
                 content: note.attributedText.string,  // plain text
                 rtf_content: base64RTF,              // fully styled
                 date: note.date,
-                locationLongitude: note.locationLatitude?.doubleValue,
-                locationLatitude: note.locationLongitude?.doubleValue,
+                locationLatitude: note.locationLatitude?.stringValue,
+                locationLongitude: note.locationLongitude?.stringValue,
                 colorString: note.category?.colorString ?? "",
                 symbol: note.category?.symbol ?? "",
                 isAnnonymous: note.isAnnonymous

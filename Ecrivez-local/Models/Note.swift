@@ -68,6 +68,10 @@ extension Note {
         // Convert the raw RTF Data into a base64 string
         let rtfString = self.attributedTextData?.base64EncodedString()
         
+        print("longitude: \(self.locationLongitude)")
+        print("latitude: \(self.locationLatitude)")
+
+        
         return SupabaseNote(
             id: self.id ?? UUID(),
             owner_id: ownerID,
@@ -78,8 +82,8 @@ extension Note {
             rtf_content: rtfString,
             
             date: self.date,
-            locationLongitude: self.locationLongitude?.doubleValue,
-            locationLatitude: self.locationLatitude?.doubleValue,
+            locationLatitude: self.locationLatitude?.stringValue,
+            locationLongitude:self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",
             symbol: self.category?.symbol ?? "",
             isAnnonymous: self.isAnnonymous

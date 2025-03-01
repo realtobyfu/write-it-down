@@ -13,6 +13,7 @@ import CoreLocation
 struct PublicNoteDetailView: View {
     let note: SupabaseNote
     let isAuthenticated: Bool
+    let currentUserID: UUID?
     
     @State private var locationString: String = ""
 
@@ -48,6 +49,10 @@ struct PublicNoteDetailView: View {
                         .font(.headline)
                         .padding(.horizontal)
 
+                    if note.owner_id == currentUserID {
+                        Text("Edit Note -> go to editor or Edit online copy")
+                        
+                    }
                     Spacer(minLength: 100)
                 }
                 
@@ -71,7 +76,7 @@ struct PublicNoteDetailView: View {
             VStack {
                 Spacer()
                 HStack {
-                    if isAuthenticated {
+                    if isAuthenticated && note.owner_id != currentUserID {
                         VStack (spacing: 5) {
                             // MARK: DM Button (bottom-right)
                             
@@ -234,7 +239,10 @@ extension PublicNoteDetailView {
                     Image(systemName: "mappin")
                     Text(locationString)
                 }
-                if let userName = note.profiles?.username {
+                
+                if note.isAnnonymous == true {
+                    Text("Annonymous")
+                } else if let userName = note.profiles?.username {
                     Text("@\(userName)")
                 }
             }
@@ -275,7 +283,7 @@ extension PublicNoteDetailView {
             locationString = ""
             return
         }
-        let location = CLLocation(latitude: Double(lat), longitude: Double(lon))
+        let location = CLLocation(latitude: Double(lat)!, longitude: Double(lon)!)
         CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
             if let placemark = placemarks?.first, error == nil {
                 let locality = placemark.locality ?? ""
