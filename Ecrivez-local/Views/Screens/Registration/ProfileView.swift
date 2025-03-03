@@ -227,7 +227,7 @@ extension ProfileView {
             HStack {
                 Text(supaNote.content.prefix(40)) // or a custom UI
                 Spacer()
-                Button("Edit Locally") {
+                Button("Edit Note") {
                     selectedLocalNote = localNote
                     showingNoteEditor = true
                 }

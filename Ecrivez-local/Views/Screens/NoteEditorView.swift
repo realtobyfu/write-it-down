@@ -1,10 +1,11 @@
 import SwiftUI
+
 import CoreLocation
 import RichTextKit
 
 struct NoteEditorView: View {
     let categories: [Category]
-
+    
     @State private var selectedDate: Date?
     @State private var attributedText: NSAttributedString
 
@@ -21,6 +22,8 @@ struct NoteEditorView: View {
     let onSave: () -> Void
     let isAuthenticated: Bool
     
+    @Environment(\.colorScheme) var colorScheme
+
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.managedObjectContext) private var context  // Core Data context
 
@@ -112,6 +115,13 @@ struct NoteEditorView: View {
                     trailingButtons: { $0 },
                     formatSheet: { $0 }
                 )
+                .richTextKeyboardToolbarConfig(
+                    .init(
+                        leadingActions: [ .undo, .redo ],           // no .textColor
+                        trailingActions: [ ]          // no .highlightColor
+                    )
+                )
+
                 #endif
                 
                 
@@ -177,6 +187,23 @@ struct NoteEditorView: View {
 //                    print("error")
 //                }
 //            }
+            .onAppear {
+                // This example forcibly enumerates existing attributes
+                // and replaces them with black or white text color.
+                let textColor: UIColor = (colorScheme == .dark) ? .white : .black
+
+                // If using a local `attributedText` for the note:
+                let mutable = NSMutableAttributedString(attributedString: attributedText)
+                mutable.enumerateAttributes(in: NSRange(location: 0, length: mutable.length), options: []) { attrs, range, _ in
+                    var newAttrs = attrs
+                    newAttrs[.foregroundColor] = textColor
+                }
+                print("OnAppear triggered, updated note: \(mutable)")
+
+                // Then reassign
+                attributedText = mutable
+            }
+
             .padding([.leading, .trailing])
             .navigationBarTitle("Edit Note", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") {
@@ -409,4 +436,42 @@ func removeFromSupabase(note: Note) async {
     }
 }
 
+import CoreData
 
+#Preview("Create Mode") {
+    // 1) Create an in-memory Core Data container for previews
+    let container = NSPersistentContainer(name: "Model")
+    container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
+    container.loadPersistentStores { storeDescription, error in
+        if let error = error {
+            fatalError("Failed to load in-memory store for preview: \(error)")
+        }
+    }
+    let viewContext = container.viewContext
+
+    // 2) Create a sample Category
+    let sampleCategory = Category(context: viewContext)
+    sampleCategory.id = UUID()
+    sampleCategory.name = "Test Category"
+    sampleCategory.colorString = "blue"
+    sampleCategory.symbol = "book"
+
+    // 3) Show the NoteEditor in .create mode
+    return NoteEditorView(
+        mode: .create(sampleCategory),        // <— create
+        categories: [sampleCategory],
+        isAuthenticated: true,
+        onSave: {
+            do {
+                try viewContext.save()
+                print("Preview: saved context after creating note.")
+            } catch {
+                print("Preview: failed to save context: \(error)")
+            }
+        }
+    )
+    // Provide a managedObjectContext env for the note
+    .environment(\.managedObjectContext, viewContext)
+//    .environment(\.colorScheme, .dark)
+
+}

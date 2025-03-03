@@ -21,6 +21,7 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
 
+    
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
@@ -29,6 +30,7 @@ struct ContentView: View {
     @State private var selectedCategory: Category?
 
     @Environment(\.scenePhase) private var scenePhase
+
 
     var filteredNotes: [Note] {
         if let category = selectedCategory {
@@ -227,28 +229,58 @@ struct ContentView: View {
 
 
 
-// CategoryFilterView displays category bubbles for filtering notes
 struct CategoryFilterView: View {
     @Binding var selectedCategory: Category?
     var categories: [Category]
+    @Environment(\.colorScheme) var colorScheme
 
-    @State private var isExpanded: Bool = false // Default to collapsed
+    @State private var isExpanded: Bool = false // Collapses/expands the category list
+    @State private var foldAll = false
 
     var body: some View {
         VStack {
-            // Toggle button to expand/collapse the view
+            // Title row with "Categories", Fold button, Sort button, and expand/collapse chevron
             HStack {
                 Text("Categories")
                     .font(.headline)
                     .foregroundColor(.blue)
+
                 Spacer()
-                Button(action: {
-                    withAnimation {
-                        isExpanded.toggle()
+
+                // Group your right-side buttons together
+                HStack(spacing: 16) {
+                    // Existing up/down chevron to expand/collapse category row
+                    Button(action: {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .foregroundColor(.blue)
                     }
-                }) {
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
+
+                    // Fold All Button
+                    Button(action: {
+                        withAnimation {
+                            foldAll.toggle()
+                        }
+                    }) {
+                        Image(systemName: "chevron.up.chevron.down")
+//                            .foregroundColor(.orange)
+                            .foregroundColor((colorScheme == .dark) ? .white : .orange)
+                    }
+
+                    // Sort by Date Button
+                    Button(action: {
+                        // TODO: Add your "sort by date" logic
+                        // e.g. call a method in ContentView that changes the sortDescriptor
+                    }) {
+                        Image(systemName: "calendar")
+//                            .foregroundColor(.orange)
+
+                            .foregroundColor((colorScheme == .dark) ? .white : .orange)
+                    }
+
                 }
             }
             .padding(.horizontal)
@@ -267,7 +299,7 @@ struct CategoryFilterView: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(20)
                         }
-                        Spacer()
+
                         // Category bubbles
                         ForEach(categories, id: \.self) { category in
                             Button(action: {
@@ -276,10 +308,6 @@ struct CategoryFilterView: View {
                                 Circle()
                                     .fill(category.color)
                                     .frame(width: 30, height: 30)
-//                                    .overlay(
-//                                        Image(systemName: category.symbol ?? "circle")
-//                                            .foregroundColor(.white)
-//                                    )
                                     .overlay(
                                         Circle()
                                             .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
@@ -289,11 +317,12 @@ struct CategoryFilterView: View {
                     }
                     .padding(.horizontal)
                 }
-                .transition(.slide) // Smooth transition for expand/collapse
+                .transition(.slide)
             }
         }
     }
 }
+
 
 @MainActor
 func checkExistInDB (note: Note) async -> Bool {

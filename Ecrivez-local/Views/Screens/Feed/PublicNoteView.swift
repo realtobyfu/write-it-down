@@ -8,12 +8,14 @@
 import SwiftUI
 import CoreLocation
 
+
+
 struct PublicNoteView: View {
     let note: SupabaseNote
     
     @State private var dynamicHeight: CGFloat = .zero
     @State private var locationString: String = ""
-
+    
     var body: some View {
         VStack {
             HStack {
