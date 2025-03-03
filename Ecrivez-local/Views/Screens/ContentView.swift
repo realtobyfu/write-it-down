@@ -8,9 +8,11 @@ import UIKit
 
 struct ContentView: View {
 
+    // MARK: - Core Data & Environment
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
 
+    // MARK: - FetchRequests
     @FetchRequest(
         entity: Note.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
@@ -21,7 +23,7 @@ struct ContentView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
 
-    
+    // MARK: - Local State
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
@@ -29,20 +31,41 @@ struct ContentView: View {
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
 
+    // For “Fold All”
+    @State private var foldAll = false
+
+    // For “Sort by Date” toggle
+    @State private var sortByDateDesc = false
+
     @Environment(\.scenePhase) private var scenePhase
 
-
+    // MARK: - Filtered + Sorted Notes
     var filteredNotes: [Note] {
         if let category = selectedCategory {
+            // Filter by category
             return notes.filter { $0.category == category }
         } else {
+            // No filter => show all
             return Array(notes)
+        }
+    }
+
+    var displayedNotes: [Note] {
+        // If user toggles date sort, use note.date
+        // Otherwise, use note.index as the manual reorder
+        if sortByDateDesc {
+            // sort descending by date
+            return filteredNotes.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+        } else {
+            // default to the "index" property for manual ordering
+            return filteredNotes.sorted { $0.index < $1.index }
         }
     }
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+                // Top Bar
                 HStack {
                     Text("Ideas")
                         .font(.title)
@@ -59,18 +82,22 @@ struct ContentView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 15)
 
-
+                // Category Filter + Fold/Sort Toggles
                 CategoryFilterView(
                     selectedCategory: $selectedCategory,
-                    categories: Array(categories)
+                    categories: Array(categories),
+                    foldAll: $foldAll,
+                    sortByDateDesc: $sortByDateDesc
                 )
                 .font(.subheadline)
                 .padding(.bottom, 5)
 
+                // NOTES LIST
                 List {
-                    ForEach(filteredNotes) { note in
+                    ForEach(displayedNotes) { note in
                         NoteView(
                             note: note,
+                            foldAll: foldAll,
                             buttonTapped: {
                                 selectedNote = note
                                 showingNoteEditor = true
@@ -78,15 +105,18 @@ struct ContentView: View {
                         )
                         .listRowSeparator(.hidden)
                     }
-                    .onDelete { IndexSet in
+                    .onDelete { indexSet in
                         Task {
-                            await deleteNote(at: IndexSet)
+                            await deleteNote(at: indexSet)
                         }
                     }
+                    // Only allow reordering if no category & no date sort
                     .onMove(perform: moveNote)
-                    .moveDisabled(selectedCategory != nil)
+                    .moveDisabled(selectedCategory != nil || sortByDateDesc)
                 }
+                .listStyle(PlainListStyle())
                 .safeAreaInset(edge: .bottom) {
+                    // Horizontal Bubble Menu
                     BubbleMenuView(
                         showBubbles: $showBubbles,
                         selectedCategory: $selectedCategory,
@@ -96,10 +126,10 @@ struct ContentView: View {
                         }
                     )
                 }
-                .listStyle(PlainListStyle())
 
                 Spacer()
 
+                // PLUS Button & Nav Buttons
                 ZStack {
                     HStack {
                         Spacer()
@@ -140,11 +170,13 @@ struct ContentView: View {
                 }
             }
         }
+        // Save context on background
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
                 saveContext()
             }
         }
+        // Present Note Editor
         .sheet(isPresented: $showingNoteEditor, onDismiss: {
             selectedNote = nil
         }) {
@@ -153,12 +185,11 @@ struct ContentView: View {
                     mode: .edit(note),
                     categories: Array(categories),
                     isAuthenticated: authVM.isAuthenticated,
-                    onSave: {
-                        saveContext()
-                    }
+                    onSave: { saveContext() }
                 )
             }
         }
+        // Present "Add Note" after picking category bubble
         .sheet(isPresented: $showingAddNoteView, onDismiss: {
             selectedCategory = nil
         }) {
@@ -167,12 +198,11 @@ struct ContentView: View {
                     mode: .create(selectedCategory),
                     categories: Array(categories),
                     isAuthenticated: authVM.isAuthenticated,
-                    onSave: {
-                        saveContext()
-                    }
+                    onSave: { saveContext() }
                 )
             }
         }
+        // Auth / Profile sheet
         .sheet(isPresented: $showingAuthView) {
             if authVM.isAuthenticated {
                 UserView(authVM: authVM)
@@ -182,9 +212,11 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - Deletions & Reordering
+
     private func deleteNote(at offsets: IndexSet) async {
         for index in offsets {
-            let noteToDelete = filteredNotes[index]
+            let noteToDelete = displayedNotes[index]
             let existInDB = await checkExistInDB(note: noteToDelete)
 
             if existInDB {
@@ -198,18 +230,18 @@ struct ContentView: View {
                     print("Error deleting note from Supabase: \(error)")
                 }
             }
-
             context.delete(noteToDelete)
         }
         saveContext()
     }
 
     private func moveNote(from source: IndexSet, to destination: Int) {
-        guard selectedCategory == nil else { return }
-
-        var reorderedNotes = notes.map { $0 }
+        // Because we store user-defined ordering in note.index,
+        // we re-map notes, reorder them, then update each note.index
+        var reorderedNotes = Array(notes)  // the entire fetch, unsorted
         reorderedNotes.move(fromOffsets: source, toOffset: destination)
 
+        // Set new indexes
         for (newIndex, note) in reorderedNotes.enumerated() {
             note.index = Int16(newIndex)
         }
@@ -225,21 +257,21 @@ struct ContentView: View {
     }
 }
 
-
-
-
-
+// MARK: - CategoryFilterView
 struct CategoryFilterView: View {
     @Binding var selectedCategory: Category?
     var categories: [Category]
-    @Environment(\.colorScheme) var colorScheme
 
-    @State private var isExpanded: Bool = false // Collapses/expands the category list
-    @State private var foldAll = false
+    // For “Fold All” & “Sort by Date”
+    @Binding var foldAll: Bool
+    @Binding var sortByDateDesc: Bool
+
+    @Environment(\.colorScheme) var colorScheme
+    @State private var isExpanded: Bool = false
 
     var body: some View {
         VStack {
-            // Title row with "Categories", Fold button, Sort button, and expand/collapse chevron
+            // Title row
             HStack {
                 Text("Categories")
                     .font(.headline)
@@ -247,9 +279,8 @@ struct CategoryFilterView: View {
 
                 Spacer()
 
-                // Group your right-side buttons together
                 HStack(spacing: 16) {
-                    // Existing up/down chevron to expand/collapse category row
+                    // Expand/collapse categories
                     Button(action: {
                         withAnimation {
                             isExpanded.toggle()
@@ -259,37 +290,34 @@ struct CategoryFilterView: View {
                             .foregroundColor(.blue)
                     }
 
-                    // Fold All Button
+                    // Fold All
                     Button(action: {
                         withAnimation {
                             foldAll.toggle()
                         }
                     }) {
                         Image(systemName: "chevron.up.chevron.down")
-//                            .foregroundColor(.orange)
-                            .foregroundColor((colorScheme == .dark) ? .white : .orange)
+                            .foregroundColor(foldAll ? .red : ((colorScheme == .dark) ? .white : .orange))
                     }
 
-                    // Sort by Date Button
+                    // Sort by Date
                     Button(action: {
-                        // TODO: Add your "sort by date" logic
-                        // e.g. call a method in ContentView that changes the sortDescriptor
+                        withAnimation {
+                            sortByDateDesc.toggle()
+                        }
                     }) {
                         Image(systemName: "calendar")
-//                            .foregroundColor(.orange)
-
-                            .foregroundColor((colorScheme == .dark) ? .white : .orange)
+                            .foregroundColor(sortByDateDesc ? .red : ((colorScheme == .dark) ? .white : .orange))
                     }
-
                 }
             }
             .padding(.horizontal)
 
-            // Display categories if expanded
+            // Bubbles, if expanded
             if isExpanded {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        // "All" button to reset the filter
+                        // "All" button
                         Button(action: {
                             selectedCategory = nil
                         }) {
@@ -300,7 +328,7 @@ struct CategoryFilterView: View {
                                 .cornerRadius(20)
                         }
 
-                        // Category bubbles
+                        // Each category bubble
                         ForEach(categories, id: \.self) { category in
                             Button(action: {
                                 selectedCategory = category
@@ -324,8 +352,9 @@ struct CategoryFilterView: View {
 }
 
 
+// MARK: - Checking if note is in DB
 @MainActor
-func checkExistInDB (note: Note) async -> Bool {
+func checkExistInDB(note: Note) async -> Bool {
     do {
         let response: [SupabaseNote] = try await SupabaseManager.shared.client
             .from("public_notes")
@@ -333,10 +362,9 @@ func checkExistInDB (note: Note) async -> Bool {
             .eq("id", value: note.id)
             .execute()
             .value
-        
         return !response.isEmpty
     } catch {
         print("error: (\(error))")
+        return false
     }
-    return false
 }

@@ -20,12 +20,14 @@ struct NoteApp: App {
     
     
     @StateObject private var authVM = AuthViewModel()
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, dataController.container.viewContext)
                 .environmentObject(authVM)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
 
                 .onOpenURL { url in
                     Task {

@@ -53,7 +53,6 @@
 		3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060342C4EE7EF00392BDC /* Assets.xcassets */; };
 		3EDB88532D4AD8FE00FE9293 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */; };
 		3EEC1D622D53327000EE6AE0 /* PublicNoteDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEC1D612D53326C00EE6AE0 /* PublicNoteDetailView.swift */; };
-		3EEC1D792D540B4B00EE6AE0 /* Boutique in Frameworks */ = {isa = PBXBuildFile; productRef = 3EEC1D782D540B4B00EE6AE0 /* Boutique */; };
 		3EEC1D9A2D553CB700EE6AE0 /* DonationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEC1D992D553CB500EE6AE0 /* DonationView.swift */; };
 		3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */; };
 		3EEF1B732D19BE50005F7C9C /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEF1B722D19BE45005F7C9C /* RegistrationView.swift */; };
@@ -128,7 +127,6 @@
 				3E730C342D15471D00FCD000 /* Functions in Frameworks */,
 				3E730C322D15471D00FCD000 /* Auth in Frameworks */,
 				3E730C382D15471D00FCD000 /* Realtime in Frameworks */,
-				3EEC1D792D540B4B00EE6AE0 /* Boutique in Frameworks */,
 				3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -334,7 +332,6 @@
 			packageReferences = (
 				3E730C2D2D15441200FCD000 /* XCRemoteSwiftPackageReference "RichTextKit" */,
 				3E730C302D15471D00FCD000 /* XCRemoteSwiftPackageReference "supabase-swift" */,
-				3EEC1D772D540B4B00EE6AE0 /* XCRemoteSwiftPackageReference "Boutique" */,
 				3EC75B852D55AD5D00A4605A /* XCRemoteSwiftPackageReference "lottie-spm" */,
 			);
 			productRefGroup = 3ED0602E2C4EE7ED00392BDC /* Products */;
@@ -540,7 +537,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Ecrivez-local/Preview Content\"";
-				DEVELOPMENT_TEAM = KUXA576FBM;
+				DEVELOPMENT_TEAM = 679K683SQ5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
@@ -552,6 +549,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -573,7 +571,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Ecrivez-local/Preview Content\"";
-				DEVELOPMENT_TEAM = KUXA576FBM;
+				DEVELOPMENT_TEAM = 679K683SQ5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ecrivez-local/Info.plist";
@@ -585,6 +583,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -646,14 +645,6 @@
 				minimumVersion = 4.5.1;
 			};
 		};
-		3EEC1D772D540B4B00EE6AE0 /* XCRemoteSwiftPackageReference "Boutique" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/mergesort/Boutique";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.4.9;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -696,11 +687,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 3EC75B852D55AD5D00A4605A /* XCRemoteSwiftPackageReference "lottie-spm" */;
 			productName = Lottie;
-		};
-		3EEC1D782D540B4B00EE6AE0 /* Boutique */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 3EEC1D772D540B4B00EE6AE0 /* XCRemoteSwiftPackageReference "Boutique" */;
-			productName = Boutique;
 		};
 /* End XCSwiftPackageProductDependency section */
 

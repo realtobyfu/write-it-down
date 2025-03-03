@@ -9,7 +9,8 @@ import CoreLocation
 
 struct NoteView: View {
     let note: Note
-    
+    let foldAll: Bool
+
     /// leaking too much info from the parent
     ///
 //    @Binding var selectedNote: Note?
@@ -36,7 +37,8 @@ struct NoteView: View {
                             attributedText: adjustedAttributedText,
                             dynamicHeight: $dynamicHeight
                         )
-                        .frame(height: dynamicHeight)
+                        .frame(height: foldAll ? min(dynamicHeight, 100) : dynamicHeight)
+                        .clipped()
                     }
                     Spacer()
                 }

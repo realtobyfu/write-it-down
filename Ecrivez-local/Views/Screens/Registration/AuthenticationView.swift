@@ -54,6 +54,14 @@ struct AuthenticationView: View {
             }
         }
     }
+    /// A basic email format check. You can replace with a more robust regex if you like.
+    private func isValidEmail(_ email: String) -> Bool {
+        // Quick check that it's non-empty, has an "@" and a dot after it
+        // For a more advanced approach, see a robust regex approach.
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.contains("@"), trimmed.contains(".") else { return false }
+        return trimmed.count > 5
+    }
 
     private func signInButtonTapped() {
         Task {

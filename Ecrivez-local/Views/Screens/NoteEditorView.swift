@@ -188,20 +188,21 @@ struct NoteEditorView: View {
 //                }
 //            }
             .onAppear {
-                // This example forcibly enumerates existing attributes
-                // and replaces them with black or white text color.
-                let textColor: UIColor = (colorScheme == .dark) ? .white : .black
-
-                // If using a local `attributedText` for the note:
+                // Overwrite text color for entire string
                 let mutable = NSMutableAttributedString(attributedString: attributedText)
-                mutable.enumerateAttributes(in: NSRange(location: 0, length: mutable.length), options: []) { attrs, range, _ in
-                    var newAttrs = attrs
-                    newAttrs[.foregroundColor] = textColor
-                }
-                print("OnAppear triggered, updated note: \(mutable)")
+                let entireRange = NSRange(location: 0, length: mutable.length)
 
-                // Then reassign
+                // 1) Remove any existing foreground color
+                mutable.removeAttribute(.foregroundColor, range: entireRange)
+
+                // 2) Add the color we want
+                let newColor: UIColor = (colorScheme == .dark) ? .white : .black
+                mutable.addAttribute(.foregroundColor, value: newColor, range: entireRange)
+
+                // 3) Assign back
                 attributedText = mutable
+
+                print("Updated note:", attributedText) // Just to confirm
             }
 
             .padding([.leading, .trailing])
