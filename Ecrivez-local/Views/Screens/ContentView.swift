@@ -7,39 +7,29 @@ import MapKit
 import UIKit
 
 struct ContentView: View {
-    
-    // MARK: - CoreData
+
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
 
-    // Fetching Notes and Categories from CoreData
-    // similar to state, when changes, causes the view body to recompute
     @FetchRequest(
         entity: Note.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
     ) var notes: FetchedResults<Note>
-    
+
     @FetchRequest(
         entity: Category.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
 
-    // @State: after making the new struct when something inside the struct changes, the State variables will restore the old values from the older struct
-    // allowing the values to live after the stuct's lifetime
-    // @State stores the value in the "view tree" (hierarchy of objects and storing values) and restore it from the view tree
-    //@FetchRequest (from database), @Environment (from the environment ) etc... applied to all property wrappers
-    
-    // just a optional for note
     @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
     @State private var showingAuthView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
-    
-    @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
-    // Filtered notes based on the selected category
+    @Environment(\.scenePhase) private var scenePhase
+
     var filteredNotes: [Note] {
         if let category = selectedCategory {
             return notes.filter { $0.category == category }
@@ -50,12 +40,30 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                // Category selection view at the top
+            VStack(spacing: 0) {
+                HStack {
+                    Text("Ideas")
+                        .font(.title)
+                        .fontWeight(.medium)
+                    Spacer()
+                    Button(action: {
+                        showingAuthView = true
+                    }) {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 24))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 15)
+
+
                 CategoryFilterView(
                     selectedCategory: $selectedCategory,
                     categories: Array(categories)
                 )
+                .font(.subheadline)
+                .padding(.bottom, 5)
 
                 List {
                     ForEach(filteredNotes) { note in
@@ -68,14 +76,13 @@ struct ContentView: View {
                         )
                         .listRowSeparator(.hidden)
                     }
-                    .onDelete
-                    { IndexSet in 
+                    .onDelete { IndexSet in
                         Task {
                             await deleteNote(at: IndexSet)
                         }
                     }
                     .onMove(perform: moveNote)
-                    .moveDisabled(selectedCategory != nil) // Disable moving when a category is selected
+                    .moveDisabled(selectedCategory != nil)
                 }
                 .safeAreaInset(edge: .bottom) {
                     BubbleMenuView(
@@ -87,42 +94,11 @@ struct ContentView: View {
                         }
                     )
                 }
-
                 .listStyle(PlainListStyle())
-                .navigationTitle("Ideas")
-                
-                .sheet(isPresented: $showingNoteEditor, onDismiss: {
-                    selectedNote = nil
-                }) {
-                    if let note = selectedNote {
-                        ZStack {
-                            NoteEditorView(
-                                mode: .edit(note),
-                                categories: Array(categories),
-                                isAuthenticated: authVM.isAuthenticated,
-                                onSave: {
-                                    saveContext()
-                                }
-                            )
-                        }
-                    }
-                }
 
                 Spacer()
 
                 ZStack {
-                    // Horizontal Bar of Pop-up Bubbles for adding notes
-//                    BubbleMenuView(
-//                        showBubbles: $showBubbles,
-//                        selectedCategory: $selectedCategory,
-//                        categories: Array(categories),
-//                        onCategorySelected: {
-//                            showingAddNoteView = true
-//                        }
-//                    )
-                    
-
-                    // Plus Button to show/hide BubbleMenuView
                     HStack {
                         Spacer()
                         Button(action: {
@@ -137,7 +113,6 @@ struct ContentView: View {
                         Spacer()
                     }
 
-                    // Additional Navigation Buttons
                     HStack {
                         NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
                             Image(systemName: "text.bubble")
@@ -147,9 +122,9 @@ struct ContentView: View {
                                 .clipShape(Circle())
                         }
                         .padding(.leading, 50)
-                        
+
                         Spacer()
-                        
+
                         NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gear")
                                 .font(.system(size: 26))
@@ -162,102 +137,83 @@ struct ContentView: View {
                     }
                 }
             }
-            
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingAuthView = true
-                    }) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 24))
-                    }
-                }
-            }
-//            .onAppear {
-//                // If user is not authenticated, present the sheet
-//                if !isAuthenticated {
-//                    showingAuthView = true
-//                }
-//            }
         }
-
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
-                saveContext() // Save context when app goes to background
+                saveContext()
             }
         }
-        .sheet(
-            isPresented: $showingAddNoteView,
-            onDismiss: {
-                selectedCategory = nil
-            },
-            content: {
-                if let selectedCategory = selectedCategory {
-                    NoteEditorView(
-                        mode: .create(selectedCategory),
-                        categories: Array(categories),
-                        isAuthenticated: authVM.isAuthenticated,
-                        onSave: {
-                            saveContext()
-                        }
-                    )
-                }
+        .sheet(isPresented: $showingNoteEditor, onDismiss: {
+            selectedNote = nil
+        }) {
+            if let note = selectedNote {
+                NoteEditorView(
+                    mode: .edit(note),
+                    categories: Array(categories),
+                    isAuthenticated: authVM.isAuthenticated,
+                    onSave: {
+                        saveContext()
+                    }
+                )
             }
-        )
+        }
+        .sheet(isPresented: $showingAddNoteView, onDismiss: {
+            selectedCategory = nil
+        }) {
+            if let selectedCategory = selectedCategory {
+                NoteEditorView(
+                    mode: .create(selectedCategory),
+                    categories: Array(categories),
+                    isAuthenticated: authVM.isAuthenticated,
+                    onSave: {
+                        saveContext()
+                    }
+                )
+            }
+        }
         .sheet(isPresented: $showingAuthView) {
             if authVM.isAuthenticated {
-                // If user is now authenticated, show some user-related view
                 UserView(authVM: authVM)
             } else {
-                // If user is still not authenticated, show the auth flow
                 AuthenticationView(authVM: authVM)
             }
         }
     }
-    
-    private func deleteNote(at offsets: IndexSet) async {
 
+    private func deleteNote(at offsets: IndexSet) async {
         for index in offsets {
             let noteToDelete = filteredNotes[index]
-            
-            
             let existInDB = await checkExistInDB(note: noteToDelete)
-            
+
             if existInDB {
                 do {
-                    let _ = try await SupabaseManager.shared.client
+                    _ = try await SupabaseManager.shared.client
                         .from("public_notes")
                         .delete()
                         .eq("id", value: noteToDelete.id)
                         .execute()
-                    
-                    print("Deleted Note, ID: \(String(describing: noteToDelete.id))")
                 } catch {
                     print("Error deleting note from Supabase: \(error)")
                 }
             }
-            
+
             context.delete(noteToDelete)
         }
-    
         saveContext()
     }
-    
+
     private func moveNote(from source: IndexSet, to destination: Int) {
-        guard selectedCategory == nil else { return } // Prevent moving when a category is selected
+        guard selectedCategory == nil else { return }
 
         var reorderedNotes = notes.map { $0 }
-        
         reorderedNotes.move(fromOffsets: source, toOffset: destination)
-        
+
         for (newIndex, note) in reorderedNotes.enumerated() {
             note.index = Int16(newIndex)
         }
-        
         saveContext()
     }
-    
-    // Helper function to save context
+
     private func saveContext() {
         do {
             try context.save()
@@ -266,6 +222,10 @@ struct ContentView: View {
         }
     }
 }
+
+
+
+
 
 // CategoryFilterView displays category bubbles for filtering notes
 struct CategoryFilterView: View {
@@ -302,10 +262,10 @@ struct CategoryFilterView: View {
                             selectedCategory = nil
                         }) {
                             Text("All")
-                                .padding(10)
+                                .padding(8)
                                 .background(selectedCategory == nil ? Color.blue : Color.gray)
                                 .foregroundColor(.white)
-                                .cornerRadius(15)
+                                .cornerRadius(20)
                         }
                         Spacer()
                         // Category bubbles
