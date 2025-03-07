@@ -23,6 +23,11 @@ class AuthViewModel: ObservableObject {
     func signIn() async {
         isLoading = true
         errorMessage = nil
+        guard isValidEmail(email) else {
+            errorMessage = "Invalid email format"
+            isLoading = false
+            return
+        }
 
         do {
             try await SupabaseManager.shared.client.auth.signInWithOTP(
@@ -36,6 +41,16 @@ class AuthViewModel: ObservableObject {
         }
         isLoading = false
     }
+    
+    /// A basic email format check. You can replace with a more robust regex if you like.
+    private func isValidEmail(_ email: String) -> Bool {
+        // Quick check that it's non-empty, has an "@" and a dot after it
+        // For a more advanced approach, see a robust regex approach.
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.contains("@"), trimmed.contains(".") else { return false }
+        return trimmed.count > 5
+    }
+
 
     func signOut() {
         Task {
