@@ -7,22 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "D273C934-7FB0-4521-A336-FCCDFA6232D0"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Ecrivez-local/Views/Screens/CategoryEditorView.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "12"
-            endingLineNumber = "12"
-            landmarkName = "CategoryEditorView"
-            landmarkType = "14">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA"
             shouldBeEnabled = "No"
             nameForDebugger = "SupabaseNoteCreation"
@@ -31,13 +15,27 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "380"
-            endingLineNumber = "380"
+            startingLineNumber = "381"
+            endingLineNumber = "381"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
             <Locations>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - be6b0321c0fcac01"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886afd"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
+                  moduleName = "Ecrivez-local.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
+               </Location>
+               <Location
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - be6b0321c0fcac26"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -47,11 +45,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 12a5c4729e5ae2d6"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 12a5c4729e5ae2f1"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -61,11 +59,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - f13e703f48bfc1fc"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - f13e703f48bfc1db"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -75,11 +73,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c66b720e917326d4"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c66b720e917326f3"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -89,11 +87,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7ff991b8cf9803e2"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7ff991b8cf9803c5"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -103,11 +101,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886ada"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886afd"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -117,25 +115,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886ada"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(5) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - eb4b13a4e857de0"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - eb4b13a4e857dc7"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -145,11 +129,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 2dd867167fa6aed8"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 2dd867167fa6aeff"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -159,11 +143,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9d0fd2a7cd67bfe6"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9d0fd2a7cd67bfc1"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -173,11 +157,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e19e1ea272bff2de"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e19e1ea272bff2f9"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -187,11 +171,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9e9af0bcd0d2f0a2"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9e9af0bcd0d2f085"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -201,11 +185,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e20d70940bfc5cd2"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e20d70940bfc5cf5"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -215,11 +199,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 8453bd64b192c1d1"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 8453bd64b192c1f6"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -229,11 +213,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 26b9fa355f336ad0"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 26b9fa355f336af7"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -243,11 +227,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c89e071a06d10fd7"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c89e071a06d10ff0"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -257,11 +241,11 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
                <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 6ae44deaac77b0d6"
+                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 6ae44deaac77b0f1"
                   shouldBeEnabled = "No"
                   ignoreCount = "0"
                   continueAfterRunningActions = "No"
@@ -271,8 +255,8 @@
                   urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
                   startingColumnNumber = "9223372036854775807"
                   endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "380"
-                  endingLineNumber = "380">
+                  startingLineNumber = "381"
+                  endingLineNumber = "381">
                </Location>
             </Locations>
          </BreakpointContent>
@@ -303,8 +287,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "339"
-            endingLineNumber = "339"
+            startingLineNumber = "340"
+            endingLineNumber = "340"
             landmarkName = "saveNote()"
             landmarkType = "7">
          </BreakpointContent>
@@ -319,8 +303,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "340"
-            endingLineNumber = "340"
+            startingLineNumber = "341"
+            endingLineNumber = "341"
             landmarkName = "saveNote()"
             landmarkType = "7">
          </BreakpointContent>
@@ -399,8 +383,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "379"
-            endingLineNumber = "379"
+            startingLineNumber = "380"
+            endingLineNumber = "380"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -415,8 +399,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "381"
-            endingLineNumber = "381"
+            startingLineNumber = "382"
+            endingLineNumber = "382"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -431,10 +415,72 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "378"
-            endingLineNumber = "378"
+            startingLineNumber = "379"
+            endingLineNumber = "379"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "278C8A07-3275-4C88-8C6F-65BC1D349996"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Ecrivez-local/Views/Screens/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "101"
+            endingLineNumber = "101"
+            landmarkName = "body"
+            landmarkType = "24">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "14EC91A2-CF5F-4E23-B300-BB6C9D93136E"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Ecrivez-local/Views/Screens/ContentView.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "180"
+            endingLineNumber = "180"
+            landmarkName = "body"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "14EC91A2-CF5F-4E23-B300-BB6C9D93136E - e504aff1461ab120"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Ecrivez_local.ContentView.body.getter : some"
+                  moduleName = "Ecrivez-local.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/ContentView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "180"
+                  endingLineNumber = "180">
+               </Location>
+               <Location
+                  uuid = "14EC91A2-CF5F-4E23-B300-BB6C9D93136E - 45b8438e0148372d"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #3 () -&gt; () in Ecrivez_local.ContentView.body.getter : some"
+                  moduleName = "Ecrivez-local.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/ContentView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "181"
+                  endingLineNumber = "181">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

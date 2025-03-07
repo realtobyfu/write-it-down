@@ -187,6 +187,8 @@ struct ContentView: View {
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: { saveContext() }
                 )
+            } else {
+                Text("No note selected")
             }
         }
         // Present "Add Note" after picking category bubble
@@ -256,6 +258,9 @@ struct ContentView: View {
         }
     }
 }
+
+
+
 
 // MARK: - CategoryFilterView
 struct CategoryFilterView: View {
