@@ -24,7 +24,7 @@ struct ContentView: View {
     ) var categories: FetchedResults<Category>
 
     // MARK: - Local State
-    @State private var showingNoteEditor = false
+//    @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
     @State private var showingAuthView = false
@@ -100,7 +100,7 @@ struct ContentView: View {
                             foldAll: foldAll,
                             buttonTapped: {
                                 selectedNote = note
-                                showingNoteEditor = true
+//                                showingNoteEditor = true
                             }
                         )
                         .listRowSeparator(.hidden)
@@ -177,32 +177,30 @@ struct ContentView: View {
             }
         }
         // Present Note Editor
-        .sheet(isPresented: $showingNoteEditor, onDismiss: {
+        .sheet(item: $selectedNote, onDismiss: {
             selectedNote = nil
-        }) {
-            if let note = selectedNote {
+        }) { note in
+//            if let note = selectedNote {
                 NoteEditorView(
                     mode: .edit(note),
                     categories: Array(categories),
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: { saveContext() }
                 )
-            } else {
-                Text("No note selected")
-            }
+//            } else {
+//                Text("No note selected")
+//            }
         }
         // Present "Add Note" after picking category bubble
         .sheet(isPresented: $showingAddNoteView, onDismiss: {
             selectedCategory = nil
         }) {
-            if let selectedCategory = selectedCategory {
-                NoteEditorView(
-                    mode: .create(selectedCategory),
-                    categories: Array(categories),
-                    isAuthenticated: authVM.isAuthenticated,
-                    onSave: { saveContext() }
-                )
-            }
+            NoteEditorView(
+                mode: .create(selectedCategory!),
+                categories: Array(categories),
+                isAuthenticated: authVM.isAuthenticated,
+                onSave: { saveContext() }
+            )
         }
         // Auth / Profile sheet
         .sheet(isPresented: $showingAuthView) {
