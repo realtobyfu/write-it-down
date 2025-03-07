@@ -314,9 +314,10 @@ struct NoteEditorView: View {
                 existingNote.isPublic = isPublic
                 existingNote.isAnnonymous = isAnnonymous
                 existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
-                
-                Task {
-                    await updateSupabase(note: existingNote)
+                if existingNote.isPublic && isAuthenticated {
+                    Task {
+                        await updateSupabase(note: existingNote)
+                    }
                 }
             } else {
                 // Create new note
