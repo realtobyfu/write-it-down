@@ -60,6 +60,12 @@ extension Note {
             }
         }
     }
+    
+    var placeName: String {
+        get { locationName ?? "" }
+        set { locationName = newValue }
+    }
+
 }
 
 extension Note {
@@ -80,8 +86,8 @@ extension Note {
             content: self.attributedText.string,
             // Full RTF as base64
             rtf_content: rtfString,
-            
             date: self.date,
+            locationName: self.placeName,
             locationLatitude: self.locationLatitude?.stringValue,
             locationLongitude:self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",

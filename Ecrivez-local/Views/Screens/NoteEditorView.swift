@@ -31,6 +31,7 @@ struct NoteEditorView: View {
     @State private var showingImagePicker = false
     @State private var showingWeatherPicker = false
     @State private var showingLocationPicker = false  // State to control the presentation of LocationPickerView
+    @State private var locationName: String?
     @FocusState private var isTextEditorFocused: Bool
 
     // RichTextKit context
@@ -78,6 +79,8 @@ struct NoteEditorView: View {
         
         self.note = note
         self.onSave = onSave
+        self.categories = categories
+        self.isAuthenticated = isAuthenticated
 
         _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
         _location = State(initialValue: note?.location?.coordinate)  // Make location optional
@@ -86,9 +89,7 @@ struct NoteEditorView: View {
         _category = State(initialValue: category)
         _selectedDate = State(initialValue: note?.date)
         _isPublic = State(initialValue: note?.isPublic ?? false)
-        
-        self.categories = categories
-        self.isAuthenticated = isAuthenticated
+        _locationName  = State(initialValue: note?.placeName)
     }
 
     var body: some View {
@@ -140,7 +141,7 @@ struct NoteEditorView: View {
                 HStack {
                     if let location = location {
                         // Display the location bar if location is selected
-                        LocationSelectionBar(location: location)
+                        LocationSelectionBar(location: location, placeName: locationName!)
                             .onTapGesture {
                                 showingLocationPicker.toggle()
                             }
@@ -238,7 +239,9 @@ struct NoteEditorView: View {
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingLocationPicker) {
-                LocationPickerView(location: $location)
+                // pass $location AND $locationName
+                LocationPickerView(location: $location,
+                                   locationName: $locationName)
             }
         }
     }
@@ -304,49 +307,44 @@ struct NoteEditorView: View {
     }
 
     private func saveNote() {
-        if !attributedText.string.isEmpty {
-            
-            if let existingNote = note {
-                // Update existing note
-                existingNote.attributedText = attributedText
-                existingNote.date = selectedDate
-                existingNote.category = category
-                existingNote.isPublic = isPublic
-                existingNote.isAnnonymous = isAnnonymous
-                existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
-                if existingNote.isPublic && isAuthenticated {
-                    Task {
-                        await updateSupabase(note: existingNote)
-                    }
-                }
-            } else {
-                // Create new note
-                let newNote = Note(context: context)
-                newNote.id = UUID()
-                newNote.attributedText = attributedText
-                newNote.category = category
-                newNote.date = selectedDate
-                newNote.isAnnonymous = isAnnonymous
-                newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
-                
-                if newNote.isPublic && isAuthenticated {
-                    Task {
-                        await updateSupabase(note: newNote)
-                    }
-                }
-            }
-            
-            // Save the context
-            do {
-                try context.save()
-            } catch {
-                print("Failed to save note: \(error)")
-            }
+        if attributedText.string.isEmpty { return }
+        
+        if let existing = note {
+            // update
+            existing.attributedText = attributedText
+            existing.category       = category
+            existing.date          = selectedDate
+            existing.isPublic      = isPublic
+            existing.isAnnonymous  = isAnnonymous
+            existing.location      = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+            existing.placeName     = locationName ?? ""
 
-            // Dismiss and call the onSave closure
-            presentationMode.wrappedValue.dismiss()
-            onSave()
+            if existing.isPublic, isAuthenticated {
+                Task { await updateSupabase(note: existing) }
+            }
+        } else {
+            // create
+            let newNote = Note(context: context)
+            newNote.id = UUID()
+            newNote.attributedText = attributedText
+            newNote.category       = category
+            newNote.date          = selectedDate
+            newNote.isAnnonymous  = isAnnonymous
+            newNote.location      = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+            newNote.placeName     = locationName ?? ""
+            
+            if newNote.isPublic, isAuthenticated {
+                Task { await updateSupabase(note: newNote) }
+            }
         }
+
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save note: \(error)")
+        }
+        presentationMode.wrappedValue.dismiss()
+        onSave()
     }
 }
 
@@ -383,7 +381,7 @@ func updateSupabase(note: Note) async {
                 owner_id: user.id, category_id: note.category?.id,
                 content: note.attributedText.string,  // plain text
                 rtf_content: base64RTF,              // fully styled
-                date: note.date,
+                date: note.date, locationName: note.locationName,
                 locationLatitude: note.locationLatitude?.stringValue,
                 locationLongitude: note.locationLongitude?.stringValue,
                 colorString: note.category?.colorString ?? "",

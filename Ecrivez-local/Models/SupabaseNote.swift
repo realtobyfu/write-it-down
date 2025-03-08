@@ -17,6 +17,7 @@ struct SupabaseNote: Codable, Identifiable {
     var rtf_content: String?
     
     var date: Date?
+    var locationName: String?  
     var locationLongitude: String?
     var locationLatitude: String?
     
@@ -75,6 +76,7 @@ struct SupabaseNote: Codable, Identifiable {
          content: String,
          rtf_content: String?,
          date: Date?,
+         locationName: String?,
          locationLatitude: String?,
          locationLongitude: String?,
          colorString: String,
@@ -87,7 +89,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.content = content
         self.rtf_content = rtf_content
         self.date = date
-        
+        self.locationName = locationName
         self.locationLongitude = locationLongitude
         self.locationLatitude = locationLatitude
         self.isAnnonymous = isAnnonymous

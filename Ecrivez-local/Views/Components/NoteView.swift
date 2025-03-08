@@ -37,7 +37,7 @@ struct NoteView: View {
                             attributedText: adjustedAttributedText,
                             dynamicHeight: $dynamicHeight
                         )
-                        .frame(height: foldAll ? min(dynamicHeight, 100) : dynamicHeight)
+                        .frame(height: foldAll ? min(dynamicHeight, 100) : dynamicHeight, alignment: .top)
                         .clipped()
                     }
                     Spacer()
