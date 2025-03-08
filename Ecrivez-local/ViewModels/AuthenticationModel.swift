@@ -24,13 +24,14 @@ class AuthViewModel: ObservableObject {
     }
 
     /// Replaces your old signInWithOTP usage
-    func signIn() async {
+    func signIn() async throws {
         isLoading = true
+        defer { isLoading = false }
         errorMessage = nil
+
         guard isValidEmail(email) else {
             errorMessage = "Invalid email format"
-            isLoading = false
-            return
+            throw AuthError.invalidEmail
         }
 
         do {
@@ -38,21 +39,16 @@ class AuthViewModel: ObservableObject {
                 email: email,
                 redirectTo: URL(string: "com.tobiasfu.write-it-down://login-callback")
             )
-            // If successful, user will tap link from their inbox ->
-            // handleURL in the App sets isAuthenticated = true
         } catch {
             errorMessage = error.localizedDescription
+            throw error
         }
-        isLoading = false
     }
-    
-    /// A basic email format check. You can replace with a more robust regex if you like.
+
     private func isValidEmail(_ email: String) -> Bool {
-        // Quick check that it's non-empty, has an "@" and a dot after it
-        // For a more advanced approach, see a robust regex approach.
-        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.contains("@"), trimmed.contains(".") else { return false }
-        return trimmed.count > 5
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+        let predicate = NSPredicate(format:"SELF MATCHES %@", emailRegex)
+        return predicate.evaluate(with: email)
     }
 
 
@@ -110,5 +106,23 @@ class AuthViewModel: ObservableObject {
 
     func didCompleteSignIn() {
         isAuthenticated = true
+    }
+}
+
+
+enum AuthError: LocalizedError {
+    case invalidEmail
+    case networkError(String)
+    case unknownError(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidEmail:
+            return "Please enter a valid email address."
+        case .networkError(let message):
+            return "Network error: \(message)"
+        case .unknownError(let message):
+            return "Something went wrong: \(message)"
+        }
     }
 }

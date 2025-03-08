@@ -11,124 +11,149 @@ import CryptoKit
 struct AuthenticationView: View {
     @ObservedObject var authVM: AuthViewModel
     
-    @State private var result: Result<Void, Error>?
+    @State private var signInResult: Result<Void, Error>?
 
     var body: some View {
-        Form {
-            VStack(spacing: 20) {
-                Spacer().frame(height: 15)
+        VStack(spacing: 24) {
+            
+            Text("Create an Account")
+                .font(.title2)
+                .bold()
+                .padding(.top, 20)
+            
+            Text("to share notes and interact with other users")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            // MARK: Email Field
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Email address:")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
                 
-                Text("Create an Account to share your notes and interact with other users!")
-                    .font(.custom("AmericanTypewriter", fixedSize: 20))
-                    .padding(.horizontal, 10)
-                
-                Text("Enter email to receive a magic link!")
-                    .font(.custom("AmericanTypewriter", fixedSize: 20))
-                    .padding(.horizontal, 10)
-                
-                Section {
-                    TextField("Email", text: $authVM.email)
-                        .textContentType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                }
-                
-                // Existing "Sign in" with Magic Link
-                Section {
-                    Button("Sign in") {
-                        signInButtonTapped()
+                TextField("Enter your email", text: $authVM.email)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .keyboardType(.emailAddress)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.gray.opacity(0.15)) // light gray background
+                    .cornerRadius(8)
+            }
+            .padding(.horizontal, 20)
+            
+            // MARK: Sign in (Magic Link) Button
+            VStack(spacing: 8) {
+                Button {
+                    Task {
+                        await signInButtonTapped()
                     }
-                    
+                } label: {
                     if authVM.isLoading {
                         ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(.white)
+                            .frame(height: 22)
+                    } else {
+                        Text("Sign in with Magic Link")
+                            .fontWeight(.semibold)
                     }
                 }
-                
-                // ******* ADD: Sign in with Apple ********
-                Section {
-                    SignInWithAppleButton(
-                        .signIn,
-                        onRequest: { request in
-                            // 1) Generate random nonce and store in authVM
-                            let nonce = authVM.randomNonceString()
-                            authVM.currentNonce = nonce
-
-                            // 2) Hash the nonce and attach it to the request
-                            request.requestedScopes = [.fullName, .email]
-                            request.nonce = sha256(nonce)
-                        },
-                        onCompletion: { outcome in
-                            switch outcome {
-                            case .success(let authorization):
-                                handleAppleSignIn(authorization)
-                            case .failure(let error):
-                                print("Apple sign-in failed: \(error)")
-                            }
-                        }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                        startPoint: .leading,
+                        endPoint: .trailing
                     )
-                    .signInWithAppleButtonStyle(.black)
-                    .frame(height: 50)
+                )
+                .cornerRadius(8)
+                .padding(.horizontal, 20)
+                
+                if let error = authVM.errorMessage {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 20)
                 }
                 
-                // Display result or error
-                if let result {
-                    Section {
-                        switch result {
-                        case .success:
-                            Text("Check your inbox.")
-                        case .failure(let error):
-                            Text(error.localizedDescription)
-                                .foregroundStyle(.red)
-                        }
-                    }
+                if case .success = signInResult {
+                    Text("Check your inbox for the magic link.")
+                        .font(.footnote)
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 20)
                 }
             }
+
+            Divider().padding(.vertical, 10)
+            
+            // MARK: Sign in with Apple
+            SignInWithAppleButton(
+                .signIn,
+                onRequest: { request in
+                    let nonce = authVM.randomNonceString()
+                    authVM.currentNonce = nonce
+                    request.requestedScopes = [.fullName, .email]
+                    request.nonce = sha256(nonce)
+                },
+                onCompletion: { outcome in
+                    switch outcome {
+                    case .success(let authorization):
+                        handleAppleSignIn(authorization)
+                    case .failure(let error):
+                        print("Apple sign-in failed: \(error)")
+                    }
+                }
+            )
+            .signInWithAppleButtonStyle(.black)
+            .frame(height: 50)
+            .cornerRadius(8)
+            .padding(.horizontal, 20)
+
+            Spacer()
         }
+        .padding(.top, 10)
+        .background(Color(UIColor.systemBackground)) // or any custom color
+        .edgesIgnoringSafeArea(.bottom)
+    }
+}
+
+// MARK: - Private Helpers
+extension AuthenticationView {
+    
+    private func signInButtonTapped() async {
+        authVM.isLoading = true
+        do {
+            try await authVM.signIn()
+            signInResult = .success(())
+        } catch {
+            signInResult = .failure(error)
+        }
+        authVM.isLoading = false
     }
 
-    // MARK: - Handle Magic Link Flow
-    private func signInButtonTapped() {
-        Task {
-            authVM.isLoading = true
-            do {
-                try await authVM.signIn()
-                result = .success(())
-            } catch {
-                result = .failure(error)
-            }
-            authVM.isLoading = false
-        }
-    }
-
-    // MARK: - Handle Apple Credential
     private func handleAppleSignIn(_ authorization: ASAuthorization) {
-        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-            print("Invalid cred from Apple")
-            return
-        }
-        
-        // Grab the ID token data
-        guard let appleIDToken = appleIDCredential.identityToken,
+        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let appleIDToken = appleIDCredential.identityToken,
               let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
             print("Unable to get Apple ID token as string")
             return
         }
-
-        // Call into AuthViewModel
         Task {
             do {
                 authVM.isLoading = true
                 try await authVM.signInWithApple(idTokenString: idTokenString)
-                // Optionally handle success in `result`
-                result = .success(())
+                signInResult = .success(())
             } catch {
-                result = .failure(error)
+                signInResult = .failure(error)
             }
             authVM.isLoading = false
         }
     }
 
-    // MARK: - Helper: hash the nonce
+    /// For extra security, hash the nonce before sending it to Apple.
     private func sha256(_ input: String) -> String {
         let inputData = Data(input.utf8)
         let hashedData = SHA256.hash(data: inputData)
