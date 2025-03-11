@@ -15,250 +15,10 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "379"
-            endingLineNumber = "379"
+            startingLineNumber = "442"
+            endingLineNumber = "442"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
-            <Locations>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886a3b"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(5) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - be6b0321c0fcace0"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 12a5c4729e5ae237"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(1) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - f13e703f48bfc11d"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(2) await resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c66b720e91732635"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(3) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7ff991b8cf980303"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(4) await resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 7a12e99a84886a3b"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(5) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - eb4b13a4e857d01"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(6) await resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 2dd867167fa6ae39"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(7) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9d0fd2a7cd67bf07"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(8) await resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e19e1ea272bff23f"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(9) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 9e9af0bcd0d2f043"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(10) await resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - e20d70940bfc5c33"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(11) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 8453bd64b192c130"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(12) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 26b9fa355f336a31"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(13) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - c89e071a06d10f36"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(14) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-               <Location
-                  uuid = "0D7F5FD8-2FCF-4ACE-BABD-9D00765060CA - 6ae44deaac77b037"
-                  shouldBeEnabled = "No"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "(15) suspend resume partial function for Ecrivez_local.updateSupabase(note: Ecrivez_local.Note) async -&gt; ()"
-                  moduleName = "Ecrivez-local.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/Views/Screens/NoteEditorView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "379"
-                  endingLineNumber = "379">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -351,8 +111,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "378"
-            endingLineNumber = "378"
+            startingLineNumber = "441"
+            endingLineNumber = "441"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -367,8 +127,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "380"
-            endingLineNumber = "380"
+            startingLineNumber = "443"
+            endingLineNumber = "443"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>
@@ -383,8 +143,8 @@
             filePath = "Ecrivez-local/Views/Screens/NoteEditorView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "377"
-            endingLineNumber = "377"
+            startingLineNumber = "440"
+            endingLineNumber = "440"
             landmarkName = "updateSupabase(note:)"
             landmarkType = "9">
          </BreakpointContent>

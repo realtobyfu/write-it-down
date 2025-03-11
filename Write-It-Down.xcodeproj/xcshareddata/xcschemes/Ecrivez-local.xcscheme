@@ -30,9 +30,26 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:test.xctestplan">
+            reference = "container:test.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:TestPlan.xctestplan">
          </TestPlanReference>
       </TestPlans>
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3EDAA2902D80A20600CC0F91"
+               BuildableName = "Write-It-Down-localTests.xctest"
+               BlueprintName = "Write-It-Down-localTests"
+               ReferencedContainer = "container:Write-It-Down.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"

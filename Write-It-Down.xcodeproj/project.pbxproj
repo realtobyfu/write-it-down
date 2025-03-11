@@ -51,6 +51,7 @@
 		3ED060312C4EE7ED00392BDC /* NoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060302C4EE7ED00392BDC /* NoteApp.swift */; };
 		3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060322C4EE7ED00392BDC /* ContentView.swift */; };
 		3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060342C4EE7EF00392BDC /* Assets.xcassets */; };
+		3EDAA28C2D80A18D00CC0F91 /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */; };
 		3EDB88532D4AD8FE00FE9293 /* NoteEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */; };
 		3EEC1D622D53327000EE6AE0 /* PublicNoteDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEC1D612D53326C00EE6AE0 /* PublicNoteDetailView.swift */; };
 		3EEC1D9A2D553CB700EE6AE0 /* DonationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EEC1D992D553CB500EE6AE0 /* DonationView.swift */; };
@@ -62,6 +63,16 @@
 		3EFCE2312C5A90F2000F748A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2302C5A90F2000F748A /* SettingsView.swift */; };
 		3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EFCE2352C5ACC48000F748A /* ImagePicker.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3EDAA2952D80A20600CC0F91 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3ED060252C4EE7ED00392BDC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3ED0602C2C4EE7ED00392BDC;
+			remoteInfo = "Ecrivez-local";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		3E05DF0E2D39A61800ECA2DA /* NewUserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewUserProfileView.swift; sourceTree = "<group>"; };
@@ -104,6 +115,8 @@
 		3ED060302C4EE7ED00392BDC /* NoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteApp.swift; sourceTree = "<group>"; };
 		3ED060322C4EE7ED00392BDC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3ED060342C4EE7EF00392BDC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
+		3EDAA2912D80A20600CC0F91 /* Write-It-Down-localTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Write-It-Down-localTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EEC1D612D53326C00EE6AE0 /* PublicNoteDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicNoteDetailView.swift; sourceTree = "<group>"; };
 		3EEC1D992D553CB500EE6AE0 /* DonationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationView.swift; sourceTree = "<group>"; };
 		3EEF1B6E2D17BC75005F7C9C /* ToastModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastModifier.swift; sourceTree = "<group>"; };
@@ -115,6 +128,10 @@
 		3EFCE2352C5ACC48000F748A /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
 		3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Write-It-Down-localTests"; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		3ED0602A2C4EE7ED00392BDC /* Frameworks */ = {
@@ -129,6 +146,13 @@
 				3E730C322D15471D00FCD000 /* Auth in Frameworks */,
 				3E730C382D15471D00FCD000 /* Realtime in Frameworks */,
 				3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3EDAA28E2D80A20600CC0F91 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,11 +261,13 @@
 		3ED060242C4EE7ED00392BDC = {
 			isa = PBXGroup;
 			children = (
+				3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */,
 				3E7B744A2CCD9F2400569AE7 /* README.md */,
 				3E252DA72CEBAC160053506C /* screenshot-1.png */,
 				3E252DA52CEBAB390053506C /* screenshot.png */,
 				3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */,
 				3ED0602F2C4EE7ED00392BDC /* Ecrivez-local */,
+				3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */,
 				3ED0602E2C4EE7ED00392BDC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -250,6 +276,7 @@
 			isa = PBXGroup;
 			children = (
 				3ED0602D2C4EE7ED00392BDC /* Ecrivez-local.app */,
+				3EDAA2912D80A20600CC0F91 /* Write-It-Down-localTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -307,6 +334,29 @@
 			productReference = 3ED0602D2C4EE7ED00392BDC /* Ecrivez-local.app */;
 			productType = "com.apple.product-type.application";
 		};
+		3EDAA2902D80A20600CC0F91 /* Write-It-Down-localTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3EDAA2972D80A20600CC0F91 /* Build configuration list for PBXNativeTarget "Write-It-Down-localTests" */;
+			buildPhases = (
+				3EDAA28D2D80A20600CC0F91 /* Sources */,
+				3EDAA28E2D80A20600CC0F91 /* Frameworks */,
+				3EDAA28F2D80A20600CC0F91 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3EDAA2962D80A20600CC0F91 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */,
+			);
+			name = "Write-It-Down-localTests";
+			packageProductDependencies = (
+			);
+			productName = "Write-It-Down-localTests";
+			productReference = 3EDAA2912D80A20600CC0F91 /* Write-It-Down-localTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -314,11 +364,15 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1540;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1540;
 				TargetAttributes = {
 					3ED0602C2C4EE7ED00392BDC = {
 						CreatedOnToolsVersion = 15.4;
+					};
+					3EDAA2902D80A20600CC0F91 = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 3ED0602C2C4EE7ED00392BDC;
 					};
 				};
 			};
@@ -341,6 +395,7 @@
 			projectRoot = "";
 			targets = (
 				3ED0602C2C4EE7ED00392BDC /* Ecrivez-local */,
+				3EDAA2902D80A20600CC0F91 /* Write-It-Down-localTests */,
 			);
 		};
 /* End PBXProject section */
@@ -353,7 +408,15 @@
 				3E7B744B2CCD9F2900569AE7 /* README.md in Resources */,
 				3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */,
 				3EC75B892D55B87000A4605A /* smiley.json in Resources */,
+				3EDAA28C2D80A18D00CC0F91 /* TestPlan.xctestplan in Resources */,
 				3E252DA62CEBAB390053506C /* screenshot.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3EDAA28F2D80A20600CC0F91 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,7 +472,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3EDAA28D2D80A20600CC0F91 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3EDAA2962D80A20600CC0F91 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3ED0602C2C4EE7ED00392BDC /* Ecrivez-local */;
+			targetProxy = 3EDAA2952D80A20600CC0F91 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		3ED060392C4EE7EF00392BDC /* Debug */ = {
@@ -600,6 +678,44 @@
 			};
 			name = Release;
 		};
+		3EDAA2982D80A20600CC0F91 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KUXA576FBM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Write-It-Down-localTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ecrivez-local.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ecrivez-local";
+			};
+			name = Debug;
+		};
+		3EDAA2992D80A20600CC0F91 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KUXA576FBM;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.tobiasfu.Write-It-Down-localTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ecrivez-local.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ecrivez-local";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -617,6 +733,15 @@
 			buildConfigurations = (
 				3ED0603C2C4EE7EF00392BDC /* Debug */,
 				3ED0603D2C4EE7EF00392BDC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3EDAA2972D80A20600CC0F91 /* Build configuration list for PBXNativeTarget "Write-It-Down-localTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3EDAA2982D80A20600CC0F91 /* Debug */,
+				3EDAA2992D80A20600CC0F91 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
