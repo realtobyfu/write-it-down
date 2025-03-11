@@ -41,6 +41,19 @@ struct NoteEditorView: View {
         case edit(Note)
         case create(Category)
     }
+    
+    // MARK: - Image Insertion
+    
+    enum ImageSourceType {
+        case camera
+        case photoLibrary
+    }
+
+    @State private var isConfirmationDialogPresented = false
+    @State private var isShowingImagePicker = false
+    @State private var imageSourceType: ImageSourceType = .photoLibrary
+    @State private var inputImage: UIImage?
+
 
     init(
         mode: Mode,
@@ -113,7 +126,14 @@ struct NoteEditorView: View {
                 RichTextKeyboardToolbar(
                     context: contextRT,
                     leadingButtons: { $0 },
-                    trailingButtons: { $0 },
+                    trailingButtons: { _ in
+                        // Add this
+                        Button(action: {
+                            isConfirmationDialogPresented = true
+                        }, label: {
+                            Image(systemName: "photo")
+                        })
+                    },
                     formatSheet: { $0 }
                 )
                 .richTextKeyboardToolbarConfig(
@@ -172,6 +192,49 @@ struct NoteEditorView: View {
 
                 }
             }
+            .confirmationDialog(
+                "Select Image Source",
+                isPresented: $isConfirmationDialogPresented,
+                actions: {
+                    // If you want camera:
+                    Button("Camera") {
+                        imageSourceType = .camera
+                        isShowingImagePicker = true
+                    }
+                    // Or library:
+                    Button("Photo Library") {
+                        imageSourceType = .photoLibrary
+                        isShowingImagePicker = true
+                    }
+                },
+                message: {
+                    Text("Where do you want to pick an image from?")
+                }
+            )
+
+            .sheet(isPresented: $isShowingImagePicker, onDismiss: {
+                // Once the sheet is dismissed, see if we got a valid UIImage
+                if let inputImage {
+                    // Insert that image into the RichTextEditor at the cursor
+                    let cursorLocation = contextRT.selectedRange.location
+                    let insertion = RichTextInsertion<UIImage>.image(inputImage,
+                                                                     at: cursorLocation,
+                                                                     moveCursor: true)
+                    let action = RichTextAction.pasteImage(insertion)
+                    contextRT.handle(action)
+                    
+                    // Clear out the input
+                    self.inputImage = nil
+                }
+            }) {
+                switch imageSourceType {
+                case .camera:
+                    CameraImagePicker(image: $inputImage, sourceType: .camera)
+                case .photoLibrary:
+                    PhotoLibraryPicker(selectedImage: $inputImage)
+                }
+            }
+
             
             // check if the note is in the already, if so mark it as public
             //
