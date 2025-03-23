@@ -4,46 +4,43 @@ import CoreLocation
 import RichTextKit
 
 struct NoteEditorView: View {
-    let categories: [Category]
-    
-    @State private var selectedDate: Date?
-    @State private var attributedText: NSAttributedString
-
-    // Make location optional
-    @State private var location: CLLocationCoordinate2D?
-    @State private var weather: String
-    @State private var category: Category
-    @State var isPublic: Bool = false
-    @State var isAnnonymous: Bool = false
-    
-    // should not be "var" because inside a view,
-    // you won't be able to change it meaningfully inside a view
-    let note: Note?
-    let onSave: () -> Void
-    let isAuthenticated: Bool
-    
-    @Environment(\.colorScheme) var colorScheme
-
-    @Environment(\.presentationMode) var presentationMode
-    @Environment(\.managedObjectContext) private var context  // Core Data context
-
-    @State private var tapped: Bool = false
-    @State private var showingImagePicker = false
-    @State private var showingWeatherPicker = false
-    @State private var showingLocationPicker = false  // State to control the presentation of LocationPickerView
-    @State private var locationName: String?
-    @FocusState private var isTextEditorFocused: Bool
-
-    // RichTextKit context
-    @StateObject private var contextRT = RichTextContext()  // Renamed to avoid conflict with Core Data context
     
     enum Mode {
         case edit(Note)
         case create(Category)
     }
-    
-    // MARK: - Image Insertion
-    
+
+    // MARK: - Stored Properties
+
+    let mode: Mode
+    let categories: [Category]
+    let onSave: () -> Void
+    let isAuthenticated: Bool
+    private let note: Note?
+
+    // MARK: - States
+    @State private var selectedDate: Date?
+    @State private var attributedText: NSAttributedString
+    @State private var location: CLLocationCoordinate2D?
+    @State private var weather: String
+    @State private var category: Category
+    @State private var isPublic: Bool
+    @State private var isAnnonymous: Bool
+    @State private var locationName: String?
+
+    // Other states...
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.managedObjectContext) private var context
+
+    @State private var tapped = false
+    @State private var showingImagePicker = false
+    @State private var showingWeatherPicker = false
+    @State private var showingLocationPicker = false
+    @FocusState private var isTextEditorFocused: Bool
+
+    @StateObject private var contextRT = RichTextContext()
+
     enum ImageSourceType {
         case camera
         case photoLibrary
@@ -54,6 +51,7 @@ struct NoteEditorView: View {
     @State private var imageSourceType: ImageSourceType = .photoLibrary
     @State private var inputImage: UIImage?
 
+    // MARK: - Initializer
 
     init(
         mode: Mode,
@@ -61,49 +59,88 @@ struct NoteEditorView: View {
         isAuthenticated: Bool,
         onSave: @escaping () -> Void
     ) {
-        
+        // Set basic let properties directly
+        self.mode = mode
+        self.categories = categories
+        self.isAuthenticated = isAuthenticated
+        self.onSave = onSave
+
+        // Placeholder vars
+        var noteForEdit: Note?
+        var initialAttributedText = NSAttributedString()
+        var initialDate: Date?
+        var initialIsPublic = false
+        var initialIsAnnonymous = false
+        var initialLocation: CLLocationCoordinate2D?
+        var initialLocationName: String?
+        var initialWeather = ""
+        var initialCategory: Category
+
+        // Populate placeholders based on mode
         switch mode {
-        case .edit(let note):
-            self.init(
-                isAuthenticated : isAuthenticated,
-                note: note,
-                categories: categories,
-                category: note.category!,
-                onSave: onSave
-            )
+        case .edit(let existingNote):
+            noteForEdit = existingNote
+            initialAttributedText = existingNote.attributedText
+            initialDate = existingNote.date
+            initialIsPublic = existingNote.isPublic
+            initialIsAnnonymous = existingNote.isAnnonymous
+            initialLocation = existingNote.location?.coordinate
+            initialLocationName = existingNote.placeName
+            initialCategory = existingNote.category ?? categories.first!
+
         case .create(let category):
-            self.init(
-                isAuthenticated : isAuthenticated,
-                note: nil,
-                categories: categories,
-                category: category,
-                onSave: onSave
-            )
+            noteForEdit = nil
+            initialCategory = category
+        }
+
+        // Set state properties
+        _attributedText = State(initialValue: initialAttributedText)
+        _selectedDate = State(initialValue: initialDate)
+        _isPublic = State(initialValue: initialIsPublic)
+        _isAnnonymous = State(initialValue: initialIsAnnonymous)
+        _location = State(initialValue: initialLocation)
+        _locationName = State(initialValue: initialLocationName)
+        _weather = State(initialValue: initialWeather)
+        _category = State(initialValue: initialCategory)
+
+        // Set the private note property
+        self.note = noteForEdit
+    }
+
+    // MARK: - Computed Properties
+
+    private var navigationTitleText: String {
+        switch mode {
+        case .edit(_): return "Edit Note"
+        case .create(_): return "New Note"
         }
     }
 
-    private init(
-        isAuthenticated : Bool,
-        note: Note?,
-        categories: [Category],
-        category: Category,
-        onSave: @escaping () -> Void
-    ) {
-        
-        self.note = note
-        self.onSave = onSave
-        self.categories = categories
-        self.isAuthenticated = isAuthenticated
 
-        _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
-        _location = State(initialValue: note?.location?.coordinate)  // Make location optional
-        _weather = State(initialValue: "")  // Weather can be fetched or updated
-        _tapped = State(initialValue: note != nil)
-        _category = State(initialValue: category)
-        _selectedDate = State(initialValue: note?.date)
-        _isPublic = State(initialValue: note?.isPublic ?? false)
-        _locationName  = State(initialValue: note?.placeName)
-    }
+    
+    //
+//    private init(
+//        isAuthenticated : Bool,
+//        note: Note?,
+//        categories: [Category],
+//        category: Category,
+//        onSave: @escaping () -> Void
+//    ) {
+//        
+//        self.note = note
+//        self.onSave = onSave
+//        self.categories = categories
+//        self.isAuthenticated = isAuthenticated
+//
+//        _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
+//        _location = State(initialValue: note?.location?.coordinate)  // Make location optional
+//        _weather = State(initialValue: "")  // Weather can be fetched or updated
+//        _tapped = State(initialValue: note != nil)
+//        _category = State(initialValue: category)
+//        _selectedDate = State(initialValue: note?.date)
+//        _isPublic = State(initialValue: note?.isPublic ?? false)
+//        _locationName  = State(initialValue: note?.placeName)
+
 
     var body: some View {
         NavigationStack {
@@ -270,7 +307,7 @@ struct NoteEditorView: View {
             }
 
             .padding([.leading, .trailing])
-            .navigationBarTitle("Edit Note", displayMode: .inline)
+            .navigationBarTitle(navigationTitleText, displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") {
                 saveNote()
             })
@@ -308,6 +345,7 @@ struct NoteEditorView: View {
             }
         }
     }
+    
 
     private var categorySelectionView: some View {
         HStack(spacing: 17) {
@@ -482,6 +520,7 @@ func updateSupabase(note: Note) async {
         print("error: (\(error))")
     }
 }
+
 
 
 @MainActor
