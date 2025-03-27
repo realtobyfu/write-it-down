@@ -12,7 +12,13 @@
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
-
+    {
+      "target" : {
+        "containerPath" : "container:Write-It-Down.xcodeproj",
+        "identifier" : "3EDAA2902D80A20600CC0F91",
+        "name" : "Write-It-Down-localTests"
+      }
+    }
   ],
   "version" : 1
 }
