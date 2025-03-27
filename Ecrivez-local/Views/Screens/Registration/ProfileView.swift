@@ -99,7 +99,7 @@ struct ProfileView: View {
             if let note = selectedLocalNote {
                 NoteEditorView(
                     mode: .edit(note),
-                    categories: fetchCategories(),
+                    categories: fetchCategories(), context: context,
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: {
                         // Possibly re-fetch from supabase if needed

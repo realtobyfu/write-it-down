@@ -52,8 +52,7 @@ struct MyPublicNotesView: View {
                 NavigationLink(destination: {
                     NoteEditorView(
                         mode: .edit(localNote),
-                        categories: fetchCategories(), // Helper to pass categories
-                        isAuthenticated: authVM.isAuthenticated,
+                        categories: fetchCategories(), context: context,                        isAuthenticated: authVM.isAuthenticated,
                         onSave: { /* do any extra save logic if needed */ }
                     )
                 }) {

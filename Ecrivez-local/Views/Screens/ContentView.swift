@@ -183,7 +183,7 @@ struct ContentView: View {
 //            if let note = selectedNote {
                 NoteEditorView(
                     mode: .edit(note),
-                    categories: Array(categories),
+                    categories: Array(categories), context: context,
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: { saveContext() }
                 )
@@ -197,7 +197,7 @@ struct ContentView: View {
         }) {
             NoteEditorView(
                 mode: .create(selectedCategory!),
-                categories: Array(categories),
+                categories: Array(categories), context: context,
                 isAuthenticated: authVM.isAuthenticated,
                 onSave: { saveContext() }
             )
