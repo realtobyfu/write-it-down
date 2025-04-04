@@ -219,6 +219,7 @@ struct NoteEditorView: View {
             .onAppear {
                 // Overwrite text color for entire string
                 let mutable = NSMutableAttributedString(attributedString: viewModel.attributedText)
+                
                 let entireRange = NSRange(location: 0, length: mutable.length)
                 
                 // 1) Remove any existing foreground color

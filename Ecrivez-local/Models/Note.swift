@@ -5,7 +5,7 @@
 //  Created by Tobias Fu on 9/17/24.
 //
 
-// Note+Extensions.swift
+// Note+Extensions.swift/Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/NoteRepository.swift
 import Foundation
 import UIKit
 import CoreLocation
@@ -13,6 +13,7 @@ import CoreLocation
 extension Note {
     var attributedText: NSAttributedString {
         get {
+            // make sure that this is preserving the font
             guard let data = self.attributedTextData else {
                 return NSAttributedString(string: "")
             }
@@ -31,6 +32,7 @@ extension Note {
         }
         set {
             do {
+                // make sure that this conversion is working for the fonts/
                 let rtfData = try newValue.data(
                     from: NSRange(location: 0, length: newValue.length),
                     documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])

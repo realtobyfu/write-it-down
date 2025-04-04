@@ -9,11 +9,13 @@ import Testing
 import CoreData
 import Foundation
 @testable import Ecrivez_local
+import UIKit
+
+
 
 @Suite("Main tests")
 @MainActor
 struct Write_It_Down_localTests {
-
     @Test
     func testCreateMode() async throws {
         // 1) Set up an in-memory container
@@ -55,10 +57,41 @@ struct Write_It_Down_localTests {
         #expect(results.count == 1)
         let note = results.first!
         #expect(note.attributedText.string == "Hello from create mode!")
-        #expect(note.isPublic)
-        #expect(note.isAnnonymous)
+        #expect(!note.isPublic)
+        #expect(!note.isAnnonymous)
         #expect(note.date != nil)
         #expect(note.category != nil)
         
+    }
+}
+
+
+
+
+@Suite("Standalone Tests")
+struct standalone_tests {
+    @Test
+    func testFontDecoding() throws {
+        
+        let originalFont = UIFont(name: "Courier-Bold", size: 14)!
+        let originalString = NSAttributedString(string: "Testing font", attributes: [
+            .font: originalFont
+        ])
+        
+        print("Local Test - Original String:", originalString)
+        
+        let rtfData = try originalString.data(
+            from: NSRange(location: 0, length: originalString.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
+        
+        let decoded = try NSAttributedString(
+            data: rtfData,
+            options: [.documentType: NSAttributedString.DocumentType.rtf],
+            documentAttributes: nil
+        )
+
+        print("Local Test, Decoded:", decoded)
+        
+        #expect(originalString == decoded)
     }
 }

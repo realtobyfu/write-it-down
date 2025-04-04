@@ -38,7 +38,8 @@ struct MyPublicNotesView: View {
             .navigationTitle("My Public Notes")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
-                Task { await loadMyPublicNotes() }
+                Task {
+                    try await NoteRepository.shared.fetchMyPublicNotes() }
             }
         }
     }
@@ -49,29 +50,29 @@ struct MyPublicNotesView: View {
         // 1) Check if there's a matching local note in Core Data
         if let localNote = fetchLocalNote(with: supaNote.id) {
             // If the note is local, allow editing
-                NavigationLink(destination: {
-                    NoteEditorView(
-                        mode: .edit(localNote),
-                        categories: fetchCategories(), context: context,                        isAuthenticated: authVM.isAuthenticated,
-                        onSave: { /* do any extra save logic if needed */ }
-                    )
-                }) {
-                    PublicNoteRow(supaNote: supaNote)
-                }
-            } else {
+            NavigationLink(destination: {
+                NoteEditorView(
+                    mode: .edit(localNote),
+                    categories: fetchCategories(), context: context,                        isAuthenticated: authVM.isAuthenticated,
+                    onSave: { /* do any extra save logic if needed */ }
+                )
+            }) {
+                PublicNoteRow(supaNote: supaNote)
+            }
+        } else {
             // If no local note, just show a row that can be deleted from Supabase
-                HStack {
-                    PublicNoteRow(supaNote: supaNote)
-                    Spacer()
-                    Button(role: .destructive) {
-                        Task {
-                            await deleteFromSupabase(supaNote.id)
-                        }
-                    } label: {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
+            HStack {
+                PublicNoteRow(supaNote: supaNote)
+                Spacer()
+                Button(role: .destructive) {
+                    Task {
+                        try await NoteRepository.shared.deletePublicNote(supaNote.id)
                     }
+                } label: {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
                 }
+            }
         }
     }
     
@@ -100,52 +101,6 @@ struct MyPublicNotesView: View {
         } catch {
             print("Error fetching categories: \(error)")
             return []
-        }
-    }
-    
-    private func loadMyPublicNotes() async {
-        guard let userID = try? await SupabaseManager.shared.client.auth.user().id else {
-            errorMessage = "No user session found."
-            return
-        }
-        
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-        
-        do {
-            let notes: [SupabaseNote] = try await SupabaseManager.shared.client
-                .from("public_notes")
-                .select()
-                .eq("owner_id", value: userID) // Only the user's own notes
-                .order("date", ascending: false) // or "id"
-                .execute()
-                .value
-            
-            myNotes = notes
-        } catch {
-            print("Error loading user's public notes: \(error)")
-            errorMessage = "Failed to load your notes."
-        }
-    }
-    
-    private func deleteFromSupabase(_ noteID: UUID) async {
-        do {
-            try await SupabaseManager.shared.client
-                .from("public_notes")
-                .delete()
-                .eq("id", value: noteID)
-                .execute()
-            
-            // Remove from myNotes array
-            if let idx = myNotes.firstIndex(where: { $0.id == noteID }) {
-                myNotes.remove(at: idx)
-            }
-            print("Deleted from supabase successfully.")
-            
-        } catch {
-            print("Error deleting note in supabase: \(error)")
-            errorMessage = "Failed to delete note in Supabase."
         }
     }
 }

@@ -92,7 +92,7 @@ struct ProfileView: View {
         .navigationTitle("Your Profile")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task { await loadMyPublicNotes() }
+            Task { try await NoteRepository.shared.fetchMyPublicNotes() }
         }
         // Optional sheet for local note editing
         .sheet(isPresented: $showingNoteEditor) {
@@ -238,58 +238,58 @@ extension ProfileView {
                 Text(supaNote.content.prefix(40))
                 Spacer()
                 Button(role: .destructive) {
-                    Task { await deleteFromSupabase(supaNote.id) }
+                    Task { try await NoteRepository.shared.deletePublicNote(supaNote.id) }
                 } label: {
                     Image(systemName: "trash")
                 }
             }
         }
     }
-    
-    // MARK: Loading the User's Public Notes
-    private func loadMyPublicNotes() async {
-        guard let userID = try? await SupabaseManager.shared.client.auth.user().id else {
-            errorMessage = "No user session found."
-            return
-        }
-        
-        isLoadingMyNotes = true
-        errorMessage = nil
-        defer { isLoadingMyNotes = false }
-        
-        do {
-            let notes: [SupabaseNote] = try await SupabaseManager.shared.client
-                .from("public_notes")
-                .select()
-                .eq("owner_id", value: userID)
-                .order("date", ascending: false)
-                .execute()
-                .value
-            
-            myNotes = notes
-        } catch {
-            errorMessage = "Failed to load your public notes: \(error)"
-        }
-    }
-    
-    // MARK: Deleting a note from Supabase
-    private func deleteFromSupabase(_ noteID: UUID) async {
-        do {
-            try await SupabaseManager.shared.client
-                .from("public_notes")
-                .delete()
-                .eq("id", value: noteID)
-                .execute()
-            
-            // Remove from myNotes
-            if let idx = myNotes.firstIndex(where: { $0.id == noteID }) {
-                myNotes.remove(at: idx)
-            }
-        } catch {
-            errorMessage = "Error deleting note from Supabase: \(error)"
-        }
-    }
-    
+//    
+//    // MARK: Loading the User's Public Notes
+//    private func loadMyPublicNotes() async {
+//        guard let userID = try? await SupabaseManager.shared.client.auth.user().id else {
+//            errorMessage = "No user session found."
+//            return
+//        }
+//        
+//        isLoadingMyNotes = true
+//        errorMessage = nil
+//        defer { isLoadingMyNotes = false }
+//        
+//        do {
+//            let notes: [SupabaseNote] = try await SupabaseManager.shared.client
+//                .from("public_notes")
+//                .select()
+//                .eq("owner_id", value: userID)
+//                .order("date", ascending: false)
+//                .execute()
+//                .value
+//            
+//            myNotes = notes
+//        } catch {
+//            errorMessage = "Failed to load your public notes: \(error)"
+//        }
+//    }
+//    
+//    // MARK: Deleting a note from Supabase
+//    private func deleteFromSupabase(_ noteID: UUID) async {
+//        do {
+//            try await SupabaseManager.shared.client
+//                .from("public_notes")
+//                .delete()
+//                .eq("id", value: noteID)
+//                .execute()
+//            
+//            // Remove from myNotes
+//            if let idx = myNotes.firstIndex(where: { $0.id == noteID }) {
+//                myNotes.remove(at: idx)
+//            }
+//        } catch {
+//            errorMessage = "Error deleting note from Supabase: \(error)"
+//        }
+//    }
+//    
     // MARK: Local fetch
     private func fetchLocalNote(with id: UUID) -> Note? {
         let request = NSFetchRequest<Note>(entityName: "Note")

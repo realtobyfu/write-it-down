@@ -217,15 +217,12 @@ struct ContentView: View {
     private func deleteNote(at offsets: IndexSet) async {
         for index in offsets {
             let noteToDelete = displayedNotes[index]
-            let existInDB = await checkExistInDB(note: noteToDelete)
-
-            if existInDB {
+            if let noteID = noteToDelete.id {
                 do {
-                    _ = try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .delete()
-                        .eq("id", value: noteToDelete.id)
-                        .execute()
+                    let exists = await NoteRepository.shared.noteExistsInSupabase(noteID: noteID)
+                    if exists {
+                        try await NoteRepository.shared.deletePublicNote(noteID)
+                    }
                 } catch {
                     print("Error deleting note from Supabase: \(error)")
                 }
@@ -354,20 +351,20 @@ struct CategoryFilterView: View {
     }
 }
 
-
-// MARK: - Checking if note is in DB
-@MainActor
-func checkExistInDB(note: Note) async -> Bool {
-    do {
-        let response: [SupabaseNote] = try await SupabaseManager.shared.client
-            .from("public_notes")
-            .select()
-            .eq("id", value: note.id)
-            .execute()
-            .value
-        return !response.isEmpty
-    } catch {
-        print("error: (\(error))")
-        return false
-    }
-}
+//
+//// MARK: - Checking if note is in DB
+//@MainActor
+//func checkExistInDB(note: Note) async -> Bool {
+//    do {
+//        let response: [SupabaseNote] = try await SupabaseManager.shared.client
+//            .from("public_notes")
+//            .select()
+//            .eq("id", value: note.id)
+//            .execute()
+//            .value
+//        return !response.isEmpty
+//    } catch {
+//        print("error: (\(error))")
+//        return false
+//    }
+//}

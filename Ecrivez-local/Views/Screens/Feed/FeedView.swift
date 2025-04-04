@@ -73,12 +73,7 @@
             do {
                 // Suppose your Supabase table is "public_notes"
                 // and the columns are: id (uuid), content(text), date, etc.
-                publicNotes = try await SupabaseManager.shared.client
-                    .from("public_notes")
-                    .select("id, owner_id, category_id, content, date, locationLongitude, locationLatitude, colorString, symbol, isAnnonymous, profiles (username)")
-                    .order("created_at", ascending: false)
-                    .execute()
-                    .value
+                publicNotes = try await NoteRepository.shared.fetchAllPublicNotes()
             } catch {
                 print("Error loading public notes: \(error)")
             }

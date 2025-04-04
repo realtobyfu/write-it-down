@@ -71,78 +71,90 @@ class NoteEditorViewModel: ObservableObject {
             print("Fetched back from context: \(noteToSave.attributedText)")
 
             if isAuthenticated {
-                await updateSupabase(note: noteToSave)
+                if isPublic {
+                    // Insert or update in Supabase
+                    let user = try await SupabaseManager.shared.client.auth.user()
+                    try await NoteRepository.shared.upsertPublicNote(noteToSave, ownerID: user.id)
+                } else {
+                    // If user made it private, remove from Supabase if it existed
+                    if let noteID = noteToSave.id {
+                        let exists = await NoteRepository.shared.noteExistsInSupabase(noteID: noteID)
+                        if exists {
+                            try await NoteRepository.shared.deletePublicNote(noteID)
+                        }
+                    }
+                }
             }
         } catch {
             print("Failed to save note:", error)
         }
     }
 
-    // MARK: - Supabase Integration
-    private func updateSupabase(note: Note) async {
-        do {
-            let user = try await SupabaseManager.shared.client.auth.user()
-            let rtfData = try note.attributedText.data(
-                from: NSRange(location: 0, length: note.attributedText.length),
-                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
-            )
-            let base64RTF = rtfData.base64EncodedString()
-
-            let supaNote = SupabaseNote(
-                id: note.id!,
-                owner_id: user.id,
-                category_id: note.category?.id,
-                content: note.attributedText.string,
-                rtf_content: base64RTF,
-                date: note.date,
-                locationName: note.placeName,
-                locationLatitude: note.locationLatitude?.stringValue,
-                locationLongitude: note.locationLongitude?.stringValue,
-                colorString: note.category?.colorString ?? "",
-                symbol: note.category?.symbol ?? "",
-                isAnnonymous: note.isAnnonymous
-            )
-
-            if note.isPublic {
-                if await checkExistInDB(note: note) {
-                    try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .update(supaNote)
-                        .eq("id", value: note.id!)
-                        .execute()
-                } else {
-                    try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .insert(supaNote)
-                        .execute()
-                }
-            } else {
-                if await checkExistInDB(note: note) {
-                    try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .delete()
-                        .eq("id", value: note.id!)
-                        .execute()
-                }
-            }
-        } catch {
-            print("Supabase error:", error)
-        }
-    }
-
-    private func checkExistInDB(note: Note) async -> Bool {
-        guard let id = note.id else { return false }
-        do {
-            let response: [SupabaseNote] = try await SupabaseManager.shared.client
-                .from("public_notes")
-                .select()
-                .eq("id", value: id)
-                .execute()
-                .value
-            return !response.isEmpty
-        } catch {
-            print("Check existence error:", error)
-            return false
-        }
-    }
+//    // MARK: - Supabase Integration
+//    private func updateSupabase(note: Note) async {
+//        do {
+//            let user = try await SupabaseManager.shared.client.auth.user()
+//            let rtfData = try note.attributedText.data(
+//                from: NSRange(location: 0, length: note.attributedText.length),
+//                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+//            )
+//            let base64RTF = rtfData.base64EncodedString()
+//
+//            let supaNote = SupabaseNote(
+//                id: note.id!,
+//                owner_id: user.id,
+//                category_id: note.category?.id,
+//                content: note.attributedText.string,
+//                rtf_content: base64RTF,
+//                date: note.date,
+//                locationName: note.placeName,
+//                locationLatitude: note.locationLatitude?.stringValue,
+//                locationLongitude: note.locationLongitude?.stringValue,
+//                colorString: note.category?.colorString ?? "",
+//                symbol: note.category?.symbol ?? "",
+//                isAnnonymous: note.isAnnonymous
+//            )
+//
+//            if note.isPublic {
+//                if await checkExistInDB(note: note) {
+//                    try await SupabaseManager.shared.client
+//                        .from("public_notes")
+//                        .update(supaNote)
+//                        .eq("id", value: note.id!)
+//                        .execute()
+//                } else {
+//                    try await SupabaseManager.shared.client
+//                        .from("public_notes")
+//                        .insert(supaNote)
+//                        .execute()
+//                }
+//            } else {
+//                if await checkExistInDB(note: note) {
+//                    try await SupabaseManager.shared.client
+//                        .from("public_notes")
+//                        .delete()
+//                        .eq("id", value: note.id!)
+//                        .execute()
+//                }
+//            }
+//        } catch {
+//            print("Supabase error:", error)
+//        }
+//    }
+//
+//    private func checkExistInDB(note: Note) async -> Bool {
+//        guard let id = note.id else { return false }
+//        do {
+//            let response: [SupabaseNote] = try await SupabaseManager.shared.client
+//                .from("public_notes")
+//                .select()
+//                .eq("id", value: id)
+//                .execute()
+//                .value
+//            return !response.isEmpty
+//        } catch {
+//            print("Check existence error:", error)
+//            return false
+//        }
+//    }
 }
