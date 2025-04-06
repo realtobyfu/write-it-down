@@ -122,3 +122,122 @@ class NoteRepository {
         return supaNote
     }
 }
+
+// Add these methods to your existing NoteRepository.swift
+@MainActor
+extension NoteRepository {
+    // MARK: - Likes Methods
+    
+    /// Fetch the count of likes for a specific note
+    func fetchLikeCount(noteID: UUID) async throws -> Int {
+        let response: [LikeModel] = try await client
+            .from("note_likes")
+            .select()
+            .eq("note_id", value: noteID)
+            .execute()
+            .value
+        
+        return response.count
+    }
+    
+    /// Check if the current user has liked a specific note
+    func checkUserLikedNote(noteID: UUID) async -> Bool {
+        guard let currentUserID = try? await client.auth.user().id else {
+            return false
+        }
+        
+        do {
+            let response: [LikeModel] = try await client
+                .from("note_likes")
+                .select()
+                .eq("note_id", value: noteID)
+                .eq("user_id", value: currentUserID)
+                .execute()
+                .value
+            
+            return !response.isEmpty
+        } catch {
+            print("Error checking if user liked note: \(error)")
+            return false
+        }
+    }
+    
+    /// Toggle a like for the current user on a specific note
+    func toggleLike(noteID: UUID) async throws {
+        guard let currentUserID = try? await client.auth.user().id else {
+            throw NSError(domain: "NoteRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
+        }
+        
+        // Check if the user already liked this note
+        let hasLiked = await checkUserLikedNote(noteID: noteID)
+        
+        if hasLiked {
+            // Unlike: Delete the existing like
+            try await client
+                .from("note_likes")
+                .delete()
+                .eq("note_id", value: noteID)
+                .eq("user_id", value: currentUserID)
+                .execute()
+        } else {
+            // Like: Insert a new like
+            let like = ["note_id": noteID, "user_id": currentUserID]
+            try await client
+                .from("note_likes")
+                .insert(like)
+                .execute()
+        }
+    }
+    
+    // MARK: - Comments Methods
+    
+    /// Fetch comments for a specific note
+    func fetchComments(noteID: UUID) async throws -> [CommentModel] {
+        let comments: [CommentModel] = try await client
+            .from("note_comments")
+            .select("*, profiles(username, display_name, profile_photo_url)")
+            .eq("note_id", value: noteID)
+            .order("created_at")
+            .execute()
+            .value
+        
+        return comments
+    }
+    
+//    /// Add a comment to a note
+//    func addComment(noteID: UUID, content: String) async throws {
+//        guard let currentUserID = try? await client.auth.user().id else {
+//            throw NSError(domain: "NoteRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
+//        }
+//        
+//        // Create the comment
+//        let comment = [
+//            "note_id": noteID,
+//            "user_id": currentUserID,
+//            "content": content
+//        ]
+//        
+//        try await client
+//            .from("note_comments")
+//            .insert(comment)
+//            .execute()
+//    }
+//    
+    /// Update a comment
+    func updateComment(commentID: UUID, newContent: String) async throws {
+        try await client
+            .from("note_comments")
+            .update(["content": newContent, "updated_at": "now()"])
+            .eq("id", value: commentID)
+            .execute()
+    }
+    
+    /// Delete a comment
+    func deleteComment(commentID: UUID) async throws {
+        try await client
+            .from("note_comments")
+            .delete()
+            .eq("id", value: commentID)
+            .execute()
+    }
+}
