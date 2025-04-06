@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct SuggestFeatureView: View {
-    @Environment(\EnvironmentValues.presentationMode) private var presentationMode
+    @Environment(\.presentationMode) private var presentationMode
     @State private var featureTitle: String = ""
     @State private var featureDescription: String = ""
     @State private var email: String = ""
     @State private var showConfirmation = false
+    @State private var showErrorAlert = false
+    @State private var errorMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -33,7 +35,7 @@ struct SuggestFeatureView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Submit") {
-                        submitSuggestion()
+                        Task { await submitSuggestion() }
                     }
                     .disabled(featureTitle.trimmingCharacters(in: .whitespaces).isEmpty || featureDescription.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
@@ -45,19 +47,31 @@ struct SuggestFeatureView: View {
                 }
             }
             .alert("Thanks for your suggestion!", isPresented: $showConfirmation) {
-                Button("OK") {
-                    presentationMode.wrappedValue.dismiss()
-                }
+                Button("OK") { presentationMode.wrappedValue.dismiss() }
+            }
+            .alert("Error", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(errorMessage)
             }
         }
     }
 
-    private func submitSuggestion() {
-        // Replace with your actual submission logic (e.g., send to Supabase, Firebase, or email)
-        print("Feature Suggested: \(featureTitle) - \(featureDescription) - \(email)")
+    private func submitSuggestion() async {
+        let suggestion = FeatureSuggestion(
+            id: nil, // Supabase generates this automatically
+            title: featureTitle,
+            description: featureDescription,
+            email: email.isEmpty ? nil : email
+        )
 
-        // Show confirmation
-        showConfirmation = true
+        do {
+            try await SupabaseManager.shared.submitFeatureSuggestion(suggestion)
+            showConfirmation = true
+        } catch {
+            errorMessage = error.localizedDescription
+            showErrorAlert = true
+        }
     }
 }
 
@@ -67,4 +81,3 @@ struct SuggestFeatureView_Previews: PreviewProvider {
         SuggestFeatureView()
     }
 }
-
