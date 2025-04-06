@@ -9,6 +9,8 @@ import SwiftUI
 import _PhotosUI_SwiftUI
 import Storage
 import CoreData
+import UIKit
+import PhotosUI
 
 struct ProfileView: View {
     
@@ -16,16 +18,28 @@ struct ProfileView: View {
     
     @State private var isEditing = false
     
-    // The user’s profile that we’re displaying or editing
+    // The user's profile that we're displaying or editing
     @State var editedProfile: Profile
     
+    // For picking a new profile photo
     // For picking a new profile photo
     @State private var selectedImageItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
     
+    // For camera/photo library selection
+    @State private var isShowingImagePicker = false
+    @State private var isConfirmationDialogPresented = false
+    @State private var imageSourceType: ImageSourceType = .photoLibrary
+    
+    enum ImageSourceType {
+        case camera
+        case photoLibrary
+    }
+    
     // For error / saving state
     @State private var errorMessage: String?
     @State private var isSaving = false
+    @State private var isUploading = false
 
     // MARK: - MyPublicNotes states
     @Environment(\.managedObjectContext) private var context
@@ -92,7 +106,7 @@ struct ProfileView: View {
         .navigationTitle("Your Profile")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task { try await NoteRepository.shared.fetchMyPublicNotes() }
+            Task { try await loadMyPublicNotes() }
         }
         // Optional sheet for local note editing
         .sheet(isPresented: $showingNoteEditor) {
@@ -106,6 +120,18 @@ struct ProfileView: View {
                     }
                 )
             }
+        }
+    }
+    
+    // MARK: - Load Public Notes
+    private func loadMyPublicNotes() async throws {
+        isLoadingMyNotes = true
+        defer { isLoadingMyNotes = false }
+        
+        do {
+            myNotes = try await NoteRepository.shared.fetchMyPublicNotes()
+        } catch {
+            errorMessage = "Error loading notes: \(error.localizedDescription)"
         }
     }
 }
@@ -159,6 +185,14 @@ extension ProfileView {
                     .frame(width: 120, height: 120)
                     .foregroundColor(.gray)
             }
+            
+            // Show uploading indicator if applicable
+            if isUploading {
+                ProgressView()
+                    .frame(width: 120, height: 120)
+                    .background(Color.black.opacity(0.3))
+                    .clipShape(Circle())
+            }
         }
     }
     
@@ -173,8 +207,42 @@ extension ProfileView {
             .textFieldStyle(.roundedBorder)
             .padding(.horizontal)
         
-        // Photo picker for changing the profile pic
-        PhotosPicker("Select Photo", selection: $selectedImageItem, matching: .images)
+        // Button to show image source options
+        Button("Change Profile Photo") {
+            isConfirmationDialogPresented = true
+        }
+        .confirmationDialog(
+            "Select Image Source",
+            isPresented: $isConfirmationDialogPresented,
+            actions: {
+                // If you want camera:
+                Button("Camera") {
+                    imageSourceType = .camera
+                    isShowingImagePicker = true
+                }
+                // Or library:
+                Button("Photo Library") {
+                    imageSourceType = .photoLibrary
+                    isShowingImagePicker = true
+                }
+            },
+            message: {
+                Text("Where do you want to pick an image from?")
+            }
+        )
+        .sheet(isPresented: $isShowingImagePicker, onDismiss: {
+            // Handle after picker is dismissed if needed
+        }) {
+            switch imageSourceType {
+            case .camera:
+                CameraImagePicker(imageData: $selectedImageData, sourceType: .camera)
+            case .photoLibrary:
+                PhotoLibraryPicker(selectedImage: $selectedImageData)
+            }
+        }
+        
+        // Still keep PhotosPicker as an alternate option if preferred
+        PhotosPicker("Or Select from Photos App", selection: $selectedImageItem, matching: .images)
             .onChange(of: selectedImageItem) { newItem in
                 Task {
                     if let data = try? await newItem?.loadTransferable(type: Data.self) {
@@ -189,12 +257,13 @@ extension ProfileView {
                 Task { await saveProfileEdits() }
             }
             .buttonStyle(.borderedProminent)
-            .disabled(isSaving)
+            .disabled(isSaving || isUploading)
             
             Button("Cancel") {
                 cancelEditing()
             }
             .buttonStyle(.bordered)
+            .disabled(isSaving || isUploading)
         }
     }
     
@@ -245,51 +314,7 @@ extension ProfileView {
             }
         }
     }
-//    
-//    // MARK: Loading the User's Public Notes
-//    private func loadMyPublicNotes() async {
-//        guard let userID = try? await SupabaseManager.shared.client.auth.user().id else {
-//            errorMessage = "No user session found."
-//            return
-//        }
-//        
-//        isLoadingMyNotes = true
-//        errorMessage = nil
-//        defer { isLoadingMyNotes = false }
-//        
-//        do {
-//            let notes: [SupabaseNote] = try await SupabaseManager.shared.client
-//                .from("public_notes")
-//                .select()
-//                .eq("owner_id", value: userID)
-//                .order("date", ascending: false)
-//                .execute()
-//                .value
-//            
-//            myNotes = notes
-//        } catch {
-//            errorMessage = "Failed to load your public notes: \(error)"
-//        }
-//    }
-//    
-//    // MARK: Deleting a note from Supabase
-//    private func deleteFromSupabase(_ noteID: UUID) async {
-//        do {
-//            try await SupabaseManager.shared.client
-//                .from("public_notes")
-//                .delete()
-//                .eq("id", value: noteID)
-//                .execute()
-//            
-//            // Remove from myNotes
-//            if let idx = myNotes.firstIndex(where: { $0.id == noteID }) {
-//                myNotes.remove(at: idx)
-//            }
-//        } catch {
-//            errorMessage = "Error deleting note from Supabase: \(error)"
-//        }
-//    }
-//    
+    
     // MARK: Local fetch
     private func fetchLocalNote(with id: UUID) -> Note? {
         let request = NSFetchRequest<Note>(entityName: "Note")
@@ -328,11 +353,26 @@ extension ProfileView {
         defer { isSaving = false }
 
         do {
-//            // 1) If using Supabase Storage for the new photo, upload and get URL:
-//            if let data = selectedImageData {
-//                let newImageURL = try await uploadToSupabaseStorage(data)
-//                editedProfile.profile_photo_url = newImageURL
-//            }
+            // 1) If using Supabase Storage for the new photo, upload and get URL:
+            if let data = selectedImageData {
+                isUploading = true
+                do {
+                    // Use StorageManager to upload the image
+                    let imagePath = try await StorageManager.shared.uploadProfileImage(UIImage(data: data)!)
+                    
+                    // Get a public URL for the image
+                    let imageUrl = try StorageManager.shared.getPublicURL(for: imagePath)
+                    
+                    // Update the profile with the new URL
+                    editedProfile.profile_photo_url = imageUrl.absoluteString
+                    
+                    isUploading = false
+                } catch {
+                    isUploading = false
+                    errorMessage = "Failed to upload profile image: \(error.localizedDescription)"
+                    return
+                }
+            }
             
             // 2) Prepare payload for updating in DB
             let updatePayload = ProfileUpdateRequest(
@@ -364,27 +404,6 @@ extension ProfileView {
         errorMessage = nil
         selectedImageData = nil
     }
-//    
-//    /// Example function for uploading the raw image data to Supabase storage
-//    /// and returning a URL string. You'll need to adapt this to your project.
-//    private func uploadToSupabaseStorage(_ data: Data) async throws -> String {
-//        // Generate a unique filename
-//        let fileName = "\(editedProfile.id)_\(UUID().uuidString).jpg"
-//        
-//        // 1) Upload to your "avatars" (example) bucket
-//        let response = try await SupabaseManager.shared.client
-//            .storage
-//            .from("avatars") // your bucket name
-//            .upload(
-//                fileName,
-//                data: data
-//            )
-//        
-//        // 2) If your bucket is public, build a public URL
-//        // Replace {SUPABASE_URL} with your actual project ref
-//        let url = "https://YOUR-PROJECT-REF.supabase.co/storage/v1/object/public/avatars/\(fileName)"
-//        return url
-//    }
 }
 
 // MARK: - For the Update Payload
