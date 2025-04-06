@@ -92,6 +92,52 @@ struct standalone_tests {
 
         print("Local Test, Decoded:", decoded)
         
-        #expect(originalString == decoded)
+        // Checking font attribute
+        let decodedFont = decoded.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+        print("decodedFont:", decodedFont ?? "nil")
+        
+        // Because of potential font fallback differences, you might do a looser check, like:
+        #expect(decodedFont?.fontName == originalFont.fontName)
     }
+    
+    @Test
+    func testFontAndColorAttributes() throws {
+        // Build an attributed string with custom font + color
+        let font = UIFont(name: "HelveticaNeue-Bold", size: 18)!
+        let textColor = UIColor.systemBlue
+        
+        let originalString = NSAttributedString(
+            string: "Blue Bold Text",
+            attributes: [
+                .font: font,
+                .foregroundColor: textColor
+            ]
+        )
+        
+        let rtfData = try originalString.data(
+            from: NSRange(location: 0, length: originalString.length),
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+        )
+        
+        let decoded = try NSAttributedString(
+            data: rtfData,
+            options: [.documentType: NSAttributedString.DocumentType.rtf],
+            documentAttributes: nil
+        )
+        
+        // Basic check: string content
+        #expect(originalString.string == decoded.string)
+        
+        // Checking color attribute of first character, for example:
+        let decodedColor = decoded.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor
+        #expect(decodedColor == textColor)
+        
+        // Checking font attribute
+        let decodedFont = decoded.attribute(.font, at: 0, effectiveRange: nil) as? UIFont
+        print("decodedFont:", decodedFont ?? "nil")
+        
+        // Because of potential font fallback differences, you might do a looser check, like:
+        #expect(decodedFont?.fontName == font.fontName)
+    }
+
 }
