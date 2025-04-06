@@ -204,25 +204,31 @@ extension NoteRepository {
         return comments
     }
     
-//    /// Add a comment to a note
-//    func addComment(noteID: UUID, content: String) async throws {
-//        guard let currentUserID = try? await client.auth.user().id else {
-//            throw NSError(domain: "NoteRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
-//        }
-//        
-//        // Create the comment
-//        let comment = [
-//            "note_id": noteID,
-//            "user_id": currentUserID,
-//            "content": content
-//        ]
-//        
-//        try await client
-//            .from("note_comments")
-//            .insert(comment)
-//            .execute()
-//    }
-//    
+    /// Add a comment to a note
+    func addComment(noteID: UUID, content: String) async throws {
+        guard let currentUserID = try? await client.auth.user().id else {
+            throw NSError(domain: "NoteRepository", code: 401, userInfo: [NSLocalizedDescriptionKey: "User not authenticated"])
+        }
+        
+        // Create a properly structured comment object that conforms to Encodable
+        struct NewComment: Encodable {
+            let note_id: UUID
+            let user_id: UUID
+            let content: String
+        }
+        
+        let comment = NewComment(
+            note_id: noteID,
+            user_id: currentUserID,
+            content: content
+        )
+        
+        try await client
+            .from("note_comments")
+            .insert(comment)
+            .execute()
+    }
+    
     /// Update a comment
     func updateComment(commentID: UUID, newContent: String) async throws {
         try await client

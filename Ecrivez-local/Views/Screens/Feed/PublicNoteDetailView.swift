@@ -10,6 +10,7 @@ import SwiftUI
 import CoreLocation
 
 struct PublicNoteDetailView: View {
+    
     let note: SupabaseNote
     let isAuthenticated: Bool
     let currentUserID: UUID?
@@ -24,8 +25,11 @@ struct PublicNoteDetailView: View {
     @State private var showingComments = false
     
     // Sample comments for UI preview
-    @State private var comments: [CommentPreview] = []
-    
+    @State private var comments: [CommentModel] = []
+    @State private var isLoadingComments = false
+    @State private var showAddCommentError = false
+    @State private var errorMessage = ""
+
     struct CommentPreview: Identifiable {
         let id = UUID()
         let username: String
@@ -96,7 +100,7 @@ struct PublicNoteDetailView: View {
             reverseGeocodeIfNeeded()
             Task {
                 await loadLikeState()
-                loadSampleComments() // In real app, fetch from database
+                await loadComments()
             }
         }
     }
@@ -224,9 +228,9 @@ struct PublicNoteDetailView: View {
                     
                     Button {
                         if !commentText.isEmpty {
-                            // In a real app, you would save the comment
-                            print("Post comment: \(commentText)")
-                            commentText = ""
+                            Task {
+                                await postComment()
+                            }
                         }
                     } label: {
                         Text("Post")
@@ -237,14 +241,29 @@ struct PublicNoteDetailView: View {
             }
             
             // Comments List
-            if comments.isEmpty {
+            if isLoadingComments {
+                ProgressView("Loading comments...")
+            } else if comments.isEmpty {
                 Text("No comments yet")
                     .italic()
                     .foregroundColor(.secondary)
                     .padding(.top)
             } else {
                 ForEach(comments) { comment in
-                    CommentView(comment: comment)
+                    CommentRowView(
+                        comment: comment,
+                        isOwner: comment.user_id == currentUserID,
+                        onDelete: {
+                            Task {
+                                await deleteComment(commentID: comment.id)
+                            }
+                        },
+                        onEdit: { newContent in
+                            Task {
+                                await editComment(commentID: comment.id, newContent: newContent)
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -252,6 +271,13 @@ struct PublicNoteDetailView: View {
         .background(Color.white)
         .cornerRadius(16)
         .shadow(color: Color.black.opacity(0.1), radius: 5)
+        .alert(isPresented: $showAddCommentError) {
+            Alert(
+                title: Text("Error"),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("OK"))
+            )
+        }
     }
     
     // MARK: - Comment View
@@ -315,12 +341,29 @@ struct PublicNoteDetailView: View {
         return df.string(from: date)
     }
     
-    private func loadLikeState() async {
-        // Mock data for UI preview
-        hasLiked = true
-        likeCount = 42
-    }
     
+    
+    private func loadLikeState() async {
+        do {
+            // Get the current like count
+            likeCount = try await NoteRepository.shared.fetchLikeCount(noteID: note.id)
+            
+            // Check if the current user has liked this note
+            if isAuthenticated {
+                hasLiked = await NoteRepository.shared.checkUserLikedNote(noteID: note.id)
+            } else {
+                hasLiked = false
+            }
+        } catch {
+            print("Error loading like state: \(error)")
+        }
+    }
+//    private func loadLikeState() async {
+//        // Mock data for UI preview
+//        hasLiked = true
+//        likeCount = 42
+//    }
+//    
     private func toggleLike() {
         hasLiked.toggle()
         likeCount += hasLiked ? 1 : -1
@@ -338,28 +381,87 @@ struct PublicNoteDetailView: View {
     }
     
     private func updateDatabaseLike() async {
-        // Database update logic would go here
+        do {
+            guard isAuthenticated else {
+                // Handle unauthenticated user
+                return
+            }
+            
+            try await NoteRepository.shared.toggleLike(noteID: note.id)
+        } catch {
+            // Handle error (perhaps show an alert)
+            print("Error toggling like: \(error)")
+        }
     }
     
-    private func loadSampleComments() {
-        // Create some sample comments for preview
-        comments = [
-            CommentPreview(
-                username: "sarah",
-                text: "This is really insightful, thanks for sharing!",
-                timestamp: Date().addingTimeInterval(-3600) // 1 hour ago
-            ),
-            CommentPreview(
-                username: "alex",
-                text: "I've been thinking about this topic lately. Great perspective.",
-                timestamp: Date().addingTimeInterval(-86400) // 1 day ago
-            ),
-            CommentPreview(
-                username: "jordan",
-                text: "Have you considered looking at it from another angle? Would be interesting to discuss.",
-                timestamp: Date().addingTimeInterval(-259200) // 3 days ago
-            )
-        ]
+    private func postComment() async {
+        guard !commentText.isEmpty else { return }
+        
+        do {
+            // Add the comment to the database
+            try await NoteRepository.shared.addComment(noteID: note.id, content: commentText)
+            
+            // Refresh comments
+            await loadComments()
+            
+            // Clear the input field
+            commentText = ""
+        } catch {
+            errorMessage = "Failed to post comment: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
+    }
+
+    private func loadComments() async {
+        isLoadingComments = true
+        defer { isLoadingComments = false }
+        
+        do {
+            comments = try await NoteRepository.shared.fetchComments(noteID: note.id)
+        } catch {
+            errorMessage = "Failed to load comments: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
+    }
+//    private func loadSampleComments() {
+//        // Create some sample comments for preview
+//        comments = [
+//            CommentPreview(
+//                username: "sarah",
+//                text: "This is really insightful, thanks for sharing!",
+//                timestamp: Date().addingTimeInterval(-3600) // 1 hour ago
+//            ),
+//            CommentPreview(
+//                username: "alex",
+//                text: "I've been thinking about this topic lately. Great perspective.",
+//                timestamp: Date().addingTimeInterval(-86400) // 1 day ago
+//            ),
+//            CommentPreview(
+//                username: "jordan",
+//                text: "Have you considered looking at it from another angle? Would be interesting to discuss.",
+//                timestamp: Date().addingTimeInterval(-259200) // 3 days ago
+//            )
+//        ]
+//    }
+    
+    private func deleteComment(commentID: UUID) async {
+        do {
+            try await NoteRepository.shared.deleteComment(commentID: commentID)
+            await loadComments()
+        } catch {
+            errorMessage = "Failed to delete comment: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
+    }
+
+    private func editComment(commentID: UUID, newContent: String) async {
+        do {
+            try await NoteRepository.shared.updateComment(commentID: commentID, newContent: newContent)
+            await loadComments()
+        } catch {
+            errorMessage = "Failed to update comment: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
     }
     
     private func reverseGeocodeIfNeeded() {
