@@ -1,10 +1,3 @@
-////
-////  EnterUsernameView.swift
-////  Ecrivez-local
-////
-////  Created by Tobias Fu on 12/23/24.
-////
-//
 import SwiftUI
 import _PhotosUI_SwiftUI
 import Storage
@@ -22,19 +15,12 @@ struct ProfileView: View {
     @State var editedProfile: Profile
     
     // For picking a new profile photo
-    // For picking a new profile photo
-    @State private var selectedImageItem: PhotosPickerItem?
     @State private var selectedImageData: Data?
+    @State private var selectedImageItem: PhotosPickerItem?  // Add this back
     
-    // For camera/photo library selection
-    @State private var isShowingImagePicker = false
+    // For camera selection
+    @State private var isShowingCameraPicker = false
     @State private var isConfirmationDialogPresented = false
-    @State private var imageSourceType: ImageSourceType = .photoLibrary
-    
-    enum ImageSourceType {
-        case camera
-        case photoLibrary
-    }
     
     // For error / saving state
     @State private var errorMessage: String?
@@ -64,7 +50,7 @@ struct ProfileView: View {
                     staticProfileFields
                 }
                 
-                Button ("Log out") {
+                Button("Log out") {
                     authVM.signOut()
                 }
                 .buttonStyle(.borderedProminent)
@@ -84,9 +70,6 @@ struct ProfileView: View {
                     
                     if isLoadingMyNotes {
                         ProgressView("Loading your notes...")
-                    } else if let errorMessage {
-                        Text("Error loading notes: \(errorMessage)")
-                            .foregroundColor(.red)
                     } else if myNotes.isEmpty {
                         Text("No public notes found.")
                             .foregroundColor(.gray)
@@ -121,6 +104,16 @@ struct ProfileView: View {
                 )
             }
         }
+        // Camera picker sheet
+        .sheet(isPresented: $isShowingCameraPicker, onDismiss: {
+            if let imageData = selectedImageData {
+                print("Camera picker dismissed with \(imageData.count) bytes of image data")
+            } else {
+                print("Camera picker dismissed without setting image data")
+            }
+        }) {
+            CameraImagePicker(imageData: $selectedImageData, sourceType: .camera)
+        }
     }
     
     // MARK: - Load Public Notes
@@ -138,7 +131,6 @@ struct ProfileView: View {
 
 // MARK: - Subviews & Helpers
 extension ProfileView {
-    
     // MARK: Profile Photo
     @ViewBuilder
     var profilePhotoSection: some View {
@@ -151,6 +143,9 @@ extension ProfileView {
                     .scaledToFill()
                     .frame(width: 120, height: 120)
                     .clipShape(Circle())
+                    .onAppear {
+                        print("Displaying newly selected image: \(selectedImageData.count) bytes")
+                    }
             }
             else if let profilePhotoUrl = editedProfile.profile_photo_url,
                     let url = URL(string: profilePhotoUrl) {
@@ -166,12 +161,15 @@ extension ProfileView {
                             .scaledToFill()
                             .frame(width: 120, height: 120)
                             .clipShape(Circle())
-                    case .failure:
+                    case .failure(let error):
                         Image(systemName: "person.crop.circle")
                             .resizable()
                             .scaledToFill()
                             .frame(width: 120, height: 120)
                             .foregroundColor(.gray)
+                            .onAppear {
+                                print("Failed to load profile image URL: \(error)")
+                            }
                     @unknown default:
                         EmptyView()
                     }
@@ -194,6 +192,15 @@ extension ProfileView {
                     .clipShape(Circle())
             }
         }
+        .overlay(
+            Group {
+                if isEditing {
+                    Circle()
+                        .stroke(Color.blue, lineWidth: 3)
+                        .frame(width: 120, height: 120)
+                }
+            }
+        )
     }
     
     // MARK: Editing Fields
@@ -207,49 +214,38 @@ extension ProfileView {
             .textFieldStyle(.roundedBorder)
             .padding(.horizontal)
         
-        // Button to show image source options
-        Button("Change Profile Photo") {
-            isConfirmationDialogPresented = true
-        }
-        .confirmationDialog(
-            "Select Image Source",
-            isPresented: $isConfirmationDialogPresented,
-            actions: {
-                // If you want camera:
-                Button("Camera") {
-                    imageSourceType = .camera
-                    isShowingImagePicker = true
-                }
-                // Or library:
-                Button("Photo Library") {
-                    imageSourceType = .photoLibrary
-                    isShowingImagePicker = true
-                }
-            },
-            message: {
-                Text("Where do you want to pick an image from?")
+        // Use a combination of confirmation dialog for camera and PhotosPicker for library
+        VStack(spacing: 12) {
+            Button("Change Profile Photo") {
+                isConfirmationDialogPresented = true
             }
-        )
-        .sheet(isPresented: $isShowingImagePicker, onDismiss: {
-            // Handle after picker is dismissed if needed
-        }) {
-            switch imageSourceType {
-            case .camera:
-                CameraImagePicker(imageData: $selectedImageData, sourceType: .camera)
-            case .photoLibrary:
-                PhotoLibraryPicker(selectedImage: $selectedImageData)
-            }
-        }
-        
-        // Still keep PhotosPicker as an alternate option if preferred
-        PhotosPicker("Or Select from Photos App", selection: $selectedImageItem, matching: .images)
-            .onChange(of: selectedImageItem) { newItem in
-                Task {
-                    if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                        selectedImageData = data
+            .confirmationDialog(
+                "Select Image Source",
+                isPresented: $isConfirmationDialogPresented,
+                actions: {
+                    Button("Take Photo") {
+                        isShowingCameraPicker = true
+                    }
+                    
+                    // Instead of a button for photo library, we'll use the PhotosPicker below
+                    Button("Cancel", role: .cancel) { }
+                },
+                message: {
+                    Text("How would you like to add a photo?")
+                }
+            )
+            
+            // Using the native PhotosPicker that is known to work
+            PhotosPicker("Select from Photos", selection: $selectedImageItem, matching: .images)
+                .onChange(of: selectedImageItem) { newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            selectedImageData = data
+                            print("PhotosPicker: Image data loaded successfully: \(data.count) bytes")
+                        }
                     }
                 }
-            }
+        }
         
         // Save/Cancel buttons
         HStack(spacing: 20) {
@@ -358,13 +354,17 @@ extension ProfileView {
                 isUploading = true
                 do {
                     // Use StorageManager to upload the image
-                    let imagePath = try await StorageManager.shared.uploadProfileImage(UIImage(data: data)!)
-                    
-                    // Get a public URL for the image
-                    let imageUrl = try StorageManager.shared.getPublicURL(for: imagePath)
-                    
-                    // Update the profile with the new URL
-                    editedProfile.profile_photo_url = imageUrl.absoluteString
+                    if let image = UIImage(data: data) {
+                        let imagePath = try await StorageManager.shared.uploadProfileImage(image)
+                        
+                        // Get a public URL for the image
+                        let imageUrl = try StorageManager.shared.getPublicURL(for: imagePath)
+                        
+                        // Update the profile with the new URL
+                        editedProfile.profile_photo_url = imageUrl.absoluteString
+                    } else {
+                        throw StorageManager.StorageError.imageConversionFailed
+                    }
                     
                     isUploading = false
                 } catch {
@@ -392,6 +392,7 @@ extension ProfileView {
             // 4) If no error, exit edit mode & clear the temp image data
             isEditing = false
             selectedImageData = nil
+            selectedImageItem = nil
         } catch {
             print("Caught error message in updating profile")
             errorMessage = "Error updating profile: \(error.localizedDescription)"
@@ -403,6 +404,7 @@ extension ProfileView {
         isEditing = false
         errorMessage = nil
         selectedImageData = nil
+        selectedImageItem = nil
     }
 }
 

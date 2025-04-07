@@ -5,13 +5,6 @@
 //  Created by Tobias Fu on 4/6/25.
 //
 
-//
-//  StorageManager.swift
-//  Write-It-Down
-//
-//  Created by Tobias Fu on 4/6/25.
-//
-
 import Foundation
 import Supabase
 import UIKit
@@ -42,7 +35,7 @@ extension UIImage {
 class StorageManager {
     static let shared = StorageManager()
     private let supabase = SupabaseManager.shared.client
-    private let bucketName = "profile_images"
+    private let bucketName = "profile-images"
     
     private init() {
         // Create bucket if it doesn't exist (first time setup)
@@ -55,6 +48,7 @@ class StorageManager {
         }
     }
     
+    // Fixed the typo in enum name from StroageError to StorageError
     enum StorageError: Error {
         case imageConversionFailed
         case userNotAuthenticated
@@ -62,7 +56,7 @@ class StorageManager {
         case downloadFailed(String)
         case bucketCreationFailed(String)
     }
-    
+
     /// Ensures the profile_images bucket exists
     private func ensureBucketExists() async throws -> Bool {
         do {
@@ -103,9 +97,9 @@ class StorageManager {
         
         // 5. Upload the file
         do {
-            try await ensureBucketExists()
+            _ = try await ensureBucketExists()
             
-            let response = try await supabase.storage
+            _ = try await supabase.storage
                 .from(bucketName)
                 .upload(
                     path: fileName,
@@ -136,7 +130,7 @@ class StorageManager {
 
     /// Delete a profile image
     func deleteProfileImage(path: String) async throws {
-        try await supabase.storage
+        _ = try await supabase.storage
             .from(bucketName)
             .remove(paths: [path])
     }
@@ -154,7 +148,7 @@ class StorageManager {
             
             // If there are files, remove them
             if !filePaths.isEmpty {
-                try await supabase.storage
+                _ = try await supabase.storage
                     .from(bucketName)
                     .remove(paths: filePaths)
             }

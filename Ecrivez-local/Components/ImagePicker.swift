@@ -64,6 +64,7 @@ struct CameraImagePicker: UIViewControllerRepresentable {
             
             if parent.imageData != nil {
                 parent.imageData = uiImage.jpegData(compressionQuality: 0.8)
+                print("Camera picker: Image data set with size: \(parent.imageData?.count ?? 0) bytes")
             }
         }
 
@@ -85,6 +86,7 @@ struct PhotoLibraryPicker: UIViewControllerRepresentable {
         self._selectedImageData = .constant(nil)
     }
     
+    // IMPORTANT FIX: The parameter name here is misleading - it accepts Data, not UIImage
     init(selectedImage: Binding<Data?>) {
         self._selectedImage = .constant(nil)
         self._selectedImageData = selectedImage
@@ -117,20 +119,33 @@ struct PhotoLibraryPicker: UIViewControllerRepresentable {
             picker.dismiss(animated: true)
 
             guard let provider = results.first?.itemProvider,
-                  provider.canLoadObject(ofClass: UIImage.self) else { return }
+                  provider.canLoadObject(ofClass: UIImage.self) else {
+                print("PhotoLibraryPicker: No image provider found or cannot load UIImage")
+                return
+            }
 
             provider.loadObject(ofClass: UIImage.self) { object, error in
+                if let error = error {
+                    print("PhotoLibraryPicker error: \(error.localizedDescription)")
+                    return
+                }
+                
                 if let image = object as? UIImage {
                     DispatchQueue.main.async {
                         // Update either image or imageData binding
                         if self.parent.selectedImage != nil {
                             self.parent.selectedImage = image
+                            print("PhotoLibraryPicker: UIImage set successfully")
                         }
                         
                         if self.parent.selectedImageData != nil {
-                            self.parent.selectedImageData = image.jpegData(compressionQuality: 0.8)
+                            let imageData = image.jpegData(compressionQuality: 0.8)
+                            self.parent.selectedImageData = imageData
+                            print("PhotoLibraryPicker: Image data set with size: \(imageData?.count ?? 0) bytes")
                         }
                     }
+                } else {
+                    print("PhotoLibraryPicker: Failed to cast object to UIImage")
                 }
             }
         }
