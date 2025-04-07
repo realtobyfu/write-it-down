@@ -12,13 +12,13 @@
         <attribute name="attributedTextData" optional="YES" attributeType="Binary"/>
         <attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO"/>
-        <attribute name="imagesData" optional="YES" attributeType="Transformable"/>
+        <attribute name="imagesData" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromDataTransformerName"/>
         <attribute name="index" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="isAnnonymous" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isPublic" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="locationLatitude" optional="YES" attributeType="Decimal"/>
         <attribute name="locationLongitude" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="locationName" optional="YES" attributeType="String"/>
-        <relationship name="category" maxCount="1" deletionRule="No Action" destinationEntity="Category" inverseName="note" inverseEntity="Category"/>
+        <relationship name="category" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="note" inverseEntity="Category"/>
     </entity>
 </model>

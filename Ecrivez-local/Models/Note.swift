@@ -76,8 +76,8 @@ extension Note {
         // Convert the raw RTF Data into a base64 string
         let rtfString = self.attributedTextData?.base64EncodedString()
         
-        print("longitude: \(self.locationLongitude)")
-        print("latitude: \(self.locationLatitude)")
+        print("longitude: \(String(describing: self.locationLongitude))")
+        print("latitude: \(String(describing: self.locationLatitude))")
 
         
         return SupabaseNote(

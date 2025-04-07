@@ -52,11 +52,11 @@ struct SettingsView: View {
                     }
                 }
                 
-                // Font size stepper
-                Stepper("Font Size: \(defaultFontSize)", value: $defaultFontSize, in: 8...48)
-                
-                // Toggle for Dark/Light mode
-                Toggle("Dark Mode", isOn: $isDarkMode)
+//                // Font size stepper
+//                Stepper("Font Size: \(defaultFontSize)", value: $defaultFontSize, in: 8...48)
+//                
+//                // Toggle for Dark/Light mode
+//                Toggle("Dark Mode", isOn: $isDarkMode)
             }
         }
         .navigationTitle("Settings")
