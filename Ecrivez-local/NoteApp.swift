@@ -6,13 +6,6 @@
 //
 import SwiftUI
 import CoreData
-import Boutique
-
-struct CurrentUser: Codable, Equatable {
-    let userId: String
-    let accessToken: String
-    let refreshToken: String
-}
 
 
 
@@ -27,12 +20,14 @@ struct NoteApp: App {
     
     
     @StateObject private var authVM = AuthViewModel()
+    @AppStorage("isDarkMode") private var isDarkMode = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, dataController.container.viewContext)
                 .environmentObject(authVM)
+                .preferredColorScheme(isDarkMode ? .dark : .light)
 
                 .onOpenURL { url in
                     Task {

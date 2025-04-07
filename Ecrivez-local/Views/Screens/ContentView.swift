@@ -7,77 +7,116 @@ import MapKit
 import UIKit
 
 struct ContentView: View {
-    
-    // MARK: - CoreData
+
+    // MARK: - Core Data & Environment
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
 
-    // Fetching Notes and Categories from CoreData
-    // similar to state, when changes, causes the view body to recompute
+    // MARK: - FetchRequests
     @FetchRequest(
         entity: Note.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Note.index, ascending: true)]
     ) var notes: FetchedResults<Note>
-    
+
     @FetchRequest(
         entity: Category.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
 
-    // @State: after making the new struct when something inside the struct changes, the State variables will restore the old values from the older struct
-    // allowing the values to live after the stuct's lifetime
-    // @State stores the value in the "view tree" (hierarchy of objects and storing values) and restore it from the view tree
-    //@FetchRequest (from database), @Environment (from the environment ) etc... applied to all property wrappers
-    
-    // just a optional for note
-    @State private var showingNoteEditor = false
+    // MARK: - Local State
+//    @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
     @State private var showingAuthView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
-    
-    @Environment(\.scenePhase) private var scenePhase // Observe the app’s lifecycle
 
-    // Filtered notes based on the selected category
+    // For “Fold All”
+    @State private var foldAll = false
+
+    // For “Sort by Date” toggle
+    @State private var sortByDateDesc = false
+
+    @Environment(\.scenePhase) private var scenePhase
+
+    // MARK: - Filtered + Sorted Notes
     var filteredNotes: [Note] {
         if let category = selectedCategory {
+            // Filter by category
             return notes.filter { $0.category == category }
         } else {
+            // No filter => show all
             return Array(notes)
         }
     }
 
+    var displayedNotes: [Note] {
+        // If user toggles date sort, use note.date
+        // Otherwise, use note.index as the manual reorder
+        if sortByDateDesc {
+            // sort descending by date
+            return filteredNotes.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
+        } else {
+            // default to the "index" property for manual ordering
+            return filteredNotes.sorted { $0.index < $1.index }
+        }
+    }
+
     var body: some View {
-        NavigationView {
-            VStack {
-                // Category selection view at the top
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Top Bar
+                HStack {
+                    Text("Ideas")
+                        .font(.title)
+                        .fontWeight(.medium)
+                    Spacer()
+                    Button(action: {
+                        showingAuthView = true
+                    }) {
+                        Image(systemName: "person.crop.circle")
+                            .font(.system(size: 24))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 10)
+                .padding(.bottom, 15)
+
+                // Category Filter + Fold/Sort Toggles
                 CategoryFilterView(
                     selectedCategory: $selectedCategory,
-                    categories: Array(categories)
+                    categories: Array(categories),
+                    foldAll: $foldAll,
+                    sortByDateDesc: $sortByDateDesc
                 )
+                .font(.subheadline)
+                .padding(.bottom, 5)
 
+                // NOTES LIST
                 List {
-                    ForEach(filteredNotes) { note in
+                    ForEach(displayedNotes) { note in
                         NoteView(
                             note: note,
+                            foldAll: foldAll,
                             buttonTapped: {
                                 selectedNote = note
-                                showingNoteEditor = true
+//                                showingNoteEditor = true
                             }
                         )
                         .listRowSeparator(.hidden)
                     }
-                    .onDelete
-                    { IndexSet in 
+                    .onDelete { indexSet in
                         Task {
-                            await deleteNote(at: IndexSet)
+                            await deleteNote(at: indexSet)
                         }
                     }
+                    // Only allow reordering if no category & no date sort
                     .onMove(perform: moveNote)
-                    .moveDisabled(selectedCategory != nil) // Disable moving when a category is selected
+                    .moveDisabled(selectedCategory != nil || sortByDateDesc)
                 }
+                .listStyle(PlainListStyle())
                 .safeAreaInset(edge: .bottom) {
+                    // Horizontal Bubble Menu
                     BubbleMenuView(
                         showBubbles: $showBubbles,
                         selectedCategory: $selectedCategory,
@@ -88,41 +127,10 @@ struct ContentView: View {
                     )
                 }
 
-                .listStyle(PlainListStyle())
-                .navigationTitle("Ideas")
-                
-                .sheet(isPresented: $showingNoteEditor, onDismiss: {
-                    selectedNote = nil
-                }) {
-                    if let note = selectedNote {
-                        ZStack {
-                            NoteEditorView(
-                                mode: .edit(note),
-                                categories: Array(categories),
-                                isAuthenticated: authVM.isAuthenticated,
-                                onSave: {
-                                    saveContext()
-                                }
-                            )
-                        }
-                    }
-                }
-
                 Spacer()
 
+                // PLUS Button & Nav Buttons
                 ZStack {
-                    // Horizontal Bar of Pop-up Bubbles for adding notes
-//                    BubbleMenuView(
-//                        showBubbles: $showBubbles,
-//                        selectedCategory: $selectedCategory,
-//                        categories: Array(categories),
-//                        onCategorySelected: {
-//                            showingAddNoteView = true
-//                        }
-//                    )
-                    
-
-                    // Plus Button to show/hide BubbleMenuView
                     HStack {
                         Spacer()
                         Button(action: {
@@ -137,7 +145,6 @@ struct ContentView: View {
                         Spacer()
                     }
 
-                    // Additional Navigation Buttons
                     HStack {
                         NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
                             Image(systemName: "text.bubble")
@@ -147,9 +154,9 @@ struct ContentView: View {
                                 .clipShape(Circle())
                         }
                         .padding(.leading, 50)
-                        
+
                         Spacer()
-                        
+
                         NavigationLink(destination: SettingsView()) {
                             Image(systemName: "gear")
                                 .font(.system(size: 26))
@@ -162,92 +169,82 @@ struct ContentView: View {
                     }
                 }
             }
-            
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                        showingAuthView = true
-                    }) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 24))
-                    }
-                }
-            }
-//            .onAppear {
-//                // If user is not authenticated, present the sheet
-//                if !isAuthenticated {
-//                    showingAuthView = true
-//                }
-//            }
         }
-
+        // Save context on background
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
-                saveContext() // Save context when app goes to background
+                saveContext()
             }
         }
-        .sheet(
-            isPresented: $showingAddNoteView,
-            onDismiss: {
-                selectedCategory = nil
-            },
-            content: {
-                if let selectedCategory = selectedCategory {
-                    NoteEditorView(
-                        mode: .create(selectedCategory),
-                        categories: Array(categories),
-                        isAuthenticated: authVM.isAuthenticated,
-                        onSave: {
-                            saveContext()
-                        }
-                    )
-                }
-            }
-        )
+        // Present Note Editor
+        .sheet(item: $selectedNote, onDismiss: {
+            selectedNote = nil
+        }) { note in
+//            if let note = selectedNote {
+                NoteEditorView(
+                    mode: .edit(note),
+                    categories: Array(categories), context: context,
+                    isAuthenticated: authVM.isAuthenticated,
+                    onSave: { saveContext() }
+                )
+//            } else {
+//                Text("No note selected")
+//            }
+        }
+        // Present "Add Note" after picking category bubble
+        .sheet(isPresented: $showingAddNoteView, onDismiss: {
+            selectedCategory = nil
+        }) {
+            NoteEditorView(
+                mode: .create(selectedCategory!),
+                categories: Array(categories), context: context,
+                isAuthenticated: authVM.isAuthenticated,
+                onSave: { saveContext() }
+            )
+        }
+        // Auth / Profile sheet
         .sheet(isPresented: $showingAuthView) {
             if authVM.isAuthenticated {
-                // If user is now authenticated, show some user-related view
                 UserView(authVM: authVM)
             } else {
-                // If user is still not authenticated, show the auth flow
                 AuthenticationView(authVM: authVM)
             }
         }
     }
-    
+
+    // MARK: - Deletions & Reordering
+
     private func deleteNote(at offsets: IndexSet) async {
-
         for index in offsets {
-            let noteToDelete = filteredNotes[index]
-            context.delete(noteToDelete)
-            
-            
-            let existInDB = await checkExistInDB(note: noteToDelete)
-            
-            if existInDB {
-                
+            let noteToDelete = displayedNotes[index]
+            if let noteID = noteToDelete.id {
+                do {
+                    let exists = await NoteRepository.shared.noteExistsInSupabase(noteID: noteID)
+                    if exists {
+                        try await NoteRepository.shared.deletePublicNote(noteID)
+                    }
+                } catch {
+                    print("Error deleting note from Supabase: \(error)")
+                }
             }
+            context.delete(noteToDelete)
         }
-        
-
         saveContext()
     }
-    
-    private func moveNote(from source: IndexSet, to destination: Int) {
-        guard selectedCategory == nil else { return } // Prevent moving when a category is selected
 
-        var reorderedNotes = notes.map { $0 }
-        
+    private func moveNote(from source: IndexSet, to destination: Int) {
+        // Because we store user-defined ordering in note.index,
+        // we re-map notes, reorder them, then update each note.index
+        var reorderedNotes = Array(notes)  // the entire fetch, unsorted
         reorderedNotes.move(fromOffsets: source, toOffset: destination)
-        
+
+        // Set new indexes
         for (newIndex, note) in reorderedNotes.enumerated() {
             note.index = Int16(newIndex)
         }
-        
         saveContext()
     }
-    
-    // Helper function to save context
+
     private func saveContext() {
         do {
             try context.save()
@@ -257,48 +254,81 @@ struct ContentView: View {
     }
 }
 
-// CategoryFilterView displays category bubbles for filtering notes
+
+
+
+// MARK: - CategoryFilterView
 struct CategoryFilterView: View {
     @Binding var selectedCategory: Category?
     var categories: [Category]
 
-    @State private var isExpanded: Bool = false // Default to collapsed
+    // For “Fold All” & “Sort by Date”
+    @Binding var foldAll: Bool
+    @Binding var sortByDateDesc: Bool
+
+    @Environment(\.colorScheme) var colorScheme
+    @State private var isExpanded: Bool = false
 
     var body: some View {
         VStack {
-            // Toggle button to expand/collapse the view
+            // Title row
             HStack {
                 Text("Categories")
                     .font(.headline)
                     .foregroundColor(.blue)
+
                 Spacer()
-                Button(action: {
-                    withAnimation {
-                        isExpanded.toggle()
+
+                HStack(spacing: 16) {
+                    // Expand/collapse categories
+                    Button(action: {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }) {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .foregroundColor(.blue)
                     }
-                }) {
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .foregroundColor(.blue)
+
+                    // Fold All
+                    Button(action: {
+                        withAnimation {
+                            foldAll.toggle()
+                        }
+                    }) {
+                        Image(systemName: "chevron.up.chevron.down")
+                            .foregroundColor(foldAll ? .red : ((colorScheme == .dark) ? .white : .orange))
+                    }
+
+                    // Sort by Date
+                    Button(action: {
+                        withAnimation {
+                            sortByDateDesc.toggle()
+                        }
+                    }) {
+                        Image(systemName: "calendar")
+                            .foregroundColor(sortByDateDesc ? .red : ((colorScheme == .dark) ? .white : .orange))
+                    }
                 }
             }
             .padding(.horizontal)
 
-            // Display categories if expanded
+            // Bubbles, if expanded
             if isExpanded {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
-                        // "All" button to reset the filter
+                        // "All" button
                         Button(action: {
                             selectedCategory = nil
                         }) {
                             Text("All")
-                                .padding(10)
+                                .padding(8)
                                 .background(selectedCategory == nil ? Color.blue : Color.gray)
                                 .foregroundColor(.white)
-                                .cornerRadius(15)
+                                .cornerRadius(20)
                         }
-                        Spacer()
-                        // Category bubbles
+
+                        // Each category bubble
                         ForEach(categories, id: \.self) { category in
                             Button(action: {
                                 selectedCategory = category
@@ -306,10 +336,6 @@ struct CategoryFilterView: View {
                                 Circle()
                                     .fill(category.color)
                                     .frame(width: 30, height: 30)
-//                                    .overlay(
-//                                        Image(systemName: category.symbol ?? "circle")
-//                                            .foregroundColor(.white)
-//                                    )
                                     .overlay(
                                         Circle()
                                             .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
@@ -319,25 +345,26 @@ struct CategoryFilterView: View {
                     }
                     .padding(.horizontal)
                 }
-                .transition(.slide) // Smooth transition for expand/collapse
+                .transition(.slide)
             }
         }
     }
 }
 
-@MainActor
-func checkExistInDB (note: Note) async -> Bool {
-    do {
-        let response: [SupabaseNote] = try await SupabaseManager.shared.client
-            .from("public_notes")
-            .select()
-            .eq("id", value: note.id)
-            .execute()
-            .value
-        
-        return !response.isEmpty
-    } catch {
-        print("error: (\(error))")
-    }
-    return false
-}
+//
+//// MARK: - Checking if note is in DB
+//@MainActor
+//func checkExistInDB(note: Note) async -> Bool {
+//    do {
+//        let response: [SupabaseNote] = try await SupabaseManager.shared.client
+//            .from("public_notes")
+//            .select()
+//            .eq("id", value: note.id)
+//            .execute()
+//            .value
+//        return !response.isEmpty
+//    } catch {
+//        print("error: (\(error))")
+//        return false
+//    }
+//}

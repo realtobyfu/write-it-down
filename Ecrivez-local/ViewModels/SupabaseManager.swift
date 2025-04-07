@@ -9,6 +9,14 @@
 import SwiftUI
 import Supabase
 
+struct FeatureSuggestion: Codable {
+    let id: UUID?
+    let title: String
+    let description: String
+    let email: String?
+}
+
+
 /// Your global manager for Supabase
 class SupabaseManager: ObservableObject {
     // Singleton or shared instance
@@ -28,4 +36,12 @@ class SupabaseManager: ObservableObject {
             supabaseKey: supabaseKey
         )
     }
+    
+    func submitFeatureSuggestion(_ suggestion: FeatureSuggestion) async throws {
+        try await client
+            .from("feature_suggestions")
+            .insert(suggestion)
+            .execute()
+    }
+
 }

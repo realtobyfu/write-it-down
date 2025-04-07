@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "19E59B34-F30D-4D1E-B852-3AC9101DF8FF",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Write-It-Down.xcodeproj",
+        "identifier" : "3EDAA2902D80A20600CC0F91",
+        "name" : "Write-It-Down-localTests"
+      }
+    }
+  ],
+  "version" : 1
+}

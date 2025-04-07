@@ -5,7 +5,7 @@
 //  Created by Tobias Fu on 9/17/24.
 //
 
-// Note+Extensions.swift
+// Note+Extensions.swift/Users/realtobyfu/Documents/Ecrivez-local/Ecrivez-local/NoteRepository.swift
 import Foundation
 import UIKit
 import CoreLocation
@@ -13,9 +13,12 @@ import CoreLocation
 extension Note {
     var attributedText: NSAttributedString {
         get {
+            // make sure that this is preserving the font
             guard let data = self.attributedTextData else {
                 return NSAttributedString(string: "")
             }
+            
+            // decodeRTF
             do {
                 return try NSAttributedString(
                     data: data,
@@ -23,19 +26,20 @@ extension Note {
                     documentAttributes: nil
                 )
             } catch {
-                print("Error decoding attributedTextData: \(error)")
-                return NSAttributedString(string: "")
+                print("Decode RTF error: \(error)")
+                return NSAttributedString()
             }
         }
         set {
             do {
-                self.attributedTextData = try newValue.data(
+                // make sure that this conversion is working for the fonts/
+                let rtfData = try newValue.data(
                     from: NSRange(location: 0, length: newValue.length),
-                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
-                )
+                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
+                self.attributedTextData = rtfData
             } catch {
-                print("Error encoding attributedText: \(error)")
-                self.attributedTextData = Data()
+                print("Encode RTF error: \(error)")
+                self.attributedTextData = nil
             }
         }
     }
@@ -57,5 +61,40 @@ extension Note {
                 self.locationLongitude = nil
             }
         }
+    }
+    
+    var placeName: String {
+        get { locationName ?? "" }
+        set { locationName = newValue }
+    }
+
+}
+
+extension Note {
+    func toSupabaseNote(ownerID: UUID) -> SupabaseNote {
+        
+        // Convert the raw RTF Data into a base64 string
+        let rtfString = self.attributedTextData?.base64EncodedString()
+        
+        print("longitude: \(self.locationLongitude)")
+        print("latitude: \(self.locationLatitude)")
+
+        
+        return SupabaseNote(
+            id: self.id ?? UUID(),
+            owner_id: ownerID,
+            category_id: self.category?.id,
+            // Plain text for quick reads/fallback
+            content: self.attributedText.string,
+            // Full RTF as base64
+            rtf_content: rtfString,
+            date: self.date,
+            locationName: self.placeName,
+            locationLatitude: self.locationLatitude?.stringValue,
+            locationLongitude:self.locationLongitude?.stringValue,
+            colorString: self.category?.colorString ?? "",
+            symbol: self.category?.symbol ?? "",
+            isAnnonymous: self.isAnnonymous
+        )
     }
 }

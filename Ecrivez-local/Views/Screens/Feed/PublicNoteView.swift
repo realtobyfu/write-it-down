@@ -8,10 +8,7 @@
 import SwiftUI
 import CoreLocation
 
-/// Displays a single 'SupabaseNote', allowing a tap action.
-/// This mimics the previous "PublicNoteView" structure but references
-/// the fields on 'SupabaseNote'.
-// MARK: - PublicNoteView
+
 
 struct PublicNoteView: View {
     let note: SupabaseNote
@@ -25,28 +22,21 @@ struct PublicNoteView: View {
                 VStack(alignment: .leading) {
                     headerView
                     
-                    // Renders the note's content as NSAttributedString
                     AttributedTextView(
                         attributedText: adjustedAttributedText,
                         dynamicHeight: $dynamicHeight
                     )
                     .frame(height: dynamicHeight)
-                    
-//                    footerView
                 }
                 Spacer()
             }
             .padding()
         }
-        
-        // To-do: add overlay
-//        .overlay()
-//        
         .background(backgroundColor)
         .cornerRadius(20)
         .padding(.vertical, 2)
         .listRowSeparator(.hidden)
-        .foregroundColor(.stroke)
+        .foregroundColor(.white)
         .onAppear {
             reverseGeocodeIfNeeded()
         }
@@ -55,100 +45,104 @@ struct PublicNoteView: View {
     // MARK: - Subviews
     
     private var headerView: some View {
-        
         HStack {
-            // Symbol from the note
+            // Symbol
             Image(systemName: note.symbol)
             
             Spacer()
             
-            if let userName = note.profiles?.username {
+            // If anonymous or user’s username
+            if note.isAnnonymous == true {
+                Text("Anonymous")
+            } else if let userName = note.profiles?.username {
                 Text("@\(userName)")
             }
-            
+
+            // Show location if found
+            if !locationString.isEmpty {
+                Image(systemName: "mappin")
+                Text(locationString)
+            }
         }
         .font(.headline)
-        .foregroundColor(.white)
     }
     
-
-    // MARK: - Helper Computed Properties
-    
-    /// Converts plain text into an NSAttributedString.
+    // MARK: - Decoding the RTF
     private var rawAttributedString: NSAttributedString {
-        NSAttributedString(string: note.content)
+        if let base64RTF = note.rtf_content,
+           let data = Data(base64Encoded: base64RTF) {
+            do {
+                return try NSAttributedString(
+                    data: data,
+                    options: [.documentType: NSAttributedString.DocumentType.rtf],
+                    documentAttributes: nil
+                )
+            } catch {
+                print("Error decoding RTF: \(error)")
+                return NSAttributedString(string: note.content) // fallback
+            }
+        } else {
+            return NSAttributedString(string: note.content)
+        }
     }
     
-    /// Applies consistent font size/color to the note’s text.
     private var adjustedAttributedText: NSAttributedString {
         let mutable = NSMutableAttributedString(attributedString: rawAttributedString)
         let newFontSize: CGFloat = 18
         let newTextColor: UIColor = .white
         
-        mutable.enumerateAttributes(in: NSRange(location: 0, length: mutable.length), options: []) { attributes, range, _ in
+        mutable.enumerateAttributes(
+            in: NSRange(location: 0, length: mutable.length),
+            options: []
+        ) { attributes, range, _ in
             var modified = attributes
-            
-            // Force a consistent font
             if let font = attributes[.font] as? UIFont {
                 let newFont = UIFont(descriptor: font.fontDescriptor, size: newFontSize)
                 modified[.font] = newFont
             } else {
                 modified[.font] = UIFont.systemFont(ofSize: newFontSize)
             }
-            
-            // Force text color to white
+            // Force the text color to white
             modified[.foregroundColor] = newTextColor
             mutable.setAttributes(modified, range: range)
         }
         return mutable
     }
     
-    /// Converts `colorString` into a SwiftUI Color.
-    private var backgroundColor: Color {
-        switch note.colorString {
-            case "green":  return .green
-            case "blue":   return .blue
-            case "yellow": return .yellow
-            case "pink":   return .pink
-            case "brown":  return .brown
-            case "gray":   return .gray
-            case "red":    return .red
-            case "purple": return .purple
-            case "orange": return .orange
-            case "teal":   return .teal
-            case "indigo": return .indigo
-            default:       return .black
-        }
-    }
-    
-    /// Converts lat/lon into a CLLocation if present.
-    private var location: CLLocation? {
-        guard let lat = note.locationLatitude,
-              let lon = note.locationLongitude else {
-            return nil
-        }
-        return CLLocation(latitude: Double(lat), longitude: Double(lon))
-    }
-    
-    // MARK: - Utility Methods
-    
+    // MARK: - Reverse Geocoding
     private func reverseGeocodeIfNeeded() {
-        guard let loc = location else {
+        // Check the computed property `note.location` from your SupabaseNote extension
+        guard let loc = note.location else {
             locationString = ""
             return
         }
         CLGeocoder().reverseGeocodeLocation(loc) { placemarks, error in
-            if let placemark = placemarks?.first, error == nil {
-                locationString = placemark.locality ?? "Cambridge"
-            } else {
-                locationString = "Alabama"
+            guard error == nil, let place = placemarks?.first else {
+                print("Cannot find the exact location names")
+                locationString = ""
+                return
             }
+            
+            print("reverse geo coded: \(place)")
+            // For example, just store the city/locality
+            locationString = place.locality ?? ""
         }
     }
-    
-    private func formatDate(_ date: Date) -> String {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "MM/dd/yy"
-        return dateFormatter.string(from: date)
+
+    private var backgroundColor: Color {
+        switch note.colorString {
+            case "green":   return .green
+            case "blue":    return .blue
+            case "yellow":  return .yellow
+            case "pink":    return .pink
+            case "brown":   return .brown
+            case "gray":    return .gray
+            case "red":     return .red
+            case "purple":  return .purple
+            case "orange":  return .orange
+            case "teal":    return .teal
+            case "indigo":  return .indigo
+            default:        return .black
+        }
     }
 }

@@ -9,7 +9,8 @@ import CoreLocation
 
 struct NoteView: View {
     let note: Note
-    
+    let foldAll: Bool
+
     /// leaking too much info from the parent
     ///
 //    @Binding var selectedNote: Note?
@@ -36,7 +37,8 @@ struct NoteView: View {
                             attributedText: adjustedAttributedText,
                             dynamicHeight: $dynamicHeight
                         )
-                        .frame(height: dynamicHeight)
+                        .frame(height: foldAll ? min(dynamicHeight, 100) : dynamicHeight, alignment: .top)
+                        .clipped()
                     }
                     Spacer()
                 }
@@ -80,33 +82,35 @@ struct NoteView: View {
     }
     
     // MARK: - Helper Functions
-    
     private var adjustedAttributedText: NSAttributedString {
         let mutable = NSMutableAttributedString(attributedString: note.attributedText)
         
-        let newFontSize: CGFloat = 18
+        let maxFontSize: CGFloat = 22
         let newTextColor: UIColor = .white
-        
+
         mutable.enumerateAttributes(
             in: NSRange(location: 0, length: mutable.length),
             options: []
         ) { attributes, range, _ in
             var modified = attributes
+            
             if let font = attributes[.font] as? UIFont {
+                let clampedSize = min(font.pointSize, maxFontSize)
                 let newFont = UIFont(
                     descriptor: font.fontDescriptor,
-                    size: newFontSize
+                    size: clampedSize
                 )
                 modified[.font] = newFont
             } else {
-                modified[.font] = UIFont.systemFont(ofSize: newFontSize)
+                modified[.font] = UIFont.systemFont(ofSize: maxFontSize)
             }
+            
             modified[.foregroundColor] = newTextColor
             mutable.setAttributes(modified, range: range)
         }
+        
         return mutable
     }
-    
     private func reverseGeocodeIfNeeded() {
         if let loc = note.location {
             let geocoder = CLGeocoder()

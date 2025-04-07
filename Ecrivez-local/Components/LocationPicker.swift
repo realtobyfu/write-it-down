@@ -4,13 +4,15 @@ import MapKit
 // LocationPickerView allows the user to search and select a location
 struct LocationPickerView: View {
     @Binding var location: CLLocationCoordinate2D?
+    @Binding var locationName: String?
+
     @Environment(\.presentationMode) var presentationMode
 
     @StateObject private var searchViewModel = LocationSearchViewModel()
 
     var body: some View {
-        NavigationView {
-            VStack {
+        NavigationStack {
+            VStack(alignment: .leading) {
                 // Search bar
                 HStack {
                     TextField("Search for a location", text: $searchViewModel.searchText, onCommit: {
@@ -27,10 +29,21 @@ struct LocationPickerView: View {
                     .padding(.trailing)
                 }
 
+                // Selected location bubble
+                if let locationName = locationName {
+                    Text("📍 \(locationName)")
+                        .padding(8)
+                        .background(Color.blue.opacity(0.15))
+                        .foregroundColor(.blue)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
+                }
+
                 // List of search results
                 List(searchViewModel.landmarks, id: \.self) { mapItem in
                     Button(action: {
                         location = mapItem.placemark.coordinate
+                        locationName = mapItem.name
                         searchViewModel.region.center = mapItem.placemark.coordinate
                         searchViewModel.searchText = mapItem.name ?? ""
                     }) {

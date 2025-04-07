@@ -1,128 +1,126 @@
 import SwiftUI
 import CoreLocation
 import RichTextKit
+import CoreData
 
 struct NoteEditorView: View {
-    let categories: [Category]
-
-    @State private var selectedDate: Date?
-    @State private var attributedText: NSAttributedString
-
-    // Make location optional
-    @State private var location: CLLocationCoordinate2D?
-    @State private var weather: String
-    @State private var category: Category
-    @State var isPublic: Bool = false
-    
-    // should not be "var" because inside a view,
-    // you won't be able to change it meaningfully inside a view
-    let note: Note?
-    let onSave: () -> Void
-    let isAuthenticated: Bool
-    
-    @Environment(\.presentationMode) var presentationMode
-    @Environment(\.managedObjectContext) private var context  // Core Data context
-
-    @State private var tapped: Bool = false
-    @State private var showingImagePicker = false
-    @State private var showingWeatherPicker = false
-    @State private var showingLocationPicker = false  // State to control the presentation of LocationPickerView
-    @FocusState private var isTextEditorFocused: Bool
-
-    // RichTextKit context
-    @StateObject private var contextRT = RichTextContext()  // Renamed to avoid conflict with Core Data context
-    
     enum Mode {
         case edit(Note)
         case create(Category)
     }
-
+    @StateObject private var viewModel: NoteEditorViewModel
+    private let categories: [Category]
+    private let isAuthenticated: Bool
+    private let onSave: () -> Void
+    private let mode: Mode
+    
+    @Environment(\.presentationMode) private var presentationMode
+    @Environment(\.colorScheme) private var colorScheme
+    
     init(
         mode: Mode,
         categories: [Category],
+        context: NSManagedObjectContext,
         isAuthenticated: Bool,
         onSave: @escaping () -> Void
     ) {
+        // 1) Build the VM
+        _viewModel = StateObject(wrappedValue: NoteEditorViewModel(mode: mode, context: context))
         
-        switch mode {
-        case .edit(let note):
-            self.init(
-                isAuthenticated : isAuthenticated,
-                note: note,
-                categories: categories,
-                category: note.category!,
-                onSave: onSave
-            )
-        case .create(let category):
-            self.init(
-                isAuthenticated : isAuthenticated,
-                note: nil,
-                categories: categories,
-                category: category,
-                onSave: onSave
-            )
-        }
-    }
-
-    private init(
-        isAuthenticated : Bool,
-        note: Note?,
-        categories: [Category],
-        category: Category,
-        onSave: @escaping () -> Void
-    ) {
-        
-        self.note = note
-        self.onSave = onSave
-
-        _attributedText = State(initialValue: note?.attributedText ?? NSAttributedString())
-        _location = State(initialValue: note?.location?.coordinate)  // Make location optional
-        _weather = State(initialValue: "")  // Weather can be fetched or updated
-        _tapped = State(initialValue: note != nil)
-        _category = State(initialValue: category)
-        _selectedDate = State(initialValue: note?.date)
-        _isPublic = State(initialValue: note?.isPublic ?? false)
-
         self.categories = categories
         self.isAuthenticated = isAuthenticated
+        self.onSave = onSave
+        self.mode = mode
     }
-
+    
+    private var navigationTitleText: String {
+        viewModel.existingNote == nil ? "New Note" : "Edit Note"
+    }
+    
+    //    // MARK: - States
+    //    @State private var selectedDate: Date?
+    //    @State private var attributedText: NSAttributedString
+    //    @State private var location: CLLocationCoordinate2D?
+    //    @State private var weather: String
+    //    @State private var category: Category
+    //    @State private var isPublic: Bool
+    //    @State private var isAnnonymous: Bool
+    //    @State private var locationName: String?
+    @State private var showingWeatherPicker = false
+    @State private var showingLocationPicker = false
+    @FocusState private var isTextEditorFocused: Bool
+    
+    @StateObject private var contextRT = RichTextContext()
+    
+    enum ImageSourceType {
+        case camera
+        case photoLibrary
+    }
+    
+    @State private var isConfirmationDialogPresented = false
+    @State private var isShowingImagePicker = false
+    @State private var imageSourceType: ImageSourceType = .photoLibrary
+    @State private var inputImage: UIImage?
+    
+    
+    
+    // MARK: - Computed Properties
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
-
-                #if os(macOS)
+                
+#if os(macOS)
                 RichTextFormat.Toolbar(context: contextRT)
-                #endif
-
+#endif
+                
                 // Category Selection
                 categorySelectionView
-
-                RichTextEditor(text: $attributedText, context: contextRT)
+                
+                RichTextEditor(text: $viewModel.attributedText, context: contextRT)
                     .padding(8)
-//                    .background(Color.background)
+                //                    .background(Color.background)
                     .foregroundStyle(Color.background)
                     .focused($isTextEditorFocused)
-
-                #if os(iOS)
+                
+#if os(iOS)
                 RichTextKeyboardToolbar(
                     context: contextRT,
                     leadingButtons: { $0 },
-                    trailingButtons: { $0 },
+                    trailingButtons: { _ in
+                        // Add this
+                        Button(action: {
+                            isConfirmationDialogPresented = true
+                        }, label: {
+                            Image(systemName: "photo")
+                        })
+                    },
                     formatSheet: { $0 }
                 )
-                #endif
+                .richTextKeyboardToolbarConfig(
+                    .init(
+                        leadingActions: [ .undo, .redo ],           // no .textColor
+                        trailingActions: [ ]          // no .highlightColor
+                    )
+                )
+                
+#endif
+                
                 
                 if isAuthenticated {
-                    Toggle("Make Public", isOn: $isPublic)
+                    if viewModel.isPublic {
+                        Toggle("Anonymous Post?", isOn: $viewModel.isAnonymous)
+                            .padding(.vertical, 0)
+                    }
+                    
+                    Toggle("Make Public", isOn: $viewModel.isPublic)
                         .padding(.vertical, 8)
                 }
-
+                
                 // Location Picker View
                 HStack {
-                    if let location = location {
+                    if let location = viewModel.location {
                         // Display the location bar if location is selected
-                        LocationSelectionBar(location: location)
+                        LocationSelectionBar(location: viewModel.location!, placeName: viewModel.locationName!)
                             .onTapGesture {
                                 showingLocationPicker.toggle()
                             }
@@ -141,43 +139,117 @@ struct NoteEditorView: View {
                     }
                     Spacer()
                     // Displaying selected date or date picker
-                    DateView(selectedDate: $selectedDate)
+                    DateView(selectedDate: $viewModel.selectedDate)
                         .padding(.leading, 5)
-
-                    if !weather.isEmpty {
-                        WeatherBar(weather: weather)
+                    
+                    if !viewModel.weather.isEmpty {
+                        WeatherBar(weather: viewModel.weather)
                             .padding(.leading, 5)
                             .padding(.bottom, 25)
                             .fixedSize(horizontal: true, vertical: false)
                     }
-
+                    
+                }
+            }
+            .confirmationDialog(
+                "Select Image Source",
+                isPresented: $isConfirmationDialogPresented,
+                actions: {
+                    // If you want camera:
+                    Button("Camera") {
+                        imageSourceType = .camera
+                        isShowingImagePicker = true
+                    }
+                    // Or library:
+                    Button("Photo Library") {
+                        imageSourceType = .photoLibrary
+                        isShowingImagePicker = true
+                    }
+                },
+                message: {
+                    Text("Where do you want to pick an image from?")
+                }
+            )
+            .sheet(isPresented: $isShowingImagePicker, onDismiss: {
+                // Once the sheet is dismissed, see if we got a valid UIImage
+                if let inputImage {
+                    // Insert that image into the RichTextEditor at the cursor
+                    let cursorLocation = contextRT.selectedRange.location
+                    let insertion = RichTextInsertion<UIImage>.image(inputImage,
+                                                                     at: cursorLocation,
+                                                                     moveCursor: true)
+                    let action = RichTextAction.pasteImage(insertion)
+                    contextRT.handle(action)
+                
+                    // Clear out the input
+                    self.inputImage = nil
+                }
+            }) {
+                switch imageSourceType {
+                case .camera:
+                    CameraImagePicker(image: $inputImage, sourceType: .camera)
+                case .photoLibrary:
+                    PhotoLibraryPicker(selectedImage: $inputImage)
                 }
             }
             
+            .onChange(of: viewModel.attributedText) { newValue in
+                print("Attributed text changed:")
+//                print(newValue.string) // plain text
+                print(newValue)        // full NSAttributedString
+            }
+
             // check if the note is in the already, if so mark it as public
             //
-//            .task {
-//                do {
-//                    let response = SupabaseManager.shared.client
-//                       .from("public_notes")
-//                        .select()
-//                        .eq("note", value: note?.id)
-//                        .single()
-//                    
-//                    if response {}
-//                } catch {
-//                    print("error")
-//                }
-//            }
+            //            .task {
+            //                do {
+            //                    let response = SupabaseManager.shared.client
+            //                       .from("public_notes")
+            //                        .select()
+            //                        .eq("note", value: note?.id)
+            //                        .single()
+            //
+            //                    if response {}
+            //                } catch {
+            //                    print("error")
+            //                }
+            //            }
+            
+            
+            .onAppear {
+                // Overwrite text color for entire string
+                let mutable = NSMutableAttributedString(attributedString: viewModel.attributedText)
+                
+                let entireRange = NSRange(location: 0, length: mutable.length)
+                
+                // 1) Remove any existing foreground color
+                mutable.removeAttribute(.foregroundColor, range: entireRange)
+                
+                // 2) Add the color we want
+                let newColor: UIColor = (colorScheme == .dark) ? .white : .black
+                mutable.addAttribute(.foregroundColor, value: newColor, range: entireRange)
+                
+                // 3) Assign back
+                viewModel.attributedText = mutable
+                
+                print("Updated note:", viewModel.attributedText) // Just to confirm
+            }
+            
             .padding([.leading, .trailing])
-            .navigationBarTitle("Edit Note", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Done") {
-                saveNote()
-            })
+            .navigationBarTitle(navigationTitleText, displayMode: .inline)
+            .navigationBarItems(trailing:
+                Button("Done") {
+                    Task {
+                        await viewModel.saveNote(isAuthenticated: isAuthenticated)
+                        presentationMode.wrappedValue.dismiss()
+                        onSave()
+                    }
+                }.disabled(viewModel.attributedText.string.isEmpty)
+            )
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-
+                    
                     Button(action: {
                         showingWeatherPicker.toggle()
                     }) {
@@ -185,9 +257,9 @@ struct NoteEditorView: View {
                             .font(.system(size: 20))
                             .foregroundColor(.purple)
                     }
-
+                    
                     Button(action: {
-                        showingImagePicker = true
+                        isShowingImagePicker = true
                     }) {
                         Image(systemName: "photo.circle.fill")
                             .font(.system(size: 20))
@@ -197,37 +269,40 @@ struct NoteEditorView: View {
                 }
             }
             .sheet(isPresented: $showingWeatherPicker) {
-                WeatherPicker(weather: $weather)
+                WeatherPicker(weather: $viewModel.weather)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingLocationPicker) {
-                LocationPickerView(location: $location)
+                // pass $location AND $locationName
+                LocationPickerView(location: $viewModel.location,
+                                   locationName: $viewModel.locationName)
             }
         }
     }
-
+    
+    
     private var categorySelectionView: some View {
         HStack(spacing: 17) {
             Spacer()
-
+            
             Circle()
-                .fill(category.color)
+                .fill(viewModel.category.color)
                 .frame(width: 45, height: 45)
                 .overlay(
-                    Image(systemName: category.symbol!)
+                    Image(systemName: viewModel.category.symbol!)
                         .foregroundColor(.white)
                         .font(.title2)
                 )
-
+            
             Spacer()
-
+            
             if categories.count > 6 {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 17) {
-                        ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.category.name }, id: \.self) { categoryItem in
+                        ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.viewModel.category.name }, id: \.self) { categoryItem in
                             Button(action: {
-                                self.category = categoryItem
+                                self.viewModel.category = categoryItem
                             }) {
                                 Circle()
                                     .fill(categoryItem.color)
@@ -245,9 +320,9 @@ struct NoteEditorView: View {
                 .frame(height: 55) // Adjust if needed
             } else {
                 // If 6 or fewer, just show them inline as before
-                ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.category.name }, id: \.self) { categoryItem in
+                ForEach(categories.sorted(by: {$0.index < $1.index }).filter { $0.name != self.viewModel.category.name }, id: \.self) { categoryItem in
                     Button(action: {
-                        self.category = categoryItem
+                        self.viewModel.category = categoryItem
                     }) {
                         Circle()
                             .fill(categoryItem.color)
@@ -260,238 +335,139 @@ struct NoteEditorView: View {
                     }
                 }
             }
-
-
-//            Spacer()
+            
+            
+            //            Spacer()
         }
         .padding(.vertical, 5)
     }
-
-    private func saveNote() {
-        if !attributedText.string.isEmpty {
-            
-            if let existingNote = note {
-                // Update existing note
-                existingNote.attributedText = attributedText
-                existingNote.date = selectedDate
-                existingNote.category = category
-                existingNote.isPublic = isPublic
-                existingNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
-                
-                Task {
-                    await updateSupabase(note: existingNote)
-                }
-            } else {
-                // Create new note
-                let newNote = Note(context: context)
-                newNote.id = UUID()
-                newNote.attributedText = attributedText
-                newNote.category = category
-                newNote.date = selectedDate
-                newNote.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
-                
-                if newNote.isPublic && isAuthenticated {
-                    Task {
-                        await updateSupabase(note: newNote)
-                    }
-                }
-            }
-            
-            // Save the context
-            do {
-                try context.save()
-            } catch {
-                print("Failed to save note: \(error)")
-            }
-
-            // Dismiss and call the onSave closure
-            presentationMode.wrappedValue.dismiss()
-            onSave()
-        }
-    }
 }
-
-@MainActor
-func updateSupabase(note: Note) async {
-    
-    do {
-        let user = try await SupabaseManager.shared.client.auth.user()
-        
-        print("ID of the user: \(user.id)")
-        
-        
-        let existInDB = await checkExistInDB(note: note)
-//        if !note.isPublic {
-//            let _ = try await SupabaseManager.shared.client
-//                .from("public_notes")
-//                .delete()
-//                .eq("id", value: note.id)
-//                .execute()
-//            
-//            print("Deleted Note, ID: \(String(describing: note.id))")
-//        } else {
-            print("Note longitude (before uploading): \(String(describing: note.locationLongitude))")
-            print("Note latitude (before uploading): \(String(describing: note.locationLatitude))")
-            
-            let supaNote = SupabaseNote(
-                id: note.id ?? UUID(),
-                owner_id: user.id, category_id: note.category?.id,
-                content: note.attributedText.string,
-                date: note.date,
-                locationLongitude: note.locationLatitude?.doubleValue,
-                locationLatitude: note.locationLongitude?.doubleValue,
-                colorString: note.category?.colorString ?? "",
-                symbol: note.category?.symbol ?? ""
-            )
-            
-            if existInDB {
-                if !note.isPublic {
-                    let _ = try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .delete()
-                        .eq("id", value: note.id)
-                        .execute()
-        
-                    print("Deleted Note, ID: \(String(describing: note.id))")
-                } else {
-                    try await SupabaseManager.shared.client
-                        .from("public_notes")
-                        .update(supaNote)
-                        .eq("id", value: note.id)
-                        .execute()
-                    print("Updated Note: \(String(describing: note.id))")
-                }
-            } else {
-                try await SupabaseManager.shared.client
-                    .from("public_notes")
-                    .insert(supaNote)
-                    .execute()
-                print("Created Note: \(String(describing: note.id))")
-            }
-//        }
-
-    } catch {
-        print("error: (\(error))")
-    }
-}
-
-
-@MainActor
-func removeFromSupabase(note: Note) async {
-    guard let noteID = note.id else { return }
-    do {
-        try await SupabaseManager.shared.client
-            .from("public_notes")
-            .delete()
-            .eq("id", value: noteID)
-            .execute()
-        print("Deleted note \(noteID) from Supabase.")
-    } catch {
-        print("Error deleting from Supabase: \(error)")
-    }
-}
-
-
-
-
-//struct SupabaseCategory: Codable {
-//    let id: UUID
-//    let name: String
-//    let symbol: String
-//    let colorString: String
+//
+//@MainActor
+//func updateSupabase(note: Note) async {
 //    
-//    init (id: UUID, name: String, symbol: String, colorString: String)
+//    do {
+//        let user = try await SupabaseManager.shared.client.auth.user()
+//        
+//        print("ID of the user: \(user.id)")
+//        // 1) Convert local RichTextKit to RTF
+//        let rtfData = try note.attributedText.data(
+//            from: NSRange(location: 0, length: note.attributedText.length),
+//            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+//        )
+//        let base64RTF = rtfData.base64EncodedString()
+//
+//        
+//        let existInDB = await checkExistInDB(note: note)
+////        if !note.isPublic {
+////            let _ = try await SupabaseManager.shared.client
+////                .from("public_notes")
+////                .delete()
+////                .eq("id", value: note.id)
+////                .execute()
+////            
+////            print("Deleted Note, ID: \(String(describing: note.id))")
+////        } else {
+//            print("Note longitude (before uploading): \(String(describing: note.locationLongitude))")
+//            print("Note latitude (before uploading): \(String(describing: note.locationLatitude))")
+//            
+//            let supaNote = SupabaseNote(
+//                id: note.id ?? UUID(),
+//                owner_id: user.id, category_id: note.category?.id,
+//                content: note.attributedText.string,  // plain text
+//                rtf_content: base64RTF,              // fully styled
+//                date: note.date, locationName: note.locationName,
+//                locationLatitude: note.locationLatitude?.stringValue,
+//                locationLongitude: note.locationLongitude?.stringValue,
+//                colorString: note.category?.colorString ?? "",
+//                symbol: note.category?.symbol ?? "",
+//                isAnnonymous: note.isAnnonymous
+//            )
+//            
+//            if existInDB {
+//                if !note.isPublic {
+//                    let _ = try await SupabaseManager.shared.client
+//                        .from("public_notes")
+//                        .delete()
+//                        .eq("id", value: note.id)
+//                        .execute()
+//        
+//                    print("Deleted Note, ID: \(String(describing: note.id))")
+//                } else {
+//                    try await SupabaseManager.shared.client
+//                        .from("public_notes")
+//                        .update(supaNote)
+//                        .eq("id", value: note.id)
+//                        .execute()
+//                    print("Updated Note: \(String(describing: note.id))")
+//                }
+//            } else {
+//                try await SupabaseManager.shared.client
+//                    .from("public_notes")
+//                    .insert(supaNote)
+//                    .execute()
+//                print("Created Note: \(String(describing: note.id))")
+//            }
+////        }
+//
+//    } catch {
+//        print("error: (\(error))")
+//    }
 //}
 //
-struct SupabaseNote: Codable, Identifiable {
-    // Matching your DB columns:
-    let id: UUID        // or Int
-    let owner_id: UUID
-    
-    let category_id: UUID?    // if using a separate categories table
-    let content: String       // either plain text or base64
-    
-    // optional attributes
-    var date: Date? = nil
-    var locationLongitude: Double? = nil
-    var locationLatitude: Double? = nil
-    
-    // temporary solution: store the color string inside note in db
-    let colorString: String
-    let symbol: String
-    
-    var profiles: ProfileData? = nil
-    
-    struct ProfileData: Codable {
-        let username: String?
-    }
-
-    
-    // MARK: - Custom Keys
-    private enum CodingKeys: String, CodingKey {
-        case id, owner_id, category_id
-        case content, date, locationLongitude, locationLatitude
-        case colorString, symbol
-        case profiles
-    }
-    
-    // MARK: - Custom Decoder (for the "YYYY-MM-DD" date)
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Required fields
-        self.id = try container.decode(UUID.self, forKey: .id)
-        self.owner_id = try container.decode(UUID.self, forKey: .owner_id)
-        self.category_id = try container.decodeIfPresent(UUID.self, forKey: .category_id)
-        self.content = try container.decode(String.self, forKey: .content)
-        self.colorString = try container.decode(String.self, forKey: .colorString)
-        self.symbol = try container.decode(String.self, forKey: .symbol)
-        
-        // Date stored as "YYYY-MM-DD" in Supabase
-        if let dateString = try container.decodeIfPresent(String.self, forKey: .date) {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            self.date = formatter.date(from: dateString)
-        } else {
-            self.date = nil
-        }
-        
-        // Optional floats for location
-        self.locationLongitude = try container.decodeIfPresent(Double.self, forKey: .locationLongitude)
-        self.locationLatitude = try container.decodeIfPresent(Double.self, forKey: .locationLatitude)
-        
-        self.profiles = try container.decodeIfPresent(ProfileData.self, forKey: .profiles)
-    }
-    
-    init(id: UUID,
-         owner_id: UUID,
-         category_id: UUID?,
-         content: String,
-//         created_at: String?,
-         date: Date?,
-         locationLongitude: Double?,
-         locationLatitude: Double?,
-         colorString: String,
-         symbol: String
-    ) {
-        self.id = id
-        self.owner_id = owner_id
-        self.category_id = category_id
-        self.content = content
-        
-        if let lat = locationLatitude, let lon = locationLongitude {
-            self.locationLatitude = lat
-            self.locationLongitude = lon
-        }
-
-        if date != nil {
-            self.date = date
-        }
-        
-        self.colorString = colorString
-        self.symbol = symbol
-        
-        print("locationLatitude: \(String(describing: self.locationLatitude))")
-        print("locationLongitude: \(String(describing: self.locationLongitude))")
-    }
-}
+//
+//
+//@MainActor
+//func removeFromSupabase(note: Note) async {
+//    guard let noteID = note.id else { return }
+//    do {
+//        try await SupabaseManager.shared.client
+//            .from("public_notes")
+//            .delete()
+//            .eq("id", value: noteID)
+//            .execute()
+//        print("Deleted note \(noteID) from Supabase.")
+//    } catch {
+//        print("Error deleting from Supabase: \(error)")
+//    }
+//}
+//
+//import CoreData
+//
+//#Preview("Create Mode") {
+//    // 1) Create an in-memory Core Data container for previews
+//    let container = NSPersistentContainer(name: "Model")
+//    container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
+//    container.loadPersistentStores { storeDescription, error in
+//        if let error = error {
+//            fatalError("Failed to load in-memory store for preview: \(error)")
+//        }
+//    }
+//    let viewContext = container.viewContext
+//
+//    // 2) Create a sample Category
+//    let sampleCategory = Category(context: viewContext)
+//    sampleCategory.id = UUID()
+//    sampleCategory.name = "Test Category"
+//    sampleCategory.colorString = "blue"
+//    sampleCategory.symbol = "book"
+//
+//    // 3) Show the NoteEditor in .create mode
+//    NoteEditorView(
+//        mode: .create(sampleCategory),        // <— create
+//        categories: [sampleCategory], context: <#NSManagedObjectContext#>,
+//        isAuthenticated: true,
+//        onSave: {
+//            do {
+//                try viewContext.save()
+//                print("Preview: saved context after creating note.")
+//            } catch {
+//                print("Preview: failed to save context: \(error)")
+//            }
+//        }
+//    )
+//    // Provide a managedObjectContext env for the note
+//    .environment(\.managedObjectContext, viewContext)
+////    .environment(\.colorScheme, .dark)
+//
+//}

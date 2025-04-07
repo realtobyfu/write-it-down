@@ -11,22 +11,24 @@ import CoreLocation
 
 struct LocationSelectionBar: View {
     var location: CLLocationCoordinate2D
+    let placeName: String
     @StateObject private var addressViewModel = LocationAddressViewModel()
     
     var body: some View {
         HStack {
             Image(systemName: "location.fill")
                 .foregroundColor(.purple)
-            Text(addressViewModel.address)
+//            Text(addressViewModel.address)
+            Text(placeName)
                 .font(.subheadline)
             Spacer()
         }
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(8)
-        .onAppear {
-            addressViewModel.fetchAddress(from: location)
-        }
+//        .onAppear {
+//            addressViewModel.fetchAddress(from: location)
+//        }
     }
 }
 
