@@ -25,11 +25,11 @@ struct SettingsView: View {
                 Text("Edit Categories")
             }
             
-            NavigationLink(destination: CategoryEditorListView()) {
-                Text("Account Settings")
-            }
+//            NavigationLink(destination: CategoryEditorListView()) {
+//                Text("Account Settings")
+//            }
 
-            NavigationLink(destination: CategoryEditorListView()) {
+            NavigationLink(destination: SuggestFeatureView()) {
                 Text("Suggest a Feature")
             }
             
