@@ -24,6 +24,7 @@ struct AuthenticationView: View {
             Text("to share notes and interact with other users")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
+                .padding(.horizontal, 7)
             
             // MARK: Email Field
             VStack(alignment: .leading, spacing: 6) {
