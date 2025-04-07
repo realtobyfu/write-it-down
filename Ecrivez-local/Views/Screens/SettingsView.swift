@@ -5,8 +5,8 @@ struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
 
     // Store user preferences in UserDefaults
-    @AppStorage("defaultFontSize") private var defaultFontSize = 18
-    @AppStorage("defaultFontName") private var defaultFontName = "Helvetica"
+//    @AppStorage("defaultFontSize") private var defaultFontSize = 18
+//    @AppStorage("defaultFontName") private var defaultFontName = "Helvetica"
     @AppStorage("isDarkMode") private var isDarkMode = false
     
     // A small list of fonts for demonstration
@@ -45,18 +45,18 @@ struct SettingsView: View {
             // MARK: - New Section for font & color mode
             Section(header: Text("Default Editor Settings")) {
                 
-                // Font name picker
-                Picker("Font Family", selection: $defaultFontName) {
-                    ForEach(availableFonts, id: \.self) { font in
-                        Text(font).tag(font)
-                    }
-                }
-                
+//                // Font name picker
+//                Picker("Font Family", selection: $defaultFontName) {
+//                    ForEach(availableFonts, id: \.self) { font in
+//                        Text(font).tag(font)
+//                    }
+//                }
+//                
 //                // Font size stepper
 //                Stepper("Font Size: \(defaultFontSize)", value: $defaultFontSize, in: 8...48)
-//                
-//                // Toggle for Dark/Light mode
-//                Toggle("Dark Mode", isOn: $isDarkMode)
+                
+                // Toggle for Dark/Light mode
+                Toggle("Dark Mode", isOn: $isDarkMode)
             }
         }
         .navigationTitle("Settings")
