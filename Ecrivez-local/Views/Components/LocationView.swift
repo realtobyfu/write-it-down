@@ -1,5 +1,5 @@
 //
-// ImageSelectionView.swift
+// LocationSelectionBar.swift
 //  Ecrivez-local
 //
 //  Created by Tobias Fu on 9/17/24.

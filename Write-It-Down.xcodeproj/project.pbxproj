@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		3E05DF0F2D39A61C00ECA2DA /* NewUserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E05DF0E2D39A61800ECA2DA /* NewUserProfileView.swift */; };
 		3E05DF112D39A65D00ECA2DA /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E05DF102D39A65B00ECA2DA /* Profile.swift */; };
+		3E0716292DA47E2500E3E13D /* smiley.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E0716282DA47E2500E3E13D /* smiley.json */; };
 		3E231A8F2D9075F300F8E98C /* NoteEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E231A8E2D9075EE00F8E98C /* NoteEditorViewModel.swift */; };
 		3E252DA62CEBAB390053506C /* screenshot.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E252DA52CEBAB390053506C /* screenshot.png */; };
 		3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3109912CB62FA500DB73B9 /* NoteView.swift */; };
@@ -40,7 +41,6 @@
 		3E7B744B2CCD9F2900569AE7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B744A2CCD9F2400569AE7 /* README.md */; };
 		3E7D31352CD5ED730030EAC4 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */; };
 		3E7F82232DA2682300997B54 /* CommentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F82222DA2681B00997B54 /* CommentRowView.swift */; };
-		3E7F824A2DA388E900997B54 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F82492DA388E500997B54 /* AppDelegate.swift */; };
 		3E8250052D4BFBB2006E4D8B /* PublicNoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8250042D4BFBAE006E4D8B /* PublicNoteView.swift */; };
 		3E8E70232C87ADC10001BD86 /* LocationSearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */; };
 		3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E8E70242C87B07F0001BD86 /* MapView.swift */; };
@@ -55,7 +55,6 @@
 		3EC53C732C62DD4000CED78A /* WeatherBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC53C722C62DD4000CED78A /* WeatherBar.swift */; };
 		3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EC53C742C63051000CED78A /* LocationPicker.swift */; };
 		3EC75B872D55AD5D00A4605A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 3EC75B862D55AD5D00A4605A /* Lottie */; };
-		3EC75B892D55B87000A4605A /* smiley.json in Resources */ = {isa = PBXBuildFile; fileRef = 3EC75B882D55B87000A4605A /* smiley.json */; };
 		3ED060312C4EE7ED00392BDC /* NoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060302C4EE7ED00392BDC /* NoteApp.swift */; };
 		3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED060322C4EE7ED00392BDC /* ContentView.swift */; };
 		3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3ED060342C4EE7EF00392BDC /* Assets.xcassets */; };
@@ -85,6 +84,7 @@
 /* Begin PBXFileReference section */
 		3E05DF0E2D39A61800ECA2DA /* NewUserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewUserProfileView.swift; sourceTree = "<group>"; };
 		3E05DF102D39A65B00ECA2DA /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		3E0716282DA47E2500E3E13D /* smiley.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = smiley.json; sourceTree = "<group>"; };
 		3E231A8E2D9075EE00F8E98C /* NoteEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorViewModel.swift; sourceTree = "<group>"; };
 		3E252DA52CEBAB390053506C /* screenshot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot.png; sourceTree = "<group>"; };
 		3E252DA72CEBAC160053506C /* screenshot-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "screenshot-1.png"; sourceTree = "<group>"; };
@@ -110,7 +110,6 @@
 		3E7B744A2CCD9F2400569AE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		3E7F82222DA2681B00997B54 /* CommentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRowView.swift; sourceTree = "<group>"; };
-		3E7F82492DA388E500997B54 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		3E7F824D2DA420E700997B54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3E8250042D4BFBAE006E4D8B /* PublicNoteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublicNoteView.swift; sourceTree = "<group>"; };
 		3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchViewModel.swift; sourceTree = "<group>"; };
@@ -126,7 +125,6 @@
 		3EBD2FF52C97D0B40061BB83 /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
 		3EC53C722C62DD4000CED78A /* WeatherBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherBar.swift; sourceTree = "<group>"; };
 		3EC53C742C63051000CED78A /* LocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPicker.swift; sourceTree = "<group>"; };
-		3EC75B882D55B87000A4605A /* smiley.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = smiley.json; sourceTree = "<group>"; };
 		3ED0602D2C4EE7ED00392BDC /* Ecrivez-local.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ecrivez-local.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ED060302C4EE7ED00392BDC /* NoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteApp.swift; sourceTree = "<group>"; };
 		3ED060322C4EE7ED00392BDC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -178,7 +176,7 @@
 		3E51FF392C64598500D317B7 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
-				3EC75B882D55B87000A4605A /* smiley.json */,
+				3E0716282DA47E2500E3E13D /* smiley.json */,
 				3EEC1D992D553CB500EE6AE0 /* DonationView.swift */,
 				3E8250032D4BFBA5006E4D8B /* Feed */,
 				3E61F2CD2D35A1DD00781812 /* Registration */,
@@ -282,7 +280,6 @@
 		3ED060242C4EE7ED00392BDC = {
 			isa = PBXGroup;
 			children = (
-				3E7F82492DA388E500997B54 /* AppDelegate.swift */,
 				3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */,
 				3E7B744A2CCD9F2400569AE7 /* README.md */,
 				3E252DA72CEBAC160053506C /* screenshot-1.png */,
@@ -431,7 +428,7 @@
 			files = (
 				3E7B744B2CCD9F2900569AE7 /* README.md in Resources */,
 				3ED060352C4EE7EF00392BDC /* Assets.xcassets in Resources */,
-				3EC75B892D55B87000A4605A /* smiley.json in Resources */,
+				3E0716292DA47E2500E3E13D /* smiley.json in Resources */,
 				3EDAA28C2D80A18D00CC0F91 /* TestPlan.xctestplan in Resources */,
 				3E252DA62CEBAB390053506C /* screenshot.png in Resources */,
 			);
@@ -466,7 +463,6 @@
 				3EDB88532D4AD8FE00FE9293 /* NoteEditorView.swift in Sources */,
 				3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */,
 				3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */,
-				3E7F824A2DA388E900997B54 /* AppDelegate.swift in Sources */,
 				3E4CCD9B2DA23CFB00BD65BF /* StorageManager.swift in Sources */,
 				3E8250052D4BFBB2006E4D8B /* PublicNoteView.swift in Sources */,
 				3ED060312C4EE7ED00392BDC /* NoteApp.swift in Sources */,
@@ -556,7 +552,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -633,7 +629,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;

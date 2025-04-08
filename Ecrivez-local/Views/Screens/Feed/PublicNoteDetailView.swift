@@ -109,10 +109,8 @@ struct PublicNoteDetailView: View {
     private var noteHeader: some View {
         HStack(spacing: 16) {
             // Category Icon
-
             Spacer()
 
-            
             VStack(alignment: .leading, spacing: 50) {
                 // Author info
                 
@@ -155,7 +153,7 @@ struct PublicNoteDetailView: View {
     private var actionsBar: some View {
         HStack(spacing: 60) {
             // Like Button with counter
-            VStack(spacing: 4) {
+            HStack(spacing: 10) {
                 Button(action: toggleLike) {
                     Image(systemName: hasLiked ? "heart.fill" : "heart")
                         .resizable()
@@ -172,10 +170,11 @@ struct PublicNoteDetailView: View {
                         .foregroundColor(hasLiked ? .red : .gray)
                 }
             }
-            .frame(height: 50) // Fixed height to prevent movement
+            .padding(.leading, 4)
+            .frame(width: 40, height: 50, alignment: .leading) // Fixed height to prevent movement
             
             // Comment Button with counter
-            VStack(spacing: 4) {
+            HStack(spacing: 10) {
                 Button {
                     withAnimation {
                         showingComments.toggle()
@@ -195,7 +194,7 @@ struct PublicNoteDetailView: View {
                         .foregroundColor(showingComments ? .blue : .gray)
                 }
             }
-            .frame(height: 50) // Fixed height to prevent movement
+            .frame(height: 50, alignment: .leading) // Fixed height to prevent movement
             
             Spacer()
         }
@@ -318,7 +317,9 @@ struct PublicNoteDetailView: View {
             let components = Calendar.current.dateComponents([.minute, .hour, .day], from: date, to: now)
             
             // Show just one time indicator (minutes, hours, or days)
-            if let minutes = components.minute, minutes < 60 {
+            if let seconds = components.second, seconds < 60 {
+                return "Now"
+            } else if let minutes = components.minute, minutes < 60 {
                 return "\(minutes) min\(minutes == 1 ? "" : "s") ago"
             } else if let hours = components.hour, hours < 24 {
                 return "\(hours) hour\(hours == 1 ? "" : "s") ago"

@@ -35,6 +35,12 @@ struct ProfileView: View {
     // Optional to open local note in a sheet
     @State private var selectedLocalNote: Note?
     @State private var showingNoteEditor = false
+    
+    // Add a loading state
+    @State private var isLoadingEditor = false
+
+    // Pre-fetch categories in onAppear rather than during sheet presentation
+    @State private var cachedCategories: [Category] = []
 
     var body: some View {
         ScrollView {
@@ -50,11 +56,18 @@ struct ProfileView: View {
                     staticProfileFields
                 }
                 
-                Button("Log out") {
-                    authVM.signOut()
+                HStack {
+                    // Edit Profile button
+                    Button("Edit Profile") {
+                        isEditing = true
+                    }
+                    .padding(.trailing, 10)
+
+                    Button("Log out") {
+                        authVM.signOut()
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
-                
                 // Show any error messages
                 if let errorMessage {
                     Text(errorMessage)
@@ -96,14 +109,30 @@ struct ProfileView: View {
             if let note = selectedLocalNote {
                 NoteEditorView(
                     mode: .edit(note),
-                    categories: fetchCategories(), context: context,
+                    categories: cachedCategories, context: context,
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: {
-                        // Possibly re-fetch from supabase if needed
+                        Task {
+                            try await loadMyPublicNotes()
+                        }
                     }
                 )
             }
         }
+        .onAppear {
+            // Ensure quick presentation with loading indicator
+            isLoadingEditor = true
+            
+            // Load resources on a background thread
+            Task {
+                // Fetch the categories asynchronously
+                cachedCategories = await fetchCategoriesAsync()
+                
+                // Signal that loading is complete
+                isLoadingEditor = false
+            }
+        }
+
         // Camera picker sheet
         .sheet(isPresented: $isShowingCameraPicker, onDismiss: {
             if let imageData = selectedImageData {
@@ -131,76 +160,74 @@ struct ProfileView: View {
 
 // MARK: - Subviews & Helpers
 extension ProfileView {
+    
+    @MainActor
+    private func fetchCategoriesAsync() async -> [Category] {
+        let request = NSFetchRequest<Category>(entityName: "Category")
+        do {
+            let results = try context.fetch(request)
+            return results
+        } catch {
+            print("Error fetching categories: \(error)")
+            return []
+        }
+    }
+
     // MARK: Profile Photo
     @ViewBuilder
     var profilePhotoSection: some View {
         ZStack {
-            if let selectedImageData,
-               let uiImage = UIImage(data: selectedImageData) {
-                // Show the newly picked image (if in edit mode)
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 120, height: 120)
-                    .clipShape(Circle())
-                    .onAppear {
-                        print("Displaying newly selected image: \(selectedImageData.count) bytes")
-                    }
-            }
-            else if let profilePhotoUrl = editedProfile.profile_photo_url,
-                    let url = URL(string: profilePhotoUrl) {
-                // Show the existing photo from URL
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .frame(width: 120, height: 120)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 120, height: 120)
-                            .clipShape(Circle())
-                    case .failure(let error):
-                        Image(systemName: "person.crop.circle")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 120, height: 120)
-                            .foregroundColor(.gray)
-                            .onAppear {
-                                print("Failed to load profile image URL: \(error)")
-                            }
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
-            }
-            else {
+//            if let selectedImageData,
+//               let uiImage = UIImage(data: selectedImageData) {
+//                // Show the newly picked image (if in edit mode)
+//                Image(uiImage: uiImage)
+//                    .resizable()
+//                    .scaledToFill()
+//                    .frame(width: 120, height: 120)
+//                    .clipShape(Circle())
+//                    .onAppear {
+//                        print("Displaying newly selected image: \(selectedImageData.count) bytes")
+//                    }
+//            }
+//            else if let profilePhotoUrl = editedProfile.profile_photo_url,
+//                    let url = URL(string: profilePhotoUrl) {
+//                // Show the existing photo from URL
+//                AsyncImage(url: url) { phase in
+//                    switch phase {
+//                    case .empty:
+//                        ProgressView()
+//                            .frame(width: 80, height: 80)
+//                    case .success(let image):
+//                        image
+//                            .resizable()
+//                            .scaledToFill()
+//                            .frame(width: 120, height: 120)
+//                            .clipShape(Circle())
+//                    case .failure(let error):
+//                        Image(systemName: "person.crop.circle")
+//                            .resizable()
+//                            .scaledToFill()
+//                            .frame(width: 120, height: 120)
+//                            .foregroundColor(.gray)
+//                            .onAppear {
+//                                print("Failed to load profile image URL: \(error)")
+//                            }
+//                    @unknown default:
+//                        EmptyView()
+//                    }
+//                }
+//            }
+//            else {
                 // No image set, fallback to user icon
                 Image(systemName: "person.crop.circle")
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 120, height: 120)
-                    .foregroundColor(.gray)
-            }
+                    .frame(width: 70, height: 70)
+                    .foregroundColor(.blue)
+//            }
             
             // Show uploading indicator if applicable
-            if isUploading {
-                ProgressView()
-                    .frame(width: 120, height: 120)
-                    .background(Color.black.opacity(0.3))
-                    .clipShape(Circle())
-            }
         }
-        .overlay(
-            Group {
-                if isEditing {
-                    Circle()
-                        .stroke(Color.blue, lineWidth: 3)
-                        .frame(width: 120, height: 120)
-                }
-            }
-        )
     }
     
     // MARK: Editing Fields
@@ -215,37 +242,37 @@ extension ProfileView {
             .padding(.horizontal)
         
         // Use a combination of confirmation dialog for camera and PhotosPicker for library
-        VStack(spacing: 12) {
-            Button("Change Profile Photo") {
-                isConfirmationDialogPresented = true
-            }
-            .confirmationDialog(
-                "Select Image Source",
-                isPresented: $isConfirmationDialogPresented,
-                actions: {
-                    Button("Take Photo") {
-                        isShowingCameraPicker = true
-                    }
-                    
-                    // Instead of a button for photo library, we'll use the PhotosPicker below
-                    Button("Cancel", role: .cancel) { }
-                },
-                message: {
-                    Text("How would you like to add a photo?")
-                }
-            )
-            
-            // Using the native PhotosPicker that is known to work
-            PhotosPicker("Select from Photos", selection: $selectedImageItem, matching: .images)
-                .onChange(of: selectedImageItem) { newItem in
-                    Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                            selectedImageData = data
-                            print("PhotosPicker: Image data loaded successfully: \(data.count) bytes")
-                        }
-                    }
-                }
-        }
+//        VStack(spacing: 12) {
+//            Button("Change Profile Photo") {
+//                isConfirmationDialogPresented = true
+//            }
+//            .confirmationDialog(
+//                "Select Image Source",
+//                isPresented: $isConfirmationDialogPresented,
+//                actions: {
+//                    Button("Take Photo") {
+//                        isShowingCameraPicker = true
+//                    }
+//
+//                    // Instead of a button for photo library, we'll use the PhotosPicker below
+//                    Button("Cancel", role: .cancel) { }
+//                },
+//                message: {
+//                    Text("How would you like to add a photo?")
+//                }
+//            )
+//
+//            // Using the native PhotosPicker that is known to work
+//            PhotosPicker("Select from Photos", selection: $selectedImageItem, matching: .images)
+//                .onChange(of: selectedImageItem) { newItem in
+//                    Task {
+//                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+//                            selectedImageData = data
+//                            print("PhotosPicker: Image data loaded successfully: \(data.count) bytes")
+//                        }
+//                    }
+//                }
+//        }
         
         // Save/Cancel buttons
         HStack(spacing: 20) {
@@ -276,11 +303,6 @@ extension ProfileView {
                 .foregroundColor(.secondary)
         }
         
-        // Edit Profile button
-        Button("Edit Profile") {
-            isEditing = true
-        }
-        .padding(.top, 10)
     }
     
     // MARK: Building the MyPublicNotes row

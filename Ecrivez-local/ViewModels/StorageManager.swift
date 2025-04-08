@@ -102,8 +102,8 @@ class StorageManager {
             _ = try await supabase.storage
                 .from(bucketName)
                 .upload(
-                    path: fileName,
-                    file: imageData,
+                    fileName,
+                    data: imageData,
                     options: FileOptions(
                         cacheControl: "3600",
                         upsert: true

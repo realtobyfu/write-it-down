@@ -86,13 +86,15 @@ struct NoteEditorView: View {
                 RichTextKeyboardToolbar(
                     context: contextRT,
                     leadingButtons: { $0 },
-                    trailingButtons: { _ in
-                        // Add this
-                        Button(action: {
-                            isConfirmationDialogPresented = true
-                        }, label: {
-                            Image(systemName: "photo")
-                        })
+                    trailingButtons: {
+                        $0
+//                        _ in
+//                        // Add this
+//                        Button(action: {
+//                            isConfirmationDialogPresented = true
+//                        }, label: {
+//                            Image(systemName: "photo")
+//                        })
                     },
                     formatSheet: { $0 }
                 )
@@ -107,15 +109,22 @@ struct NoteEditorView: View {
                 
                 
                 if isAuthenticated {
-                    if viewModel.isPublic {
-                        Toggle("Anonymous Post?", isOn: $viewModel.isAnonymous)
-                            .padding(.vertical, 0)
+                    HStack(spacing: 16) {
+                        // Public Toggle
+                        Toggle("Make Public", isOn: $viewModel.isPublic)
+                            .toggleStyle(SwitchToggleStyle(tint: .blue))
+                        
+                        // Only show Anonymous toggle when Public is enabled
+                        if viewModel.isPublic {
+                            Divider()
+                                .frame(height: 24)
+                            
+                            Toggle("Anonymous", isOn: $viewModel.isAnonymous)
+                                .toggleStyle(SwitchToggleStyle(tint: .gray))
+                        }
                     }
-                    
-                    Toggle("Make Public", isOn: $viewModel.isPublic)
-                        .padding(.vertical, 8)
+                    .padding(.vertical, 8)
                 }
-                
                 // Location Picker View
                 HStack {
                     if let location = viewModel.location {

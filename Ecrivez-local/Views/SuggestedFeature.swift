@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@MainActor
 struct SuggestFeatureView: View {
     @Environment(\.presentationMode) private var presentationMode
     @State private var featureTitle: String = ""
@@ -57,6 +58,7 @@ struct SuggestFeatureView: View {
         }
     }
 
+    
     private func submitSuggestion() async {
         let suggestion = FeatureSuggestion(
             id: nil, // Supabase generates this automatically
