@@ -63,22 +63,43 @@ extension Note {
         }
     }
     
+    // Update the placeName property with logic for landmark vs locality
     var placeName: String {
+        get {
+            // If landmark (locationName) is less than 12 chars, use it
+            // Otherwise fall back to locality if available
+            if let name = locationName, name.count < 12 {
+                return name
+            } else if let locality = locationLocality, !locality.isEmpty {
+                return locality
+            } else {
+                return locationName ?? ""
+            }
+        }
+        set { locationName = newValue }
+    }
+    
+    // Add a new computed property for direct access to landmark
+    var landmark: String {
         get { locationName ?? "" }
         set { locationName = newValue }
+    }
+    
+    // Add a new computed property for direct access to locality
+    var locality: String {
+        get { locationLocality ?? "" }
+        set { locationLocality = newValue }
     }
 
 }
 
 extension Note {
     func toSupabaseNote(ownerID: UUID) -> SupabaseNote {
-        
         // Convert the raw RTF Data into a base64 string
         let rtfString = self.attributedTextData?.base64EncodedString()
         
         print("longitude: \(String(describing: self.locationLongitude))")
         print("latitude: \(String(describing: self.locationLatitude))")
-
         
         return SupabaseNote(
             id: self.id ?? UUID(),
@@ -89,9 +110,10 @@ extension Note {
             // Full RTF as base64
             rtf_content: rtfString,
             date: self.date,
-            locationName: self.placeName,
+            locationName: self.landmark,
+            locationLocality: self.locality,
             locationLatitude: self.locationLatitude?.stringValue,
-            locationLongitude:self.locationLongitude?.stringValue,
+            locationLongitude: self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",
             symbol: self.category?.symbol ?? "",
             isAnnonymous: self.isAnnonymous

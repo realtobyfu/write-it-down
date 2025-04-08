@@ -510,7 +510,7 @@ struct PublicNoteDetailView: View {
                 content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
                 rtf_content: nil,
                 date: Date(),
-                locationName: "San Francisco",
+                locationName: "Twitter, Inc.", locationLocality: "San Francisco",
                 locationLatitude: "37.7749",
                 locationLongitude: "-122.4194",
                 colorString: "blue",

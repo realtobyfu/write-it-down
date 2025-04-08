@@ -5,9 +5,9 @@ import MapKit
 struct LocationPickerView: View {
     @Binding var location: CLLocationCoordinate2D?
     @Binding var locationName: String?
+    @Binding var locationLocality: String? // Added new binding for locality
 
     @Environment(\.presentationMode) var presentationMode
-
     @StateObject private var searchViewModel = LocationSearchViewModel()
 
     var body: some View {
@@ -44,6 +44,7 @@ struct LocationPickerView: View {
                     Button(action: {
                         location = mapItem.placemark.coordinate
                         locationName = mapItem.name
+                        locationLocality = mapItem.placemark.locality // Store the city/town
                         searchViewModel.region.center = mapItem.placemark.coordinate
                         searchViewModel.searchText = mapItem.name ?? ""
                     }) {
@@ -89,8 +90,12 @@ struct LocationPickerView: View {
     }
 }
 
-extension CLLocationCoordinate2D: @retroactive Equatable {
+extension CLLocationCoordinate2D: @retroactive Equatable, Identifiable {
     public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
         lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+    
+    public var id: String {
+        "\(latitude),\(longitude)"
     }
 }
