@@ -68,6 +68,7 @@ struct ContentView: View {
                 // Top Bar
                 HStack {
                     Text("Ideas")
+                        .italic()
                         .font(.title)
                         .fontWeight(.medium)
                     Spacer()
