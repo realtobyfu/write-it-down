@@ -26,11 +26,11 @@ struct DonationView: View {
     // Dynamic color based on donation amount
     private var donationColor: Color {
         switch closestDonationStep {
-        case 0.0: return .blue
+        case 0.0: return .pink
         case 0.2: return .teal
         case 0.4: return .green
         case 0.6: return .orange
-        case 0.8: return .pink
+        case 0.8: return .blue
         case 1.0: return .purple
         default: return .blue
         }

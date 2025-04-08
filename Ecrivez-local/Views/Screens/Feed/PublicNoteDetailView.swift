@@ -1,14 +1,21 @@
+//
+//  PublicNoteDetailView.swift
+//  Ecrivez-local
+//
+//  Created by Tobias Fu on 2/5/25.
+//  Redesigned with improved UI and comment functionality
+//
+
 import SwiftUI
 import CoreLocation
 
 struct PublicNoteDetailView: View {
+    
     let note: SupabaseNote
     let isAuthenticated: Bool
     let currentUserID: UUID?
     
     @State private var locationString: String = ""
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.presentationMode) private var presentationMode
 
     // MARK: - State Variables
     @State private var hasLiked = false
@@ -16,12 +23,19 @@ struct PublicNoteDetailView: View {
     @State private var animateLike = false
     @State private var commentText = ""
     @State private var showingComments = false
-    @State private var showingAuthView = false
     
+    // Sample comments for UI preview
     @State private var comments: [CommentModel] = []
     @State private var isLoadingComments = false
-    @State private var showCommentError = false
+    @State private var showAddCommentError = false
     @State private var errorMessage = ""
+
+    struct CommentPreview: Identifiable {
+        let id = UUID()
+        let username: String
+        let text: String
+        let timestamp: Date
+    }
     
     var body: some View {
         ScrollView {
@@ -35,10 +49,10 @@ struct PublicNoteDetailView: View {
                     Text(note.content)
                         .font(.body)
                         .padding(.horizontal)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
                     
                     // MARK: - Metadata
                     HStack(spacing: 16) {
+                        
                         Spacer()
 
                         // Date
@@ -62,19 +76,12 @@ struct PublicNoteDetailView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .foregroundColor(colorScheme == .dark ? .gray : .secondary)
+                    .foregroundColor(.secondary)
                 }
                 .padding()
-                .background(colorScheme == .dark ? Color.black.opacity(0.6) : Color.white)
+                .background(Color.white)
                 .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                )
-                .shadow(color: colorScheme == .dark ? Color.blue.opacity(0.2) : Color.black.opacity(0.1),
-                       radius: colorScheme == .dark ? 8 : 5,
-                       x: 0,
-                       y: colorScheme == .dark ? 2 : 1)
+                .shadow(color: Color.black.opacity(0.1), radius: 5)
                 .padding()
                 
                 // MARK: - Actions Bar
@@ -96,21 +103,21 @@ struct PublicNoteDetailView: View {
                 await loadComments()
             }
         }
-        .sheet(isPresented: $showingAuthView) {
-            AuthenticationView(authVM: AuthViewModel())
-        }
     }
     
     // MARK: - Note Header
     private var noteHeader: some View {
         HStack(spacing: 16) {
+            // Category Icon
             Spacer()
-            
+
             VStack(alignment: .leading, spacing: 50) {
+                // Author info
+                
                 if note.isAnnonymous == true {
                     Text("anonymous")
                         .font(.headline)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .foregroundColor(.black)
                 } else if let userName = note.profiles?.username {
                     HStack(spacing: 0) {
                         Text("@")
@@ -119,14 +126,14 @@ struct PublicNoteDetailView: View {
                             .font(.custom("Baskerville", size: 25))
                             .italic()
                     }
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 } else {
+                    // Fallback if both conditions fail
                     Text("User")
                         .font(.custom("Baskerville", size: 25))
                         .italic()
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
                 }
             }
+            .foregroundColor(.black)
 
             ZStack {
                 Circle()
@@ -137,6 +144,7 @@ struct PublicNoteDetailView: View {
                     .font(.title2)
                     .foregroundColor(.white)
             }
+
         }
         .padding(.bottom, 0)
     }
@@ -144,68 +152,57 @@ struct PublicNoteDetailView: View {
     // MARK: - Actions Bar
     private var actionsBar: some View {
         HStack(spacing: 60) {
-            // Like Button with counter horizontally aligned
-            Button(action: {
-                if isAuthenticated {
-                    toggleLike()
-                } else {
-                    // Redirect to auth view if not authenticated
-                    showingAuthView = true
-                }
-            }) {
-                HStack(spacing: 8) {
+            // Like Button with counter
+            HStack(spacing: 10) {
+                Button(action: toggleLike) {
                     Image(systemName: hasLiked ? "heart.fill" : "heart")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                        .foregroundColor(hasLiked ? .red : (colorScheme == .dark ? .white : .gray))
+                        .foregroundColor(hasLiked ? .red : .gray)
                         .scaleEffect(animateLike ? 1.2 : 1.0)
-                    
-                    if likeCount > 0 {
-                        Text("\(likeCount)")
-                            .font(.subheadline)
-                            .foregroundColor(hasLiked ? .red : (colorScheme == .dark ? .white : .gray))
-                    }
+                }
+                .buttonStyle(StaticButtonStyle())
+                
+                if likeCount > 0 {
+                    Text("\(likeCount)")
+                        .font(.caption)
+                        .foregroundColor(hasLiked ? .red : .gray)
                 }
             }
-            .buttonStyle(StaticButtonStyle())
+            .padding(.leading, 4)
+            .frame(width: 40, height: 50, alignment: .leading) // Fixed height to prevent movement
             
-            // Comment Button with counter horizontally aligned
-            Button {
-                withAnimation {
-                    showingComments.toggle()
-                }
-            } label: {
-                HStack(spacing: 8) {
+            // Comment Button with counter
+            HStack(spacing: 10) {
+                Button {
+                    withAnimation {
+                        showingComments.toggle()
+                    }
+                } label: {
                     Image(systemName: showingComments ? "bubble.left.fill" : "bubble.left")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                        .foregroundColor(showingComments ? .blue : (colorScheme == .dark ? .white : .gray))
-                    
-                    if comments.count > 0 {
-                        Text("\(comments.count)")
-                            .font(.subheadline)
-                            .foregroundColor(showingComments ? .blue : (colorScheme == .dark ? .white : .gray))
-                    }
+                        .foregroundColor(showingComments ? .blue : .gray)
+                }
+                .buttonStyle(StaticButtonStyle())
+                
+                if comments.count > 0 {
+                    Text("\(comments.count)")
+                        .font(.caption)
+                        .foregroundColor(showingComments ? .blue : .gray)
                 }
             }
-            .buttonStyle(StaticButtonStyle())
+            .frame(height: 50, alignment: .leading) // Fixed height to prevent movement
             
             Spacer()
         }
         .padding(.horizontal, 30)
         .padding(.vertical, 12)
-        .background(colorScheme == .dark ? Color.black.opacity(0.6) : Color.white)
+        .background(Color.white)
         .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-        .shadow(color: colorScheme == .dark ? Color.blue.opacity(0.2) : Color.black.opacity(0.05),
-               radius: colorScheme == .dark ? 8 : 5,
-               x: 0,
-               y: colorScheme == .dark ? 2 : 1)
+        .shadow(color: Color.black.opacity(0.05), radius: 5)
     }
     
     // Custom button style to prevent movement when pressed
@@ -221,14 +218,12 @@ struct PublicNoteDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Comments")
                 .font(.headline)
-                .foregroundColor(colorScheme == .dark ? .white : .black)
             
             // New Comment Entry
             if isAuthenticated {
                 HStack {
                     TextField("Add a comment...", text: $commentText)
                         .textFieldStyle(.roundedBorder)
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
                     
                     Button {
                         if !commentText.isEmpty {
@@ -242,50 +237,51 @@ struct PublicNoteDetailView: View {
                     .buttonStyle(.bordered)
                     .disabled(commentText.isEmpty)
                 }
-            } else {
-                Button("Sign in to comment") {
-                    showingAuthView = true
-                }
-                .buttonStyle(.bordered)
-                .padding(.vertical)
             }
             
             // Comments List
             if isLoadingComments {
                 ProgressView("Loading comments...")
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .padding(.top)
             } else if comments.isEmpty {
                 Text("No comments yet")
                     .italic()
-                    .foregroundColor(colorScheme == .dark ? .gray : .secondary)
+                    .foregroundColor(.secondary)
                     .padding(.top)
             } else {
                 ForEach(comments) { comment in
-                    CommentView(comment: comment, colorScheme: colorScheme)
+                    CommentRowView(
+                        comment: comment,
+                        isOwner: comment.user_id == currentUserID,
+                        onDelete: {
+                            Task {
+                                await deleteComment(commentID: comment.id)
+                            }
+                        },
+                        onEdit: { newContent in
+                            Task {
+                                await editComment(commentID: comment.id, newContent: newContent)
+                            }
+                        }
+                    )
                 }
             }
         }
         .padding()
-        .background(colorScheme == .dark ? Color.black.opacity(0.6) : Color.white)
+        .background(Color.white)
         .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-        .shadow(color: colorScheme == .dark ? Color.blue.opacity(0.2) : Color.black.opacity(0.1),
-               radius: colorScheme == .dark ? 8 : 5,
-               x: 0,
-               y: colorScheme == .dark ? 2 : 1)
-        .alert(isPresented: $showCommentError) {
-            Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+        .shadow(color: Color.black.opacity(0.1), radius: 5)
+        .alert(isPresented: $showAddCommentError) {
+            Alert(
+                title: Text("Error"),
+                message: Text(errorMessage),
+                dismissButton: .default(Text("OK"))
+            )
         }
     }
     
     // MARK: - Comment View
     struct CommentView: View {
-        let comment: CommentModel
-        let colorScheme: ColorScheme
+        let comment: CommentPreview
         
         var body: some View {
             VStack(alignment: .leading, spacing: 8) {
@@ -294,27 +290,23 @@ struct PublicNoteDetailView: View {
                         HStack(spacing: 0) {
                             Text("@")
                                 .font(.subheadline)
-                                .foregroundColor(colorScheme == .dark ? .white : .black)
 
-                            Text("\(comment.profiles?.username ?? "User")")
+                            Text("\(comment.username)")
                                 .font(.custom("Baskerville", size: 18))
                                 .italic()
-                                .foregroundColor(colorScheme == .dark ? .white : .black)
                         }
 
                         // Simplified timestamp format
-                        Text(formattedTimestamp(for: comment.created_at ?? Date()))
+                        Text(formattedTimestamp(for: comment.timestamp))
                             .font(.caption)
-                            .foregroundColor(colorScheme == .dark ? .gray : .secondary)
+                            .foregroundColor(.secondary)
                     }
                 }
                 
-                Text(comment.content)
+                Text(comment.text)
                     .font(.body)
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 
                 Divider()
-                    .background(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.gray.opacity(0.2))
             }
             .padding(.vertical, 4)
         }
@@ -324,7 +316,10 @@ struct PublicNoteDetailView: View {
             let now = Date()
             let components = Calendar.current.dateComponents([.minute, .hour, .day], from: date, to: now)
             
-            if let minutes = components.minute, minutes < 60 {
+            // Show just one time indicator (minutes, hours, or days)
+            if let seconds = components.second, seconds < 60 {
+                return "Now"
+            } else if let minutes = components.minute, minutes < 60 {
                 return "\(minutes) min\(minutes == 1 ? "" : "s") ago"
             } else if let hours = components.hour, hours < 24 {
                 return "\(hours) hour\(hours == 1 ? "" : "s") ago"
@@ -347,12 +342,14 @@ struct PublicNoteDetailView: View {
         return df.string(from: date)
     }
     
+    
+    
     private func loadLikeState() async {
         do {
             // Get the current like count
             likeCount = try await NoteRepository.shared.fetchLikeCount(noteID: note.id)
             
-            // Check if the current user has liked this note (only if authenticated)
+            // Check if the current user has liked this note
             if isAuthenticated {
                 hasLiked = await NoteRepository.shared.checkUserLikedNote(noteID: note.id)
             } else {
@@ -362,48 +359,39 @@ struct PublicNoteDetailView: View {
             print("Error loading like state: \(error)")
         }
     }
-    
+//    private func loadLikeState() async {
+//        // Mock data for UI preview
+//        hasLiked = true
+//        likeCount = 42
+//    }
+//    
     private func toggleLike() {
-        // Only perform optimistic UI update if authenticated
-        if isAuthenticated {
-            hasLiked.toggle()
-            likeCount += hasLiked ? 1 : -1
-            
-            animateLike = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                withAnimation(.spring()) {
-                    animateLike = false
-                }
+        hasLiked.toggle()
+        likeCount += hasLiked ? 1 : -1
+        
+        animateLike = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.spring()) {
+                animateLike = false
             }
-            
-            Task {
-                await updateDatabaseLike()
-            }
+        }
+        
+        Task {
+            await updateDatabaseLike()
         }
     }
     
     private func updateDatabaseLike() async {
         do {
-            try await NoteRepository.shared.toggleLike(noteID: note.id)
+            guard isAuthenticated else {
+                // Handle unauthenticated user
+                return
+            }
             
-            // Refresh like state to ensure UI is correct
-            await loadLikeState()
+            try await NoteRepository.shared.toggleLike(noteID: note.id)
         } catch {
+            // Handle error (perhaps show an alert)
             print("Error toggling like: \(error)")
-            // Restore previous state if there was an error
-            await loadLikeState()
-        }
-    }
-    
-    private func loadComments() async {
-        isLoadingComments = true
-        defer { isLoadingComments = false }
-        
-        do {
-            comments = try await NoteRepository.shared.fetchComments(noteID: note.id)
-        } catch {
-            errorMessage = "Failed to load comments: \(error.localizedDescription)"
-            showCommentError = true
         }
     }
     
@@ -411,6 +399,7 @@ struct PublicNoteDetailView: View {
         guard !commentText.isEmpty else { return }
         
         do {
+            // Add the comment to the database
             try await NoteRepository.shared.addComment(noteID: note.id, content: commentText)
             
             // Refresh comments
@@ -420,7 +409,59 @@ struct PublicNoteDetailView: View {
             commentText = ""
         } catch {
             errorMessage = "Failed to post comment: \(error.localizedDescription)"
-            showCommentError = true
+            showAddCommentError = true
+        }
+    }
+
+    private func loadComments() async {
+        isLoadingComments = true
+        defer { isLoadingComments = false }
+        
+        do {
+            comments = try await NoteRepository.shared.fetchComments(noteID: note.id)
+        } catch {
+            errorMessage = "Failed to load comments: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
+    }
+//    private func loadSampleComments() {
+//        // Create some sample comments for preview
+//        comments = [
+//            CommentPreview(
+//                username: "sarah",
+//                text: "This is really insightful, thanks for sharing!",
+//                timestamp: Date().addingTimeInterval(-3600) // 1 hour ago
+//            ),
+//            CommentPreview(
+//                username: "alex",
+//                text: "I've been thinking about this topic lately. Great perspective.",
+//                timestamp: Date().addingTimeInterval(-86400) // 1 day ago
+//            ),
+//            CommentPreview(
+//                username: "jordan",
+//                text: "Have you considered looking at it from another angle? Would be interesting to discuss.",
+//                timestamp: Date().addingTimeInterval(-259200) // 3 days ago
+//            )
+//        ]
+//    }
+    
+    private func deleteComment(commentID: UUID) async {
+        do {
+            try await NoteRepository.shared.deleteComment(commentID: commentID)
+            await loadComments()
+        } catch {
+            errorMessage = "Failed to delete comment: \(error.localizedDescription)"
+            showAddCommentError = true
+        }
+    }
+
+    private func editComment(commentID: UUID, newContent: String) async {
+        do {
+            try await NoteRepository.shared.updateComment(commentID: commentID, newContent: newContent)
+            await loadComments()
+        } catch {
+            errorMessage = "Failed to update comment: \(error.localizedDescription)"
+            showAddCommentError = true
         }
     }
     
@@ -455,5 +496,29 @@ struct PublicNoteDetailView: View {
             case "indigo":  return .indigo
             default:        return .black
         }
+    }
+}
+
+// MARK: - Preview
+#Preview {
+    NavigationStack {
+        PublicNoteDetailView(
+            note: SupabaseNote(
+                id: UUID(),
+                owner_id: UUID(),
+                category_id: UUID(),
+                content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
+                rtf_content: nil,
+                date: Date(),
+                locationName: "San Francisco",
+                locationLatitude: "37.7749",
+                locationLongitude: "-122.4194",
+                colorString: "blue",
+                symbol: "book.fill",
+                isAnnonymous: false
+            ),
+            isAuthenticated: true,
+            currentUserID: UUID()
+        )
     }
 }
