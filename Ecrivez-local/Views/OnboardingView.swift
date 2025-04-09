@@ -222,7 +222,10 @@ struct OnboardingView: View {
                         .frame(height: 200)
                     
                     if let attributedText = try? NSAttributedString(
-                        data: $demoNote.rtf(from: NSRange(location: 0, length: demoNote.length)) ?? Data(),
+                        data: $demoNote.wrappedValue.data(
+                            from: NSRange(location: 0, length: $demoNote.wrappedValue.length),
+                            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+                        ) ?? Data(),
                         options: [.documentType: NSAttributedString.DocumentType.rtf],
                         documentAttributes: nil
                     ) {
