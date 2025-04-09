@@ -17,6 +17,10 @@ struct MyPublicNotesView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     
+    // Add this state variable for the selected note
+    @State private var selectedLocalNote: Note?
+    @State private var showingNoteEditor = false
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -39,8 +43,37 @@ struct MyPublicNotesView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 Task {
-                    try await NoteRepository.shared.fetchMyPublicNotes() }
+                    await loadMyPublicNotes()
+                }
             }
+            // Add sheet presentation for the selected note
+            .sheet(isPresented: $showingNoteEditor) {
+                if let note = selectedLocalNote {
+                    NoteEditorView(
+                        mode: .edit(note),
+                        categories: fetchCategories(),
+                        context: context,
+                        isAuthenticated: authVM.isAuthenticated,
+                        onSave: {
+                            Task {
+                                await loadMyPublicNotes()
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+    
+    // Add this function to actually load and store the notes
+    private func loadMyPublicNotes() async {
+        isLoading = true
+        defer { isLoading = false }
+        
+        do {
+            myNotes = try await NoteRepository.shared.fetchMyPublicNotes()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
     
@@ -50,14 +83,12 @@ struct MyPublicNotesView: View {
         // 1) Check if there's a matching local note in Core Data
         if let localNote = fetchLocalNote(with: supaNote.id) {
             // If the note is local, allow editing
-            NavigationLink(destination: {
-                NoteEditorView(
-                    mode: .edit(localNote),
-                    categories: fetchCategories(), context: context,                        isAuthenticated: authVM.isAuthenticated,
-                    onSave: { /* do any extra save logic if needed */ }
-                )
-            }) {
+            Button {
+                selectedLocalNote = localNote
+                showingNoteEditor = true
+            } label: {
                 PublicNoteRow(supaNote: supaNote)
+                    .foregroundColor(.primary) // Make it look like a regular row
             }
         } else {
             // If no local note, just show a row that can be deleted from Supabase
@@ -67,6 +98,8 @@ struct MyPublicNotesView: View {
                 Button(role: .destructive) {
                     Task {
                         try await NoteRepository.shared.deletePublicNote(supaNote.id)
+                        // Refresh the list after deletion
+                        await loadMyPublicNotes()
                     }
                 } label: {
                     Image(systemName: "trash")
@@ -106,7 +139,6 @@ struct MyPublicNotesView: View {
 }
 
 // MARK: - Row Display
-/// A small subview for a single row. E.g. you can do a minimal display or replicate `PublicNoteView`.
 struct PublicNoteRow: View {
     let supaNote: SupabaseNote
     

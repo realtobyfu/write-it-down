@@ -112,7 +112,7 @@ class NoteRepository {
             content: note.attributedText.string,   // plain text
             rtf_content: base64RTF,               // full RTF
             date: note.date,
-            locationName: note.placeName,
+            locationName: note.landmark, locationLocality: note.locality,
             locationLatitude: note.locationLatitude?.stringValue,
             locationLongitude: note.locationLongitude?.stringValue,
             colorString: note.category?.colorString ?? "",

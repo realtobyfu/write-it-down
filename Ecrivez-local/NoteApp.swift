@@ -17,27 +17,44 @@ struct NoteApp: App {
     // optional: show a message indicating the user is logged in
     // go to the home screen
     @StateObject private var dataController = DataController()
-    
-    
     @StateObject private var authVM = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @State private var showOnboarding = false
+    
+    @AppStorage("appOpenCount") private var appOpenCount = 0
+    @State private var showDonationView = false
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, dataController.container.viewContext)
-                .environmentObject(authVM)
-                .preferredColorScheme(isDarkMode ? .dark : .light)
-
-                .onOpenURL { url in
-                    Task {
-                        await handleURL(url: url)
+            if !hasSeenOnboarding {
+                OnboardingView(showOnboarding: $showOnboarding)
+            } else {
+                ContentView()
+                    .environment(\.managedObjectContext, dataController.container.viewContext)
+                    .environmentObject(authVM)
+                    .preferredColorScheme(isDarkMode ? .dark : .light)
+                
+                    .onOpenURL { url in
+                        Task {
+                            await handleURL(url: url)
+                        }
                     }
-                }
-                .task {
-                    // On launch, check if there's an existing valid session
-                    await authVM.checkIsAuthenticated()
-                }
+                    .task {
+                        // On launch, check if there's an existing valid session
+                        await authVM.checkIsAuthenticated()
+                        
+                        appOpenCount += 1
+                        
+                        // Show donation view after 3 opens
+                        if appOpenCount == 3 {
+                            // Delay showing the donation view slightly for better UX
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                showDonationView = true
+                            }
+                        }
+                    }
+            }
         }
     }
     

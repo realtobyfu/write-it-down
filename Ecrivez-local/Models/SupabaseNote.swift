@@ -17,11 +17,12 @@ struct SupabaseNote: Codable, Identifiable {
     var rtf_content: String?
     
     var date: Date?
-    var locationName: String?  
+    var locationName: String?
+    var locationLocality: String?  // Add new field
     var locationLongitude: String?
     var locationLatitude: String?
     
-    var isAnnonymous: Bool?  // <-- This was already declared
+    var isAnnonymous: Bool?
     
     let colorString: String
     let symbol: String
@@ -35,7 +36,7 @@ struct SupabaseNote: Codable, Identifiable {
     private enum CodingKeys: String, CodingKey {
         case id, owner_id, category_id
         case content, rtf_content
-        case date, locationLongitude, locationLatitude
+        case date, locationName, locationLocality, locationLongitude, locationLatitude
         case isAnnonymous
         case colorString, symbol
         case profiles
@@ -59,6 +60,8 @@ struct SupabaseNote: Codable, Identifiable {
             self.date = nil
         }
         
+        self.locationName = try container.decodeIfPresent(String.self, forKey: .locationName)
+        self.locationLocality = try container.decodeIfPresent(String.self, forKey: .locationLocality)
         self.locationLongitude = try container.decodeIfPresent(String.self, forKey: .locationLongitude)
         self.locationLatitude = try container.decodeIfPresent(String.self, forKey: .locationLatitude)
         self.isAnnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnnonymous)
@@ -77,6 +80,7 @@ struct SupabaseNote: Codable, Identifiable {
          rtf_content: String?,
          date: Date?,
          locationName: String?,
+         locationLocality: String?,
          locationLatitude: String?,
          locationLongitude: String?,
          colorString: String,
@@ -90,6 +94,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.rtf_content = rtf_content
         self.date = date
         self.locationName = locationName
+        self.locationLocality = locationLocality
         self.locationLongitude = locationLongitude
         self.locationLatitude = locationLatitude
         self.isAnnonymous = isAnnonymous
@@ -101,10 +106,8 @@ struct SupabaseNote: Codable, Identifiable {
     }
 }
 
-
 extension SupabaseNote {
     var location: CLLocation? {
-//        print(CLLocation(latitude: Double(locationLatitude), longitude: Double(locationLatitude)))
         guard
             let latString = locationLatitude,
             let lonString = locationLongitude,
@@ -115,5 +118,16 @@ extension SupabaseNote {
             return nil
         }
         return CLLocation(latitude: lat, longitude: lon)
+    }
+    
+    // Add a computed property to consistently determine the display name based on the same rule
+    var displayLocationName: String {
+        if let name = locationName, name.count < 12 {
+            return name
+        } else if let locality = locationLocality, !locality.isEmpty {
+            return locality
+        } else {
+            return locationName ?? ""
+        }
     }
 }

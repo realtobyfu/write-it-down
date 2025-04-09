@@ -10,17 +10,9 @@ import CoreLocation
 struct NoteView: View {
     let note: Note
     let foldAll: Bool
-
-    /// leaking too much info from the parent
-    ///
-//    @Binding var selectedNote: Note?
-//  }
-//    @Binding var showingNoteEditor: Bool
-    
     let buttonTapped: () -> Void
     
     @State private var dynamicHeight: CGFloat = .zero
-    @State private var locationString: String = ""
     
     var body: some View {
         // Wrap the entire cell in a Button
@@ -49,9 +41,6 @@ struct NoteView: View {
             .padding(.vertical, 2)
             .listRowSeparator(.hidden) // So the row separator doesn't overlay
             .foregroundColor(.white)
-            .onAppear {
-                reverseGeocodeIfNeeded()
-            }
         }
         // Make the button look/act like a tap gesture (no default button styling)
         .buttonStyle(.plain)
@@ -78,10 +67,10 @@ struct NoteView: View {
             }
             
             // Location (if present)
-            if !locationString.isEmpty {
+            if let location = getLocationDisplayName(), !location.isEmpty {
                 Image(systemName: "mappin")
                     .foregroundColor(.white.opacity(0.9))
-                Text(shortenedLocationString)
+                Text(location)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
@@ -91,21 +80,17 @@ struct NoteView: View {
         .padding(.bottom, 3)
     }
 
-    // Computed property to handle location string length
-    private var shortenedLocationString: String {
-        // If location string is short enough, use it directly
-        if locationString.count <= 12 {
-            return locationString
-        } else {
-            // Otherwise, split by comma and take just the city name (typically first component)
-            let components = locationString.components(separatedBy: ",")
-            if let cityName = components.first?.trimmingCharacters(in: .whitespaces),
-               !cityName.isEmpty {
-                return cityName
-            }
-            // If no comma or city can be extracted, truncate the original
-            return String(locationString.prefix(12))
+    // Get the display name based on the rules (landmark < 12 chars, else locality)
+    private func getLocationDisplayName() -> String? {
+        if let name = note.locationName, !name.isEmpty, name.count < 12 {
+            return name
+        } else if let locality = note.locationLocality, !locality.isEmpty {
+            return locality
+        } else if let name = note.locationName, !name.isEmpty {
+            // Fallback to locationName even if > 12 chars
+            return name
         }
+        return nil
     }
     
     // MARK: - Helper Functions
@@ -137,46 +122,6 @@ struct NoteView: View {
         }
         
         return mutable
-    }
-//    private func reverseGeocodeIfNeeded() {
-//        if let loc = note.location {
-//            let geocoder = CLGeocoder()
-//            geocoder.reverseGeocodeLocation(loc) { placemarks, error in
-//                if error == nil, let placemark = placemarks?.first {
-//                    locationString = placemark.locality ?? ""
-//                } else {
-//                    locationString = ""
-//                }
-//            }
-//        } else {
-//            locationString = ""
-//        }
-//    }
-//    
-    private func reverseGeocodeIfNeeded() {
-        if let loc = note.location {
-            let geocoder = CLGeocoder()
-            geocoder.reverseGeocodeLocation(loc) { placemarks, error in
-                if error == nil, let placemark = placemarks?.first {
-                    // Try to get the most specific name first
-                    if let name = placemark.name, !name.isEmpty {
-                        locationString = name
-                    } else if let locality = placemark.locality {
-                        // City name
-                        locationString = locality
-                    } else if let area = placemark.administrativeArea {
-                        // State/province
-                        locationString = area
-                    } else {
-                        locationString = ""
-                    }
-                } else {
-                    locationString = ""
-                }
-            }
-        } else {
-            locationString = ""
-        }
     }
     
     private func formatDate(_ date: Date) -> String {

@@ -17,23 +17,13 @@ struct CategoryEditorView: View {
     @Environment(\.presentationMode) var presentationMode
     var onSave: () -> Void  // No need to pass the `Category` back, we just save it
 
-    let colorMapping: [String: Color] = [
-        "green": .green,
-        "blue": .blue,
-        "yellow": .yellow,
-        "pink": .pink,
-        "brown": .brown,
-        "gray": .gray,
-        "red": .red,
-        "purple": .purple,
-        "orange": .orange,
-        "teal": .teal,
-        "indigo": .indigo
-    ]
+    private let colorMapping: [String: Color] = Dictionary(
+        uniqueKeysWithValues: StyleManager.availableColors.map { ($0, StyleManager.color(from: $0)) }
+    )
 
-    let availableSymbols = ["book", "fork.knife", "sun.min", "movieclapper", "message.badge.filled.fill", "list.bullet", "paperplane"]
-    let availableColors = ["green", "blue", "yellow", "pink", "brown", "gray", "red", "purple", "orange", "teal", "indigo"]
-    
+    private let availableSymbols = StyleManager.availableSymbols
+    private let availableColors = StyleManager.availableColors
+
     init(category: Category, onSave: @escaping () -> Void) {
         self.category = category
         self.onSave = onSave

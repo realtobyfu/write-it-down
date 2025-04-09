@@ -41,25 +41,17 @@ func checkAndPopulateDefaultCategories(context: NSManagedObjectContext) {
 }
 
 func populateDefaultCategories(context: NSManagedObjectContext) {
-    let categoriesData = [
-        ("book", "green", "Book"),
-        ("fork.knife", "blue", "Cooking"),
-        ("sun.min", "yellow", "Day"),
-        ("movieclapper", "pink", "Movie"),
-        ("message.badge.filled.fill", "brown", "Message"),
-        ("list.bullet", "gray", "List")
-    ]
-
-    for data in categoriesData {
+    for categoryData in StyleManager.defaultCategories {
         let category = Category(context: context)
-        category.symbol = data.0
-        category.colorString = data.1
-        category.name = data.2
+        category.symbol = categoryData.symbol
+        category.colorString = categoryData.color
+        category.name = categoryData.name
     }
-
+    
     do {
         try context.save()
     } catch {
         print("Failed to save default categories: \(error)")
     }
 }
+

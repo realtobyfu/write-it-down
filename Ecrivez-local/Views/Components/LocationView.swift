@@ -18,7 +18,7 @@ struct LocationSelectionBar: View {
         HStack {
             Image(systemName: "location.fill")
                 .foregroundColor(.purple)
-//            Text(addressViewModel.address)
+            // Display the placeName which will already have the landmark vs locality logic applied
             Text(placeName)
                 .font(.subheadline)
             Spacer()
@@ -26,13 +26,8 @@ struct LocationSelectionBar: View {
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(8)
-//        .onAppear {
-//            addressViewModel.fetchAddress(from: location)
-//        }
     }
 }
-
-
 struct LocationView: View {
     @Binding var location: CLLocationCoordinate2D
     @State private var region: MKCoordinateRegion
@@ -65,9 +60,9 @@ struct LocationView: View {
     }
 }
 
-extension CLLocationCoordinate2D: @retroactive Identifiable {
-    public var id: String {
-        "\(latitude),\(longitude)"
-    }
-}
-
+//extension CLLocationCoordinate2D: @retroactive Identifiable {
+//    public var id: String {
+//        "\(latitude),\(longitude)"
+//    }
+//}
+//

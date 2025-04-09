@@ -283,9 +283,12 @@ struct NoteEditorView: View {
                     .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: $showingLocationPicker) {
-                // pass $location AND $locationName
-                LocationPickerView(location: $viewModel.location,
-                                   locationName: $viewModel.locationName)
+                // pass $location, $locationName AND $locationLocality
+                LocationPickerView(
+                    location: $viewModel.location,
+                    locationName: $viewModel.locationName,
+                    locationLocality: $viewModel.locationLocality
+                )
             }
         }
     }
@@ -344,8 +347,6 @@ struct NoteEditorView: View {
                     }
                 }
             }
-            
-            
             //            Spacer()
         }
         .padding(.vertical, 5)

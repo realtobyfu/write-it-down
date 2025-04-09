@@ -32,7 +32,7 @@ struct SuggestFeatureView: View {
                         .autocapitalization(.none)
                 }
             }
-            .navigationTitle("Suggest a Feature")
+            .navigationTitle("Suggest a Feature / Update")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Submit") {

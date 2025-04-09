@@ -30,7 +30,7 @@ struct SettingsView: View {
 //            }
 
             NavigationLink(destination: SuggestFeatureView()) {
-                Text("Suggest a Feature")
+                Text("Suggest a Feature / Update")
             }
             
             NavigationLink(destination: DonationView()) {
