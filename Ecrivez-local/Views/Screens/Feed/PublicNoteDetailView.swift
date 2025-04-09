@@ -16,6 +16,7 @@ struct PublicNoteDetailView: View {
     let currentUserID: UUID?
     
     @State private var locationString: String = ""
+    @Environment(\.colorScheme) private var colorScheme
 
     // MARK: - State Variables
     @State private var hasLiked = false
@@ -37,6 +38,19 @@ struct PublicNoteDetailView: View {
         let timestamp: Date
     }
     
+    // MARK: - Computed Properties for Dark Mode
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark ? Color(.systemGray6) : Color.white
+    }
+    
+    private var textColor: Color {
+        colorScheme == .dark ? Color.white : Color.black
+    }
+    
+    private var secondaryTextColor: Color {
+        colorScheme == .dark ? Color.gray : Color.secondary
+    }
+    
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -48,6 +62,7 @@ struct PublicNoteDetailView: View {
                     // Note content
                     Text(note.content)
                         .font(.body)
+                        .foregroundColor(textColor)
                         .padding(.horizontal)
                     
                     // MARK: - Metadata
@@ -76,12 +91,16 @@ struct PublicNoteDetailView: View {
                         }
                     }
                     .padding(.horizontal)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryTextColor)
                 }
                 .padding()
-                .background(Color.white)
+                .background(cardBackgroundColor)
                 .cornerRadius(16)
-                .shadow(color: Color.black.opacity(0.1), radius: 5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                )
+                .shadow(color: colorScheme == .dark ? Color.black.opacity(0.3) : Color.black.opacity(0.1), radius: 5)
                 .padding()
                 
                 // MARK: - Actions Bar
@@ -117,7 +136,7 @@ struct PublicNoteDetailView: View {
                 if note.isAnnonymous == true {
                     Text("anonymous")
                         .font(.headline)
-                        .foregroundColor(.black)
+                        .foregroundColor(textColor)
                 } else if let userName = note.profiles?.username {
                     HStack(spacing: 0) {
                         Text("@")
@@ -126,19 +145,24 @@ struct PublicNoteDetailView: View {
                             .font(.custom("Baskerville", size: 25))
                             .italic()
                     }
+                    .foregroundColor(textColor)
                 } else {
                     // Fallback if both conditions fail
                     Text("User")
                         .font(.custom("Baskerville", size: 25))
                         .italic()
+                        .foregroundColor(textColor)
                 }
             }
-            .foregroundColor(.black)
 
             ZStack {
                 Circle()
                     .fill(backgroundColor)
                     .frame(width: 50, height: 50)
+                    .overlay(
+                        Circle()
+                            .stroke(colorScheme == .dark ? Color.white.opacity(0.2) : Color.clear, lineWidth: 1)
+                    )
                 
                 Image(systemName: note.symbol)
                     .font(.title2)
@@ -159,19 +183,20 @@ struct PublicNoteDetailView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                        .foregroundColor(hasLiked ? .red : .gray)
+                        .foregroundColor(hasLiked ? .red : (colorScheme == .dark ? .gray : .gray))
                         .scaleEffect(animateLike ? 1.2 : 1.0)
                 }
                 .buttonStyle(StaticButtonStyle())
                 
                 if likeCount > 0 {
+//                    print(likeCount)
                     Text("\(likeCount)")
                         .font(.caption)
-                        .foregroundColor(hasLiked ? .red : .gray)
+                        .foregroundColor(hasLiked ? .red : (colorScheme == .dark ? .gray : .gray))
                 }
             }
             .padding(.leading, 4)
-            .frame(width: 40, height: 50, alignment: .leading) // Fixed height to prevent movement
+            .frame(width: 50, height: 50, alignment: .leading) // Fixed height to prevent movement
             
             // Comment Button with counter
             HStack(spacing: 10) {
@@ -184,14 +209,14 @@ struct PublicNoteDetailView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
-                        .foregroundColor(showingComments ? .blue : .gray)
+                        .foregroundColor(showingComments ? .blue : (colorScheme == .dark ? .gray : .gray))
                 }
                 .buttonStyle(StaticButtonStyle())
                 
                 if comments.count > 0 {
                     Text("\(comments.count)")
                         .font(.caption)
-                        .foregroundColor(showingComments ? .blue : .gray)
+                        .foregroundColor(showingComments ? .blue : (colorScheme == .dark ? .gray : .gray))
                 }
             }
             .frame(height: 50, alignment: .leading) // Fixed height to prevent movement
@@ -200,9 +225,13 @@ struct PublicNoteDetailView: View {
         }
         .padding(.horizontal, 30)
         .padding(.vertical, 12)
-        .background(Color.white)
+        .background(cardBackgroundColor)
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
+        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.3) : Color.black.opacity(0.05), radius: 5)
     }
     
     // Custom button style to prevent movement when pressed
@@ -218,6 +247,7 @@ struct PublicNoteDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Comments")
                 .font(.headline)
+                .foregroundColor(textColor)
             
             // New Comment Entry
             if isAuthenticated {
@@ -245,7 +275,7 @@ struct PublicNoteDetailView: View {
             } else if comments.isEmpty {
                 Text("No comments yet")
                     .italic()
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryTextColor)
                     .padding(.top)
             } else {
                 ForEach(comments) { comment in
@@ -263,13 +293,18 @@ struct PublicNoteDetailView: View {
                             }
                         }
                     )
+                    .environment(\.colorScheme, colorScheme)
                 }
             }
         }
         .padding()
-        .background(Color.white)
+        .background(cardBackgroundColor)
         .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.1), radius: 5)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(colorScheme == .dark ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
+        .shadow(color: colorScheme == .dark ? Color.black.opacity(0.3) : Color.black.opacity(0.1), radius: 5)
         .alert(isPresented: $showAddCommentError) {
             Alert(
                 title: Text("Error"),
@@ -282,6 +317,15 @@ struct PublicNoteDetailView: View {
     // MARK: - Comment View
     struct CommentView: View {
         let comment: CommentPreview
+        @Environment(\.colorScheme) private var colorScheme
+        
+        private var textColor: Color {
+            colorScheme == .dark ? Color.white : Color.black
+        }
+        
+        private var secondaryTextColor: Color {
+            colorScheme == .dark ? Color.gray : Color.secondary
+        }
         
         var body: some View {
             VStack(alignment: .leading, spacing: 8) {
@@ -290,23 +334,27 @@ struct PublicNoteDetailView: View {
                         HStack(spacing: 0) {
                             Text("@")
                                 .font(.subheadline)
+                                .foregroundColor(textColor)
 
                             Text("\(comment.username)")
                                 .font(.custom("Baskerville", size: 18))
                                 .italic()
+                                .foregroundColor(textColor)
                         }
 
                         // Simplified timestamp format
                         Text(formattedTimestamp(for: comment.timestamp))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(secondaryTextColor)
                     }
                 }
                 
                 Text(comment.text)
                     .font(.body)
+                    .foregroundColor(textColor)
                 
                 Divider()
+                    .background(colorScheme == .dark ? Color.gray.opacity(0.5) : Color.gray.opacity(0.2))
             }
             .padding(.vertical, 4)
         }
@@ -314,7 +362,7 @@ struct PublicNoteDetailView: View {
         // Helper to format timestamp as requested
         private func formattedTimestamp(for date: Date) -> String {
             let now = Date()
-            let components = Calendar.current.dateComponents([.minute, .hour, .day], from: date, to: now)
+            let components = Calendar.current.dateComponents([.second, .minute, .hour, .day], from: date, to: now)
             
             // Show just one time indicator (minutes, hours, or days)
             if let seconds = components.second, seconds < 60 {
@@ -342,8 +390,6 @@ struct PublicNoteDetailView: View {
         return df.string(from: date)
     }
     
-    
-    
     private func loadLikeState() async {
         do {
             // Get the current like count
@@ -359,12 +405,7 @@ struct PublicNoteDetailView: View {
             print("Error loading like state: \(error)")
         }
     }
-//    private func loadLikeState() async {
-//        // Mock data for UI preview
-//        hasLiked = true
-//        likeCount = 42
-//    }
-//    
+    
     private func toggleLike() {
         hasLiked.toggle()
         likeCount += hasLiked ? 1 : -1
@@ -424,26 +465,6 @@ struct PublicNoteDetailView: View {
             showAddCommentError = true
         }
     }
-//    private func loadSampleComments() {
-//        // Create some sample comments for preview
-//        comments = [
-//            CommentPreview(
-//                username: "sarah",
-//                text: "This is really insightful, thanks for sharing!",
-//                timestamp: Date().addingTimeInterval(-3600) // 1 hour ago
-//            ),
-//            CommentPreview(
-//                username: "alex",
-//                text: "I've been thinking about this topic lately. Great perspective.",
-//                timestamp: Date().addingTimeInterval(-86400) // 1 day ago
-//            ),
-//            CommentPreview(
-//                username: "jordan",
-//                text: "Have you considered looking at it from another angle? Would be interesting to discuss.",
-//                timestamp: Date().addingTimeInterval(-259200) // 3 days ago
-//            )
-//        ]
-//    }
     
     private func deleteComment(commentID: UUID) async {
         do {
@@ -501,24 +522,49 @@ struct PublicNoteDetailView: View {
 
 // MARK: - Preview
 #Preview {
-    NavigationStack {
-        PublicNoteDetailView(
-            note: SupabaseNote(
-                id: UUID(),
-                owner_id: UUID(),
-                category_id: UUID(),
-                content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
-                rtf_content: nil,
-                date: Date(),
-                locationName: "Twitter, Inc.", locationLocality: "San Francisco",
-                locationLatitude: "37.7749",
-                locationLongitude: "-122.4194",
-                colorString: "blue",
-                symbol: "book.fill",
-                isAnnonymous: false
-            ),
-            isAuthenticated: true,
-            currentUserID: UUID()
-        )
+    Group {
+        NavigationStack {
+            PublicNoteDetailView(
+                note: SupabaseNote(
+                    id: UUID(),
+                    owner_id: UUID(),
+                    category_id: UUID(),
+                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
+                    rtf_content: nil,
+                    date: Date(),
+                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
+                    locationLatitude: "37.7749",
+                    locationLongitude: "-122.4194",
+                    colorString: "blue",
+                    symbol: "book.fill",
+                    isAnnonymous: false
+                ),
+                isAuthenticated: true,
+                currentUserID: UUID()
+            )
+            .preferredColorScheme(.light)
+        }
+        
+        NavigationStack {
+            PublicNoteDetailView(
+                note: SupabaseNote(
+                    id: UUID(),
+                    owner_id: UUID(),
+                    category_id: UUID(),
+                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
+                    rtf_content: nil,
+                    date: Date(),
+                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
+                    locationLatitude: "37.7749",
+                    locationLongitude: "-122.4194",
+                    colorString: "blue",
+                    symbol: "book.fill",
+                    isAnnonymous: false
+                ),
+                isAuthenticated: true,
+                currentUserID: UUID()
+            )
+            .preferredColorScheme(.dark)
+        }
     }
 }

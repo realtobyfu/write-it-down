@@ -347,8 +347,6 @@ struct NoteEditorView: View {
                     }
                 }
             }
-            
-            
             //            Spacer()
         }
         .padding(.vertical, 5)

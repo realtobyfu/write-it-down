@@ -10,7 +10,6 @@ import CoreLocation
 struct NoteView: View {
     let note: Note
     let foldAll: Bool
-    
     let buttonTapped: () -> Void
     
     @State private var dynamicHeight: CGFloat = .zero

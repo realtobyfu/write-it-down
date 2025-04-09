@@ -10,6 +10,7 @@
 		3E05DF0F2D39A61C00ECA2DA /* NewUserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E05DF0E2D39A61800ECA2DA /* NewUserProfileView.swift */; };
 		3E05DF112D39A65D00ECA2DA /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E05DF102D39A65B00ECA2DA /* Profile.swift */; };
 		3E0716292DA47E2500E3E13D /* smiley.json in Resources */ = {isa = PBXBuildFile; fileRef = 3E0716282DA47E2500E3E13D /* smiley.json */; };
+		3E07162B2DA5DFFE00E3E13D /* DonationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E07162A2DA5DFFA00E3E13D /* DonationManager.swift */; };
 		3E231A8F2D9075F300F8E98C /* NoteEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E231A8E2D9075EE00F8E98C /* NoteEditorViewModel.swift */; };
 		3E252DA62CEBAB390053506C /* screenshot.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E252DA52CEBAB390053506C /* screenshot.png */; };
 		3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E3109912CB62FA500DB73B9 /* NoteView.swift */; };
@@ -85,6 +86,7 @@
 		3E05DF0E2D39A61800ECA2DA /* NewUserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewUserProfileView.swift; sourceTree = "<group>"; };
 		3E05DF102D39A65B00ECA2DA /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
 		3E0716282DA47E2500E3E13D /* smiley.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = smiley.json; sourceTree = "<group>"; };
+		3E07162A2DA5DFFA00E3E13D /* DonationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DonationManager.swift; sourceTree = "<group>"; };
 		3E231A8E2D9075EE00F8E98C /* NoteEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteEditorViewModel.swift; sourceTree = "<group>"; };
 		3E252DA52CEBAB390053506C /* screenshot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot.png; sourceTree = "<group>"; };
 		3E252DA72CEBAC160053506C /* screenshot-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "screenshot-1.png"; sourceTree = "<group>"; };
@@ -256,6 +258,7 @@
 		3E8E70492C88FDDA0001BD86 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				3E07162A2DA5DFFA00E3E13D /* DonationManager.swift */,
 				3E4CCD9A2DA23CCC00BD65BF /* StorageManager.swift */,
 				3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */,
 				3E7B74482CC82DE800569AE7 /* DataController.swift */,
@@ -471,6 +474,7 @@
 				3E3109922CB62FA900DB73B9 /* NoteView.swift in Sources */,
 				3EB61F932D72534600B69DB7 /* MyPublicNotesView.swift in Sources */,
 				3E8E70252C87B07F0001BD86 /* MapView.swift in Sources */,
+				3E07162B2DA5DFFE00E3E13D /* DonationManager.swift in Sources */,
 				3E982BF72CEA8FBE004AB1A9 /* LocationAddressViewModel.swift in Sources */,
 				3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */,
 				3E62226E2D0E87EC00155143 /* AuthenticationView.swift in Sources */,
