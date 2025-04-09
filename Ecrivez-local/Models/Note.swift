@@ -9,41 +9,36 @@
 import Foundation
 import UIKit
 import CoreLocation
+import RichTextKit
 
 extension Note {
     var attributedText: NSAttributedString {
         get {
-            // make sure that this is preserving the font
             guard let data = self.attributedTextData else {
                 return NSAttributedString(string: "")
             }
             
-            // decodeRTF
             do {
-                return try NSAttributedString(
-                    data: data,
-                    options: [.documentType: NSAttributedString.DocumentType.rtf],
-                    documentAttributes: nil
-                )
+                // Use RichTextKit's initializer with format
+                return try NSAttributedString(data: data, format: .archivedData)
             } catch {
-                print("Decode RTF error: \(error)")
+                print("Decode error: \(error)")
                 return NSAttributedString()
             }
         }
         set {
             do {
-                // make sure that this conversion is working for the fonts/
-                let rtfData = try newValue.data(
-                    from: NSRange(location: 0, length: newValue.length),
-                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf])
-                self.attributedTextData = rtfData
+                // Use richTextData(for:) extension method
+                self.attributedTextData = try newValue.richTextData(for: .archivedData)
             } catch {
-                print("Encode RTF error: \(error)")
+                print("Encode error: \(error)")
                 self.attributedTextData = nil
             }
         }
     }
+}
 
+extension Note {
     var location: CLLocation? {
         get {
             if let latitudeValue = self.locationLatitude,
@@ -93,22 +88,31 @@ extension Note {
 
 }
 
+
 extension Note {
     func toSupabaseNote(ownerID: UUID) -> SupabaseNote {
-        // Convert the raw RTF Data into a base64 string
-        let rtfString = self.attributedTextData?.base64EncodedString()
+        // Get plain text for searching
+        let plainText = self.attributedText.string
         
-        print("longitude: \(String(describing: self.locationLongitude))")
-        print("latitude: \(String(describing: self.locationLatitude))")
+        // Get archived data with proper error handling
+        var base64Archived: String? = nil
+        do {
+            
+            let archivedData = try self.attributedText.richTextData(for: .archivedData)
+            let base64Archived = archivedData.base64EncodedString()
+
+        } catch {
+            print("Failed to get archived data: \(error)")
+            // Continue with nil archived data - will fall back to plain text
+        }
         
         return SupabaseNote(
             id: self.id ?? UUID(),
             owner_id: ownerID,
             category_id: self.category?.id,
-            // Plain text for quick reads/fallback
-            content: self.attributedText.string,
-            // Full RTF as base64
-            rtf_content: rtfString,
+            content: plainText,
+            rtf_content: nil,  // No longer using RTF
+            archived_content: base64Archived,
             date: self.date,
             locationName: self.landmark,
             locationLocality: self.locality,

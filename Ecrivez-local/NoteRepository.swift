@@ -84,7 +84,7 @@ class NoteRepository {
     func fetchMyPublicNotes() async throws -> [SupabaseNote] {
         
         let ownerID = try? await SupabaseManager.shared.client.auth.user().id
-
+        
         return try await client
             .from("public_notes")
             .select()
@@ -98,11 +98,13 @@ class NoteRepository {
     
     /// Converts a local `Note` (Core Data) into a `SupabaseNote` for uploading.
     private func convertToSupabaseNote(note: Note, ownerID: UUID) throws -> SupabaseNote {
-        // Convert NSAttributedString -> RTF base64
-        let rtfData = try note.attributedText.data(
-            from: NSRange(location: 0, length: note.attributedText.length),
-            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
-        )
+        // Get archived data using RichTextKit
+        let archivedData = try note.attributedText.richTextData(for: .archivedData)
+        let base64Archived = archivedData.base64EncodedString()
+        
+        // You can optionally keep rtf_content for backward compatibility
+        // or set it to nil if you're fully migrating to archived_content
+        let rtfData = try note.attributedText.richTextData(for: .rtf)
         let base64RTF = rtfData.base64EncodedString()
         
         let supaNote = SupabaseNote(
@@ -110,9 +112,11 @@ class NoteRepository {
             owner_id: ownerID,
             category_id: note.category?.id,
             content: note.attributedText.string,   // plain text
-            rtf_content: base64RTF,               // full RTF
+            rtf_content: base64RTF,                // keep for backward compatibility
+            archived_content: base64Archived,      // new archived data
             date: note.date,
-            locationName: note.landmark, locationLocality: note.locality,
+            locationName: note.landmark,
+            locationLocality: note.locality,
             locationLatitude: note.locationLatitude?.stringValue,
             locationLongitude: note.locationLongitude?.stringValue,
             colorString: note.category?.colorString ?? "",

@@ -11,22 +11,18 @@ import CoreLocation
 struct SupabaseNote: Codable, Identifiable {
     let id: UUID
     let owner_id: UUID
-    
     let category_id: UUID?
     let content: String
     var rtf_content: String?
-    
     var date: Date?
     var locationName: String?
     var locationLocality: String?  // Add new field
     var locationLongitude: String?
     var locationLatitude: String?
-    
     var isAnnonymous: Bool?
-    
     let colorString: String
     let symbol: String
-    
+    var archived_content: String?
     var profiles: ProfileData? = nil
     
     struct ProfileData: Codable {
@@ -35,7 +31,7 @@ struct SupabaseNote: Codable, Identifiable {
     
     private enum CodingKeys: String, CodingKey {
         case id, owner_id, category_id
-        case content, rtf_content
+        case content, rtf_content, archived_content
         case date, locationName, locationLocality, locationLongitude, locationLatitude
         case isAnnonymous
         case colorString, symbol
@@ -48,7 +44,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.id = try container.decode(UUID.self, forKey: .id)
         self.owner_id = try container.decode(UUID.self, forKey: .owner_id)
         self.category_id = try container.decodeIfPresent(UUID.self, forKey: .category_id)
-        
+        self.archived_content = try container.decodeIfPresent(String.self, forKey: .archived_content)
         self.content = try container.decode(String.self, forKey: .content)
         self.rtf_content = try container.decodeIfPresent(String.self, forKey: .rtf_content)
         
@@ -78,6 +74,7 @@ struct SupabaseNote: Codable, Identifiable {
          category_id: UUID?,
          content: String,
          rtf_content: String?,
+         archived_content: String?,
          date: Date?,
          locationName: String?,
          locationLocality: String?,
@@ -92,16 +89,15 @@ struct SupabaseNote: Codable, Identifiable {
         self.category_id = category_id
         self.content = content
         self.rtf_content = rtf_content
+        self.archived_content = archived_content
         self.date = date
         self.locationName = locationName
         self.locationLocality = locationLocality
         self.locationLongitude = locationLongitude
         self.locationLatitude = locationLatitude
         self.isAnnonymous = isAnnonymous
-        
         self.colorString = colorString
         self.symbol = symbol
-        
         self.profiles = nil
     }
 }

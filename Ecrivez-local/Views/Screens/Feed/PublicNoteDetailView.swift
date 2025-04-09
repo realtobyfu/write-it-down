@@ -507,51 +507,51 @@ struct PublicNoteDetailView: View {
     }
 }
 
-// MARK: - Preview
-#Preview {
-    Group {
-        NavigationStack {
-            PublicNoteDetailView(
-                note: SupabaseNote(
-                    id: UUID(),
-                    owner_id: UUID(),
-                    category_id: UUID(),
-                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
-                    rtf_content: nil,
-                    date: Date(),
-                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
-                    locationLatitude: "37.7749",
-                    locationLongitude: "-122.4194",
-                    colorString: "blue",
-                    symbol: "book.fill",
-                    isAnnonymous: false
-                ),
-                isAuthenticated: true,
-                currentUserID: UUID()
-            )
-            .preferredColorScheme(.light)
-        }
-        
-        NavigationStack {
-            PublicNoteDetailView(
-                note: SupabaseNote(
-                    id: UUID(),
-                    owner_id: UUID(),
-                    category_id: UUID(),
-                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
-                    rtf_content: nil,
-                    date: Date(),
-                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
-                    locationLatitude: "37.7749",
-                    locationLongitude: "-122.4194",
-                    colorString: "blue",
-                    symbol: "book.fill",
-                    isAnnonymous: false
-                ),
-                isAuthenticated: true,
-                currentUserID: UUID()
-            )
-            .preferredColorScheme(.dark)
-        }
-    }
-}
+//// MARK: - Preview
+//#Preview {
+//    Group {
+//        NavigationStack {
+//            PublicNoteDetailView(
+//                note: SupabaseNote(
+//                    id: UUID(),
+//                    owner_id: UUID(),
+//                    category_id: UUID(),
+//                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
+//                    rtf_content: nil,
+//                    date: Date(),
+//                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
+//                    locationLatitude: "37.7749",
+//                    locationLongitude: "-122.4194",
+//                    colorString: "blue",
+//                    symbol: "book.fill",
+//                    isAnnonymous: false
+//                ),
+//                isAuthenticated: true,
+//                currentUserID: UUID()
+//            )
+//            .preferredColorScheme(.light)
+//        }
+//        
+//        NavigationStack {
+//            PublicNoteDetailView(
+//                note: SupabaseNote(
+//                    id: UUID(),
+//                    owner_id: UUID(),
+//                    category_id: UUID(),
+//                    content: "This is a sample note with some interesting content that talks about various things. It could be a longer text with multiple paragraphs and ideas that the user has shared with the community.\n\nThe design now shows sample comments and improved button layout with counters.",
+//                    rtf_content: nil,
+//                    date: Date(),
+//                    locationName: "Twitter, Inc.", locationLocality: "San Francisco",
+//                    locationLatitude: "37.7749",
+//                    locationLongitude: "-122.4194",
+//                    colorString: "blue",
+//                    symbol: "book.fill",
+//                    isAnnonymous: false
+//                ),
+//                isAuthenticated: true,
+//                currentUserID: UUID()
+//            )
+//            .preferredColorScheme(.dark)
+//        }
+//    }
+//}
