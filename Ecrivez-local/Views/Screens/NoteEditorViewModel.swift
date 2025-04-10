@@ -20,7 +20,8 @@ class NoteEditorViewModel: ObservableObject {
     @Published var isPublic: Bool = false
     @Published var isAnonymous: Bool = false
     @Published var locationName: String?
-    @Published var locationLocality: String? // Added location locality property
+    @Published var locationLocality: String?
+    @Published var showDeleteConfirmation = false
 
     // MARK: - Private properties
     private let context: NSManagedObjectContext

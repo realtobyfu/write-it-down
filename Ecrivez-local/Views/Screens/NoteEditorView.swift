@@ -38,14 +38,6 @@ struct NoteEditorView: View {
     }
     
     //    // MARK: - States
-    //    @State private var selectedDate: Date?
-    //    @State private var attributedText: NSAttributedString
-    //    @State private var location: CLLocationCoordinate2D?
-    //    @State private var weather: String
-    //    @State private var category: Category
-    //    @State private var isPublic: Bool
-    //    @State private var isAnnonymous: Bool
-    //    @State private var locationName: String?
     @State private var showingWeatherPicker = false
     @State private var showingLocationPicker = false
     @FocusState private var isTextEditorFocused: Bool
@@ -208,23 +200,6 @@ struct NoteEditorView: View {
                 print(newValue)        // full NSAttributedString
             }
 
-            // check if the note is in the already, if so mark it as public
-            //
-            //            .task {
-            //                do {
-            //                    let response = SupabaseManager.shared.client
-            //                       .from("public_notes")
-            //                        .select()
-            //                        .eq("note", value: note?.id)
-            //                        .single()
-            //
-            //                    if response {}
-            //                } catch {
-            //                    print("error")
-            //                }
-            //            }
-            
-            
             .onAppear {
                 // Overwrite text color for entire string
                 let mutable = NSMutableAttributedString(attributedString: viewModel.attributedText)
@@ -352,132 +327,3 @@ struct NoteEditorView: View {
         .padding(.vertical, 5)
     }
 }
-//
-//@MainActor
-//func updateSupabase(note: Note) async {
-//    
-//    do {
-//        let user = try await SupabaseManager.shared.client.auth.user()
-//        
-//        print("ID of the user: \(user.id)")
-//        // 1) Convert local RichTextKit to RTF
-//        let rtfData = try note.attributedText.data(
-//            from: NSRange(location: 0, length: note.attributedText.length),
-//            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
-//        )
-//        let base64RTF = rtfData.base64EncodedString()
-//
-//        
-//        let existInDB = await checkExistInDB(note: note)
-////        if !note.isPublic {
-////            let _ = try await SupabaseManager.shared.client
-////                .from("public_notes")
-////                .delete()
-////                .eq("id", value: note.id)
-////                .execute()
-////            
-////            print("Deleted Note, ID: \(String(describing: note.id))")
-////        } else {
-//            print("Note longitude (before uploading): \(String(describing: note.locationLongitude))")
-//            print("Note latitude (before uploading): \(String(describing: note.locationLatitude))")
-//            
-//            let supaNote = SupabaseNote(
-//                id: note.id ?? UUID(),
-//                owner_id: user.id, category_id: note.category?.id,
-//                content: note.attributedText.string,  // plain text
-//                rtf_content: base64RTF,              // fully styled
-//                date: note.date, locationName: note.locationName,
-//                locationLatitude: note.locationLatitude?.stringValue,
-//                locationLongitude: note.locationLongitude?.stringValue,
-//                colorString: note.category?.colorString ?? "",
-//                symbol: note.category?.symbol ?? "",
-//                isAnnonymous: note.isAnnonymous
-//            )
-//            
-//            if existInDB {
-//                if !note.isPublic {
-//                    let _ = try await SupabaseManager.shared.client
-//                        .from("public_notes")
-//                        .delete()
-//                        .eq("id", value: note.id)
-//                        .execute()
-//        
-//                    print("Deleted Note, ID: \(String(describing: note.id))")
-//                } else {
-//                    try await SupabaseManager.shared.client
-//                        .from("public_notes")
-//                        .update(supaNote)
-//                        .eq("id", value: note.id)
-//                        .execute()
-//                    print("Updated Note: \(String(describing: note.id))")
-//                }
-//            } else {
-//                try await SupabaseManager.shared.client
-//                    .from("public_notes")
-//                    .insert(supaNote)
-//                    .execute()
-//                print("Created Note: \(String(describing: note.id))")
-//            }
-////        }
-//
-//    } catch {
-//        print("error: (\(error))")
-//    }
-//}
-//
-//
-//
-//@MainActor
-//func removeFromSupabase(note: Note) async {
-//    guard let noteID = note.id else { return }
-//    do {
-//        try await SupabaseManager.shared.client
-//            .from("public_notes")
-//            .delete()
-//            .eq("id", value: noteID)
-//            .execute()
-//        print("Deleted note \(noteID) from Supabase.")
-//    } catch {
-//        print("Error deleting from Supabase: \(error)")
-//    }
-//}
-//
-//import CoreData
-//
-//#Preview("Create Mode") {
-//    // 1) Create an in-memory Core Data container for previews
-//    let container = NSPersistentContainer(name: "Model")
-//    container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
-//    container.loadPersistentStores { storeDescription, error in
-//        if let error = error {
-//            fatalError("Failed to load in-memory store for preview: \(error)")
-//        }
-//    }
-//    let viewContext = container.viewContext
-//
-//    // 2) Create a sample Category
-//    let sampleCategory = Category(context: viewContext)
-//    sampleCategory.id = UUID()
-//    sampleCategory.name = "Test Category"
-//    sampleCategory.colorString = "blue"
-//    sampleCategory.symbol = "book"
-//
-//    // 3) Show the NoteEditor in .create mode
-//    NoteEditorView(
-//        mode: .create(sampleCategory),        // <— create
-//        categories: [sampleCategory], context: <#NSManagedObjectContext#>,
-//        isAuthenticated: true,
-//        onSave: {
-//            do {
-//                try viewContext.save()
-//                print("Preview: saved context after creating note.")
-//            } catch {
-//                print("Preview: failed to save context: \(error)")
-//            }
-//        }
-//    )
-//    // Provide a managedObjectContext env for the note
-//    .environment(\.managedObjectContext, viewContext)
-////    .environment(\.colorScheme, .dark)
-//
-//}

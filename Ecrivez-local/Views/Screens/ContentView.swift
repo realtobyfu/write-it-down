@@ -30,6 +30,11 @@ struct ContentView: View {
     @State private var showingAuthView = false
     @State private var showBubbles = false
     @State private var selectedCategory: Category?
+    
+    @State private var noteToDelete: Note?
+    @State private var showDeleteConfirmation = false
+    @State private var indexSetToDelete: IndexSet?
+
 
     // For “Fold All”
     @State private var foldAll = false
@@ -106,9 +111,15 @@ struct ContentView: View {
                         )
                         .listRowSeparator(.hidden)
                     }
+                    
                     .onDelete { indexSet in
-                        Task {
-                            await deleteNote(at: indexSet)
+                        // Store the indexSet for later use
+                        indexSetToDelete = indexSet
+                        
+                        // Get the first note to delete (for the confirmation message)
+                        if let index = indexSet.first {
+                            noteToDelete = displayedNotes[index]
+                            showDeleteConfirmation = true
                         }
                     }
                     // Only allow reordering if no category & no date sort
@@ -171,6 +182,28 @@ struct ContentView: View {
                 }
             }
         }
+        
+        .confirmationDialog(
+            "Are you sure you want to delete this note?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    if let indexSet = indexSetToDelete {
+                        await deleteNote(at: indexSet)
+                        indexSetToDelete = nil
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                noteToDelete = nil
+                indexSetToDelete = nil
+            }
+        } message: {
+            Text("This action cannot be undone.")
+        }
+
         // Save context on background
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .background {
@@ -352,20 +385,3 @@ struct CategoryFilterView: View {
     }
 }
 
-//
-//// MARK: - Checking if note is in DB
-//@MainActor
-//func checkExistInDB(note: Note) async -> Bool {
-//    do {
-//        let response: [SupabaseNote] = try await SupabaseManager.shared.client
-//            .from("public_notes")
-//            .select()
-//            .eq("id", value: note.id)
-//            .execute()
-//            .value
-//        return !response.isEmpty
-//    } catch {
-//        print("error: (\(error))")
-//        return false
-//    }
-//}
