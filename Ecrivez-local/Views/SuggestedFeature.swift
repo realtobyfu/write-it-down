@@ -32,7 +32,7 @@ struct SuggestFeatureView: View {
                         .autocapitalization(.none)
                 }
             }
-            .navigationTitle("Suggest a Feature / Update")
+            .navigationTitle("Suggestion")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Submit") {
@@ -68,7 +68,7 @@ struct SuggestFeatureView: View {
         )
 
         do {
-            try await SupabaseManager.shared.submitFeatureSuggestion(suggestion)
+//            try awaitytu69SupabaseManager.shared.submitFeatureSuggestion(suggestion)
             showConfirmation = true
         } catch {
             errorMessage = error.localizedDescription
