@@ -22,13 +22,19 @@ struct NoteApp: App {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showOnboarding = false
     
+    @AppStorage("onboardingVersion") private var onboardingVersion = 0
+    let currentOnboardingVersion = 0 // Increase this when you update onboarding
+    
     @AppStorage("appOpenCount") private var appOpenCount = 0
     @State private var showDonationView = false
 
     var body: some Scene {
         WindowGroup {
-            if !hasSeenOnboarding {
+            if onboardingVersion < currentOnboardingVersion {
                 OnboardingView(showOnboarding: $showOnboarding)
+                    .onDisappear {
+                        onboardingVersion = currentOnboardingVersion
+                    }
             } else {
                 ContentView()
                     .environment(\.managedObjectContext, dataController.container.viewContext)
