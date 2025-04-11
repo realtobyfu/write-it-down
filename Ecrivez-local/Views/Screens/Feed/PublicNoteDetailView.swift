@@ -134,9 +134,9 @@ struct PublicNoteDetailView: View {
                 // Author info
                 
                 if note.isAnnonymous == true {
-                    Text("anonymous")
-                        .font(.headline)
-                        .foregroundColor(textColor)
+                    Text("Anonymous")
+                        .font(.custom("Baskerville", size: 25))
+                        .italic()
                 } else if let userName = note.profiles?.username {
                     HStack(spacing: 0) {
                         Text("@")

@@ -79,14 +79,14 @@ struct NoteEditorView: View {
                     context: contextRT,
                     leadingButtons: { $0 },
                     trailingButtons: {
-                        $0
-//                        _ in
-//                        // Add this
-//                        Button(action: {
-//                            isConfirmationDialogPresented = true
-//                        }, label: {
-//                            Image(systemName: "photo")
-//                        })
+//                        $0
+                        _ in
+                        // Add this
+                        Button(action: {
+                            isConfirmationDialogPresented = true
+                        }, label: {
+                            Image(systemName: "photo")
+                        })
                     },
                     formatSheet: { $0 }
                 )
@@ -325,5 +325,36 @@ struct NoteEditorView: View {
             //            Spacer()
         }
         .padding(.vertical, 5)
+    }
+}
+
+// Add this component at the bottom of NoteEditorView.swift file
+struct CategoryButton: View {
+    let category: Category
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Circle()
+                    .fill(category.color)
+                    .frame(width: isSelected ? 44 : 36, height: isSelected ? 44 : 36)
+                    .overlay(
+                        Image(systemName: category.symbol ?? "circle")
+                            .foregroundColor(.white)
+                            .font(isSelected ? .title3 : .body)
+                    )
+                    .shadow(radius: isSelected ? 2 : 0)
+                
+                if let name = category.name, !name.isEmpty {
+                    Text(name)
+                        .font(.caption2)
+                        .foregroundColor(isSelected ? .primary : .secondary)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
