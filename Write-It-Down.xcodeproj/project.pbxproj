@@ -190,9 +190,9 @@
 				3EEF1B722D19BE45005F7C9C /* RegistrationView.swift */,
 				3E7146462C9A781A00F5ACE0 /* CategoryEditorView.swift */,
 				3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */,
-				3ED060322C4EE7ED00392BDC /* ContentView.swift */,
 				3E231A8E2D9075EE00F8E98C /* NoteEditorViewModel.swift */,
 				3EFCE2392C5ACD37000F748A /* NoteEditorView.swift */,
+				3ED060322C4EE7ED00392BDC /* ContentView.swift */,
 				3EFCE2302C5A90F2000F748A /* SettingsView.swift */,
 			);
 			path = Screens;

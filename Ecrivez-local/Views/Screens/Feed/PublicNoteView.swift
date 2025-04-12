@@ -8,123 +8,129 @@
 import SwiftUI
 import CoreLocation
 
-
-
 struct PublicNoteView: View {
     let note: SupabaseNote
     
     @State private var dynamicHeight: CGFloat = .zero
     @State private var locationString: String = ""
+    @Environment(\.colorScheme) private var colorScheme
+    
+    // Text colors based on color scheme
+    private var textColor: Color {
+        colorScheme == .dark ? Color.white : Color.black
+    }
+    
+    private var secondaryTextColor: Color {
+        colorScheme == .dark ? Color.gray : Color.secondary
+    }
+    
+    private var cardBackgroundColor: Color {
+        colorScheme == .dark ? Color(.systemGray6) : Color.white
+    }
     
     var body: some View {
         VStack {
             HStack {
-                VStack(alignment: .leading) {
-                    headerView
+                VStack(alignment: .leading, spacing: 12) {
+                    // Header with icon and username
+                    HStack {
+                        ZStack {
+                            Circle()
+                                .fill(cardBackgroundColor)
+                                .frame(width: 36, height: 36)
+                            
+                            Image(systemName: note.symbol)
+                                .foregroundColor(backgroundColor)
+                                .font(.system(size: 18))
+                        }
+                        
+                        Spacer()
+                        
+                        // If anonymous or user's username
+                        HStack {
+                            if note.isAnnonymous == true {
+//                                Text("Anonymous")
+//                                    .font(.subheadline)
+//                                    .foregroundColor(secondaryTextColor)
+                            } else if let userName = note.profiles?.username {
+                                HStack(spacing: 0) {
+                                    Text("@")
+                                        .font(.subheadline)
+                                    Text(userName)
+                                        .font(.custom("Baskerville", size: 16))
+                                        .italic()
+                                }
+                                .foregroundColor(secondaryTextColor)
+                            }
+                        }
+                        
+                        // Location if available
+                        if !locationString.isEmpty {
+                            Image(systemName: "mappin")
+                                .font(.caption)
+                                .foregroundColor(secondaryTextColor)
+                            Text(locationString)
+                                .font(.caption)
+                                .foregroundColor(secondaryTextColor)
+                        }
+                    }
                     
-                    AttributedTextView(
-                        attributedText: adjustedAttributedText,
-                        dynamicHeight: $dynamicHeight
-                    )
-                    .frame(height: dynamicHeight)
+                    // Note content
+                    Text(note.content)
+                        .font(.body)
+                        .foregroundColor(textColor)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                    
+                    // Date if available
+                    if let date = note.date {
+                        HStack {
+                            Spacer()
+                            Image(systemName: "calendar")
+                                .font(.caption)
+                            Text(formatDate(date))
+                                .font(.caption)
+                        }
+                        .foregroundColor(secondaryTextColor)
+                    }
                 }
                 Spacer()
             }
             .padding()
         }
-        .background(backgroundColor)
-        .cornerRadius(20)
-        .padding(.vertical, 2)
+        .background(cardBackgroundColor)
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(backgroundColor, lineWidth: 2)
+        )
+        .shadow(radius: 2)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 2)
         .listRowSeparator(.hidden)
-        .foregroundColor(.white)
         .onAppear {
             reverseGeocodeIfNeeded()
         }
     }
     
-    // MARK: - Subviews
-    
-    private var headerView: some View {
-        HStack {
-            // Symbol
-            Image(systemName: note.symbol)
-            
-            Spacer()
-            
-            // If anonymous or user’s username
-            if note.isAnnonymous == true {
-                Text("Anonymous")
-            } else if let userName = note.profiles?.username {
-                Text("@\(userName)")
-            }
-
-            // Show location if found
-            if !locationString.isEmpty {
-                Image(systemName: "mappin")
-                Text(locationString)
-            }
-        }
-        .font(.headline)
+    // Keep your existing helper functions
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, yyyy"
+        return formatter.string(from: date)
     }
     
-    // MARK: - Decoding the RTF
-    private var rawAttributedString: NSAttributedString {
-        if let base64RTF = note.rtf_content,
-           let data = Data(base64Encoded: base64RTF) {
-            do {
-                return try NSAttributedString(
-                    data: data,
-                    options: [.documentType: NSAttributedString.DocumentType.rtf],
-                    documentAttributes: nil
-                )
-            } catch {
-                print("Error decoding RTF: \(error)")
-                return NSAttributedString(string: note.content) // fallback
-            }
-        } else {
-            return NSAttributedString(string: note.content)
-        }
-    }
-    
-    private var adjustedAttributedText: NSAttributedString {
-        let mutable = NSMutableAttributedString(attributedString: rawAttributedString)
-        let newFontSize: CGFloat = 18
-        let newTextColor: UIColor = .white
-        
-        mutable.enumerateAttributes(
-            in: NSRange(location: 0, length: mutable.length),
-            options: []
-        ) { attributes, range, _ in
-            var modified = attributes
-            if let font = attributes[.font] as? UIFont {
-                let newFont = UIFont(descriptor: font.fontDescriptor, size: newFontSize)
-                modified[.font] = newFont
-            } else {
-                modified[.font] = UIFont.systemFont(ofSize: newFontSize)
-            }
-            // Force the text color to white
-            modified[.foregroundColor] = newTextColor
-            mutable.setAttributes(modified, range: range)
-        }
-        return mutable
-    }
-    
-    // MARK: - Reverse Geocoding
     private func reverseGeocodeIfNeeded() {
-        // Check the computed property `note.location` from your SupabaseNote extension
         guard let loc = note.location else {
             locationString = ""
             return
         }
         CLGeocoder().reverseGeocodeLocation(loc) { placemarks, error in
             guard error == nil, let place = placemarks?.first else {
-                print("Cannot find the exact location names")
                 locationString = ""
                 return
             }
             
-            print("reverse geo coded: \(place)")
-            // For example, just store the city/locality
             locationString = place.locality ?? ""
         }
     }

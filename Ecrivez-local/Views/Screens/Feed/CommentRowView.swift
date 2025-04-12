@@ -37,26 +37,35 @@ struct CommentRowView: View {
                 
                 Spacer()
                 
-                // Show edit/delete options if user owns the comment
+                // Inside CommentRowView, replace the current HStack for editing buttons with this:
                 if isOwner {
-                    HStack {
+                    HStack(spacing: 12) {
                         Button {
                             // Start editing
                             editedContent = comment.content
                             isEditing = true
                         } label: {
                             Image(systemName: "pencil")
-                                .foregroundColor(.blue)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .opacity(0.7)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
                         
                         Button {
                             // Delete comment
                             onDelete()
                         } label: {
                             Image(systemName: "trash")
-                                .foregroundColor(.red)
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                                .opacity(0.7)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
                     }
+                    .padding(6)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(15)
                 }
             }
             
