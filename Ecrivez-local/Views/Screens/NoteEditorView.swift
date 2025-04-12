@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 import CoreLocation
 import RichTextKit
 import CoreData
@@ -8,6 +9,7 @@ struct NoteEditorView: View {
         case edit(Note)
         case create(Category)
     }
+    
     @StateObject private var viewModel: NoteEditorViewModel
     private let categories: [Category]
     private let isAuthenticated: Bool
@@ -55,7 +57,7 @@ struct NoteEditorView: View {
     @State private var inputImage: UIImage?
     
     
-    
+
     // MARK: - Computed Properties
     var body: some View {
         NavigationStack {
@@ -96,9 +98,19 @@ struct NoteEditorView: View {
                         trailingActions: [ ]          // no .highlightColor
                     )
                 )
+//                // changes is not published in contextRT
+//                .onReceive(contextRT.actionPublisher) { action in
+//                    // Capture all formatting actions and update the view model
+//                    print("contextRT.attributedString", contextRT.attributedString)
+//                    print("viewModel.attributedText", viewModel.attributedText)
+//                    //                     contextRT.attributedString = viewModel.attributedText
+//                }
+                .onChange(of: viewModel.attributedText) { old, new in
+                    print("Old value (viewModel.attributedText):", old)
+                    print("New value (viewModel.attributedText):", new)
+                }
                 
 #endif
-                
                 
                 if isAuthenticated {
                     HStack(spacing: 16) {
@@ -193,12 +205,6 @@ struct NoteEditorView: View {
                     PhotoLibraryPicker(selectedImage: $inputImage)
                 }
             }
-            
-            .onChange(of: viewModel.attributedText) { newValue in
-                print("Attributed text changed:")
-//                print(newValue.string) // plain text
-                print(newValue)        // full NSAttributedString
-            }
 
             .onAppear {
                 // Overwrite text color for entire string
@@ -267,8 +273,6 @@ struct NoteEditorView: View {
             }
         }
     }
-    
-    
     private var categorySelectionView: some View {
         HStack(spacing: 17) {
             Spacer()
@@ -328,7 +332,6 @@ struct NoteEditorView: View {
     }
 }
 
-// Add this component at the bottom of NoteEditorView.swift file
 struct CategoryButton: View {
     let category: Category
     let isSelected: Bool
