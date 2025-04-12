@@ -39,7 +39,7 @@
 		3E730C3C2D15471D00FCD000 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C3B2D15471D00FCD000 /* Supabase */; };
 		3E730C3E2D15473F00FCD000 /* SupabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E730C3D2D15473900FCD000 /* SupabaseManager.swift */; };
 		3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B743D2CC5467800569AE7 /* Model.xcdatamodeld */; };
-		3E7B74492CC82DEB00569AE7 /* DataController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B74482CC82DE800569AE7 /* DataController.swift */; };
+		3E7B74492CC82DEB00569AE7 /* CoreDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7B74482CC82DE800569AE7 /* CoreDataManager.swift */; };
 		3E7B744B2CCD9F2900569AE7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 3E7B744A2CCD9F2400569AE7 /* README.md */; };
 		3E7D31352CD5ED730030EAC4 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */; };
 		3E7F82232DA2682300997B54 /* CommentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F82222DA2681B00997B54 /* CommentRowView.swift */; };
@@ -111,7 +111,7 @@
 		3E7146482C9A8F8100F5ACE0 /* CategoryEditorListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryEditorListView.swift; sourceTree = "<group>"; };
 		3E730C3D2D15473900FCD000 /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
 		3E7B743E2CC5467800569AE7 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
-		3E7B74482CC82DE800569AE7 /* DataController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataController.swift; sourceTree = "<group>"; };
+		3E7B74482CC82DE800569AE7 /* CoreDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManager.swift; sourceTree = "<group>"; };
 		3E7B744A2CCD9F2400569AE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
 		3E7F82222DA2681B00997B54 /* CommentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommentRowView.swift; sourceTree = "<group>"; };
@@ -266,7 +266,7 @@
 				3E07162A2DA5DFFA00E3E13D /* DonationManager.swift */,
 				3E4CCD9A2DA23CCC00BD65BF /* StorageManager.swift */,
 				3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */,
-				3E7B74482CC82DE800569AE7 /* DataController.swift */,
+				3E7B74482CC82DE800569AE7 /* CoreDataManager.swift */,
 				3E730C3D2D15473900FCD000 /* SupabaseManager.swift */,
 				3E7D31342CD5ED6A0030EAC4 /* LocationManager.swift */,
 				3E8E70222C87ADC10001BD86 /* LocationSearchViewModel.swift */,
@@ -465,7 +465,7 @@
 				3EF9F7972C5D1FFC00CD8F31 /* WeatherPicker.swift in Sources */,
 				3E61F2CF2D35A81200781812 /* UserView.swift in Sources */,
 				3EFCE2312C5A90F2000F748A /* SettingsView.swift in Sources */,
-				3E7B74492CC82DEB00569AE7 /* DataController.swift in Sources */,
+				3E7B74492CC82DEB00569AE7 /* CoreDataManager.swift in Sources */,
 				3EEF1B732D19BE50005F7C9C /* RegistrationView.swift in Sources */,
 				3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */,
 				3EEF1B772D19BFD1005F7C9C /* ProfileView.swift in Sources */,

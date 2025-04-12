@@ -16,7 +16,7 @@ struct NoteApp: App {
     // if auth screen is still open -> dismiss it
     // optional: show a message indicating the user is logged in
     // go to the home screen
-    @StateObject private var dataController = DataController()
+    @StateObject private var dataController = CoreDataManager()
     @StateObject private var authVM = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
