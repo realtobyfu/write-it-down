@@ -14,7 +14,7 @@ struct DonationView: View {
     private let startFrame: CGFloat = 78
     private let endFrame: CGFloat = 92
     
-    // Calculate actual dollar amounts (keeping your original configuration)
+    // Calculate actual dollar amounts
     private var priceTiers: [String] {
         return ["Free", "$2.99", "$4.99", "$7.99", "$11.99", "$14.99"]
     }
@@ -42,37 +42,23 @@ struct DonationView: View {
     }
 
     var body: some View {
-        ZStack {
-            // Orange background for entire view
-            Color.orange.opacity(0.15).edgesIgnoringSafeArea(.all)
-            
-            // Content
-            VStack(spacing: 15) {
-                // Just the X button in the corner - no back button or settings text
-                HStack {
-                    Spacer()
-                    
-                    Button(action: {
-                        presentationMode.wrappedValue.dismiss()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.gray)
-                            .padding()
-                    }
-                }
-                .background(Color.clear)
-                .zIndex(1) // Ensure button stays on top
+        GeometryReader { geometry in
+            ZStack {
+                // Background
+                Color.orange.opacity(0.15)
+                    .edgesIgnoringSafeArea(.all)
                 
-                // Scrollable content
-                ScrollView {
-                    VStack(spacing: 25) {
-                        // Title section
-                        VStack(spacing: 8) {
+                // Content
+                VStack(spacing: 0) {
+                    Spacer(minLength: 20)
+                    
+                    // Main content as VStack instead of ScrollView
+                    VStack(spacing: 0) {
+                        // Title section with proper spacing
+                        VStack(spacing: 10) {
                             Text("Tip the Developer")
                                 .font(.system(size: 30, weight: .bold))
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal)
                             
                             Text("Choose any price to help us continue improving the app")
                                 .font(.system(size: 17))
@@ -80,30 +66,33 @@ struct DonationView: View {
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 20)
                         }
-                        .padding(.top, 5)
+                        .padding(.top, geometry.size.height * 0.06)
+                        .padding(.bottom, geometry.size.height * 0.01)
                         
-                        // Larger smiley face animation
+                        // Lottie animation with adaptive size
                         LottieView(animation: .named("smiley"))
                             .resizable()
                             .configure(\.contentMode, to: .scaleAspectFill)
                             .currentFrame(currentFrame)
-                            .frame(width: 400, height: 400) // Increased size
-                            .padding(.top, -30) // Adjust spacing
+                            .frame(
+                                width: min(360, geometry.size.width * 0.8),
+                                height: min(360, geometry.size.width * 0.8)
+                            )
+                            .padding(.bottom, geometry.size.height * 0.02)
                         
-                        // Price display with dynamic color
-                        Text( closestDonationStep == 0 ? "Free" : String(format: "$%.2f", Float(closestDonationStep * 15 - 0.01))
-                        )
-                        .font(.system(size: 38, weight: .bold))
-                        .foregroundColor(donationColor)
-                        .padding(.top, -20)
-
-                        // Slider with dynamic color
-                        VStack(spacing: 10) {
+                        // Price display
+                        Text(closestDonationStep == 0 ? "Free" : String(format: "$%.2f", Float(closestDonationStep * 15 - 0.01)))
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(donationColor)
+                            .padding(.bottom, geometry.size.height * 0.04)
+                        
+                        // Slider with padding
+                        VStack(spacing: 12) {
                             Slider(value: $animationProgress, in: 0...1)
                                 .accentColor(donationColor)
-                                .padding(.horizontal)
+                                .padding(.horizontal, geometry.size.width * 0.1)
                             
-                            // Price labels with dynamic highlighting
+                            // Price labels
                             HStack(spacing: 0) {
                                 ForEach(0..<priceTiers.count, id: \.self) { index in
                                     Text(priceTiers[index])
@@ -112,10 +101,11 @@ struct DonationView: View {
                                         .frame(maxWidth: .infinity)
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, geometry.size.width * 0.08)
                         }
+                        .padding(.bottom, geometry.size.height * 0.07)
                         
-                        // Support button with dynamic color
+                        // Support button with proper padding
                         Button(action: {
                             if closestDonationStep == 0 {
                                 // Continue for free
@@ -132,11 +122,8 @@ struct DonationView: View {
                                     // Initiate the purchase
                                     Task {
                                         do {
-                                            // Use await to ensure proper state management
                                             let success = try await donationManager.purchase(product: product)
                                             
-                                            // Update state directly on the main actor
-                                            // No need for DispatchQueue.main.async
                                             await MainActor.run {
                                                 if success {
                                                     showThankYou = true
@@ -146,7 +133,6 @@ struct DonationView: View {
                                         } catch {
                                             print("Purchase failed: \(error)")
                                             
-                                            // Update state on failure
                                             await MainActor.run {
                                                 isPurchasing = false
                                             }
@@ -162,7 +148,6 @@ struct DonationView: View {
                                     .padding()
                                     .background(donationColor)
                                     .cornerRadius(25)
-                                    .padding(.horizontal, 20)
                             } else {
                                 Text(closestDonationStep == 0 ? "Continue for Free" : "Support with \(priceTiers[donationSteps.firstIndex(of: closestDonationStep) ?? 0])")
                                     .fontWeight(.semibold)
@@ -171,19 +156,19 @@ struct DonationView: View {
                                     .padding()
                                     .background(donationColor)
                                     .cornerRadius(25)
-                                    .padding(.horizontal, 20)
                             }
                         }
                         .disabled(isPurchasing)
-                        .padding(.top, 15)
-                        
-                        // Bottom spacing
-                        Spacer(minLength: 40)
+                        .padding(.horizontal, geometry.size.width * 0.1)
+                        .padding(.bottom, geometry.size.height * 0.01)
                     }
+                    
+                    Spacer(minLength: 25)
                 }
+                .edgesIgnoringSafeArea([.top, .bottom]) // Ignoring safe areas for top and bottom
             }
         }
-        .navigationBarHidden(true) // Hide the navigation bar
+        .navigationBarHidden(true)
         .alert(isPresented: $showThankYou) {
             Alert(
                 title: Text("Thank You!"),
@@ -195,3 +180,11 @@ struct DonationView: View {
         }
     }
 }
+
+#Preview {
+    Group {
+        
+        DonationView()
+    }
+}
+
