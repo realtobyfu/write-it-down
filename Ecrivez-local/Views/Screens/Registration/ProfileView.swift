@@ -133,16 +133,16 @@ struct ProfileView: View {
             }
         }
 
-        // Camera picker sheet
-        .sheet(isPresented: $isShowingCameraPicker, onDismiss: {
-            if let imageData = selectedImageData {
-                print("Camera picker dismissed with \(imageData.count) bytes of image data")
-            } else {
-                print("Camera picker dismissed without setting image data")
-            }
-        }) {
-            CameraImagePicker(imageData: $selectedImageData, sourceType: .camera)
-        }
+//        // Camera picker sheet
+//        .sheet(isPresented: $isShowingCameraPicker, onDismiss: {
+//            if let imageData = selectedImageData {
+//                print("Camera picker dismissed with \(imageData.count) bytes of image data")
+//            } else {
+//                print("Camera picker dismissed without setting image data")
+//            }
+//        }) {
+//            CameraImagePicker(image: $selectedImageData, sourceType: .camera)
+//        }
     }
     
     // MARK: - Load Public Notes

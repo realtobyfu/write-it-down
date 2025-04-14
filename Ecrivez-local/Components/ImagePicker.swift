@@ -12,62 +12,47 @@ import PhotosUI
 /// A simple struct to pick an image from the device's camera
 struct CameraImagePicker: UIViewControllerRepresentable {
     @Environment(\.presentationMode) var presentationMode
+    @Binding var image: UIImage? // Binding to hold the selected image
     
-    // Support both UIImage and Data bindings
-    @Binding var image: UIImage?
-    @Binding var imageData: Data?
+    var sourceType: UIImagePickerController.SourceType // Specifies the source type for the image
     
-    var sourceType: UIImagePickerController.SourceType = .camera
-    
-    // Initialize with either UIImage or Data binding
-    init(image: Binding<UIImage?>, sourceType: UIImagePickerController.SourceType = .camera) {
-        self._image = image
-        self._imageData = .constant(nil)
-        self.sourceType = sourceType
-    }
-    
-    init(imageData: Binding<Data?>, sourceType: UIImagePickerController.SourceType = .camera) {
-        self._image = .constant(nil)
-        self._imageData = imageData
-        self.sourceType = sourceType
-    }
-
+    // This method creates a Coordinator instance which handles the delegation of UIImagePickerController
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
-    func makeUIViewController(context: Context) -> UIImagePickerController {
+    
+    // This method called when the view is created
+    func makeUIViewController(context: UIViewControllerRepresentableContext<CameraImagePicker>) -> UIImagePickerController {
         let picker = UIImagePickerController()
-        picker.delegate = context.coordinator
-        picker.sourceType = sourceType
+        picker.delegate = context.coordinator // set the delegate to handle image picker events
+        picker.sourceType = sourceType // set the source type to photo library
+        picker.mediaTypes = ["public.image"]
+        picker.modalPresentationStyle = .fullScreen
         return picker
     }
-
-    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) { }
-
-    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    
+    // This method is used to update this struct when SwiftUI view update, but not used in this case
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {
+        
+    }
+    
+    // Coordinator class to handle the delegate methods of UIImagePickerController
+    class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
         let parent: CameraImagePicker
-
+        
         init(_ parent: CameraImagePicker) {
             self.parent = parent
         }
-
-        func imagePickerController(_ picker: UIImagePickerController,
-                                   didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            defer { parent.presentationMode.wrappedValue.dismiss() }
-            guard let uiImage = info[.originalImage] as? UIImage else { return }
-            
-            // Update either image or imageData binding
-            if parent.image != nil {
+        
+       
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let uiImage = info[.originalImage] as? UIImage {
                 parent.image = uiImage
             }
-            
-            if parent.imageData != nil {
-                parent.imageData = uiImage.jpegData(compressionQuality: 0.8)
-                print("Camera picker: Image data set with size: \(parent.imageData?.count ?? 0) bytes")
-            }
+            parent.presentationMode.wrappedValue.dismiss()
         }
-
+        
+        // This delegate method is called when the image picker is cancelled
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             parent.presentationMode.wrappedValue.dismiss()
         }
@@ -76,78 +61,51 @@ struct CameraImagePicker: UIViewControllerRepresentable {
 
 /// A simple struct to pick an image from the user's photo library
 struct PhotoLibraryPicker: UIViewControllerRepresentable {
-    // Support both UIImage and Data bindings
-    @Binding var selectedImage: UIImage?
-    @Binding var selectedImageData: Data?
+    @Binding var selectedImage: UIImage? // Binding to hold the selected image
+    let limitImageSelection = 1
     
-    // Initialize with either UIImage or Data binding
-    init(selectedImage: Binding<UIImage?>) {
-        self._selectedImage = selectedImage
-        self._selectedImageData = .constant(nil)
-    }
-    
-    // IMPORTANT FIX: The parameter name here is misleading - it accepts Data, not UIImage
-    init(selectedImage: Binding<Data?>) {
-        self._selectedImage = .constant(nil)
-        self._selectedImageData = selectedImage
-    }
-
+    // This method creates a Coordinator instance which handles the delegation of PHPickerViewController
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
+    
+    // This method called when the view is created
     func makeUIViewController(context: Context) -> PHPickerViewController {
-        var config = PHPickerConfiguration()
-        config.filter = .images
-        config.selectionLimit = 1
-
-        let picker = PHPickerViewController(configuration: config)
+        var configuration = PHPickerConfiguration()
+        
+        configuration.selectionLimit = limitImageSelection // limit selection to one image
+        configuration.filter = .images // filtering for images only
+        
+        let picker = PHPickerViewController(configuration: configuration)
         picker.delegate = context.coordinator
         return picker
     }
-
-    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) { }
-
+    
+    // This method is used to update this struct when SwiftUI view update, but not used in this case
+    func updateUIViewController(_ uiViewController: PHPickerViewController, context: Context) {
+        
+    }
+    
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: PhotoLibraryPicker
-
+        var parent: PhotoLibraryPicker
+        
         init(_ parent: PhotoLibraryPicker) {
             self.parent = parent
         }
-
+        
+        // this delegate method is called when an image is selected
         func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            picker.dismiss(animated: true)
-
-            guard let provider = results.first?.itemProvider,
-                  provider.canLoadObject(ofClass: UIImage.self) else {
-                print("PhotoLibraryPicker: No image provider found or cannot load UIImage")
-                return
-            }
-
-            provider.loadObject(ofClass: UIImage.self) { object, error in
-                if let error = error {
-                    print("PhotoLibraryPicker error: \(error.localizedDescription)")
-                    return
-                }
-                
-                if let image = object as? UIImage {
-                    DispatchQueue.main.async {
-                        // Update either image or imageData binding
-                        if self.parent.selectedImage != nil {
-                            self.parent.selectedImage = image
-                            print("PhotoLibraryPicker: UIImage set successfully")
-                        }
-                        
-                        if self.parent.selectedImageData != nil {
-                            let imageData = image.jpegData(compressionQuality: 0.8)
-                            self.parent.selectedImageData = imageData
-                            print("PhotoLibraryPicker: Image data set with size: \(imageData?.count ?? 0) bytes")
+            if let result = results.first {
+                result.itemProvider.loadObject(ofClass: UIImage.self) { object, error in
+                    if let uiImage = object as? UIImage {
+                        DispatchQueue.main.async {
+                            self.parent.selectedImage = uiImage
+                            print("Image successfully inserted")
                         }
                     }
-                } else {
-                    print("PhotoLibraryPicker: Failed to cast object to UIImage")
                 }
             }
+            picker.dismiss(animated: true, completion: nil) // Dismiss the photo picker
         }
     }
 }

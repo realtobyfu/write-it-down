@@ -50,6 +50,7 @@
 		3E982BF72CEA8FBE004AB1A9 /* LocationAddressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E982BF62CEA8FB7004AB1A9 /* LocationAddressViewModel.swift */; };
 		3EA0F26A2DA643A9001EE892 /* StyleManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA0F2692DA64399001EE892 /* StyleManager.swift */; };
 		3EA5DB5F2C6D6957002F4827 /* DateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA5DB5E2C6D6957002F4827 /* DateView.swift */; };
+		3EAFD81B2DAAEE5E0051355A /* SyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EAFD81A2DAAEE5E0051355A /* SyncManager.swift */; };
 		3EB21BC52D94A02F00B2FE1D /* SuggestedFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB21BC42D94A02B00B2FE1D /* SuggestedFeature.swift */; };
 		3EB21BC72D94A30A00B2FE1D /* NoteRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB21BC62D94A2FF00B2FE1D /* NoteRepository.swift */; };
 		3EB5D3482D70F98100440A7B /* SupabaseNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB5D3472D70F97A00440A7B /* SupabaseNote.swift */; };
@@ -123,6 +124,7 @@
 		3E982BF62CEA8FB7004AB1A9 /* LocationAddressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationAddressViewModel.swift; sourceTree = "<group>"; };
 		3EA0F2692DA64399001EE892 /* StyleManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StyleManager.swift; sourceTree = "<group>"; };
 		3EA5DB5E2C6D6957002F4827 /* DateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateView.swift; sourceTree = "<group>"; };
+		3EAFD81A2DAAEE5E0051355A /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
 		3EB21BC42D94A02B00B2FE1D /* SuggestedFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuggestedFeature.swift; sourceTree = "<group>"; };
 		3EB21BC62D94A2FF00B2FE1D /* NoteRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteRepository.swift; sourceTree = "<group>"; };
 		3EB5919E2D7B438B00DF6E2C /* Ecrivez-localRelease.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Ecrivez-localRelease.entitlements"; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				3EA0F2692DA64399001EE892 /* StyleManager.swift */,
+				3EAFD81A2DAAEE5E0051355A /* SyncManager.swift */,
 				3E07162A2DA5DFFA00E3E13D /* DonationManager.swift */,
 				3E4CCD9A2DA23CCC00BD65BF /* StorageManager.swift */,
 				3EEFE07E2CF94DD100212852 /* AuthenticationModel.swift */,
@@ -313,7 +316,6 @@
 			children = (
 				3EB21BC62D94A2FF00B2FE1D /* NoteRepository.swift */,
 				3EB5919E2D7B438B00DF6E2C /* Ecrivez-localRelease.entitlements */,
-				3ED060302C4EE7ED00392BDC /* NoteApp.swift */,
 				3E71462F2C9A0FF300F5ACE0 /* Models */,
 				3E8E70492C88FDDA0001BD86 /* ViewModels */,
 				3E71462E2C9A0EBF00F5ACE0 /* Components */,
@@ -321,6 +323,7 @@
 				3ED060342C4EE7EF00392BDC /* Assets.xcassets */,
 				3ED060362C4EE7EF00392BDC /* Preview Content */,
 				3E7F824D2DA420E700997B54 /* Info.plist */,
+				3ED060302C4EE7ED00392BDC /* NoteApp.swift */,
 			);
 			path = "Ecrivez-local";
 			sourceTree = "<group>";
@@ -470,6 +473,7 @@
 				3ED060332C4EE7ED00392BDC /* ContentView.swift in Sources */,
 				3EEF1B772D19BFD1005F7C9C /* ProfileView.swift in Sources */,
 				3EFCE2362C5ACC48000F748A /* ImagePicker.swift in Sources */,
+				3EAFD81B2DAAEE5E0051355A /* SyncManager.swift in Sources */,
 				3EDB88532D4AD8FE00FE9293 /* NoteEditorView.swift in Sources */,
 				3EC53C752C63051000CED78A /* LocationPicker.swift in Sources */,
 				3EEF1B6F2D17BC7B005F7C9C /* ToastModifier.swift in Sources */,

@@ -51,7 +51,7 @@ struct NoteApp: App {
                         appOpenCount += 1
                         
                         // Show donation view after 3 opens
-                        if appOpenCount == 3 {
+                        if appOpenCount == 4 || (appOpenCount >= 0 && appOpenCount % 10 == 0){
                             // Delay showing the donation view slightly for better UX
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                 showDonationView = true

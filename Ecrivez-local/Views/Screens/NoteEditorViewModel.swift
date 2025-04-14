@@ -72,7 +72,7 @@ class NoteEditorViewModel: ObservableObject {
             try context.save()
 
             context.refresh(noteToSave, mergeChanges: true)
-            print("Fetched back from context: \(noteToSave.attributedText)")
+//            print("Fetched back from context: \(noteToSave.attributedText)")
 
             if isAuthenticated {
                 if isPublic {

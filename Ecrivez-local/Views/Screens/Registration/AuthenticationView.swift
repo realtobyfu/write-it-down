@@ -14,17 +14,17 @@ struct AuthenticationView: View {
     @State private var signInResult: Result<Void, Error>?
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 18) {
             
             Text("Create an Account")
                 .font(.title2)
                 .bold()
-                .padding(.top, 20)
+                .padding(.top, 18)
             
             Text("to share notes and interact with other users")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-                .padding(.horizontal, 3)
+                .padding(.horizontal, 4)
             
             // MARK: Email Field
             VStack(alignment: .leading, spacing: 6) {
@@ -135,25 +135,53 @@ extension AuthenticationView {
         authVM.isLoading = false
     }
 
-    private func handleAppleSignIn(_ authorization: ASAuthorization) {
-        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential,
-              let appleIDToken = appleIDCredential.identityToken,
-              let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-            print("Unable to get Apple ID token as string")
+     private func handleAppleSignIn(_ authorization: ASAuthorization) {
+        // Debug print to track execution flow
+        print("Apple sign-in authorization received")
+        
+        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+            print("ERROR: Failed to get Apple ID credential")
+            signInResult = .failure(NSError(domain: "AuthenticationView", code: 1001,
+                                           userInfo: [NSLocalizedDescriptionKey: "Invalid credential type"]))
             return
         }
+        
+        guard let appleIDToken = appleIDCredential.identityToken else {
+            print("ERROR: No identity token found in credential")
+            signInResult = .failure(NSError(domain: "AuthenticationView", code: 1002,
+                                           userInfo: [NSLocalizedDescriptionKey: "No identity token"]))
+            return
+        }
+        
+        guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
+            print("ERROR: Unable to convert Apple ID token to string")
+            signInResult = .failure(NSError(domain: "AuthenticationView", code: 1003,
+                                           userInfo: [NSLocalizedDescriptionKey: "Token conversion failed"]))
+            return
+        }
+        
+        // Debug info
+        print("Apple ID token obtained successfully, length: \(idTokenString.count)")
+        print("Current nonce exists: \(authVM.currentNonce != nil)")
+        
         Task {
             do {
                 authVM.isLoading = true
+                
+                // Attempt to sign in with Apple
                 try await authVM.signInWithApple(idTokenString: idTokenString)
+                print("Apple sign-in completed successfully")
                 signInResult = .success(())
             } catch {
+                print("Apple sign-in failed with error: \(error.localizedDescription)")
                 signInResult = .failure(error)
             }
-            authVM.isLoading = false
+            
+            await MainActor.run {
+                authVM.isLoading = false
+            }
         }
     }
-
     /// For extra security, hash the nonce before sending it to Apple.
     private func sha256(_ input: String) -> String {
         let inputData = Data(input.utf8)
@@ -162,4 +190,7 @@ extension AuthenticationView {
             .map { String(format: "%02x", $0) }
             .joined()
     }
+    
+    
+    
 }

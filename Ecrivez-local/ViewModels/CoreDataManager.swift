@@ -35,7 +35,7 @@ import Foundation
 //                print("CoreData failed to load: \(error.localizedDescription)")
 //                fatalError("Failed to load Core Data: \(error.localizedDescription)")
 //            } else {
-//                self.checkAndPopulateDefaultCategories(context: viewContext)
+//                self.checkAndPopulateDefaultCategories(context: viewContexte)
 //            }
 //        }
 //    }
