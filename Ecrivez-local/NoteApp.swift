@@ -7,8 +7,6 @@
 import SwiftUI
 import CoreData
 
-
-
 @main
 struct NoteApp: App {
     
@@ -76,9 +74,5 @@ struct NoteApp: App {
         } catch {
             print("Failed to parse session: \(error)")
         }
-
-        
-        
-        
     }
 }

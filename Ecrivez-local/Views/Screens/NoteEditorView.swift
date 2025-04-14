@@ -70,18 +70,18 @@ struct NoteEditorView: View {
                 // Category Selection
                 categorySelectionView
                 
-                RichTextEditor(text: $viewModel.attributedText, context: contextRT)
+                RichTextEditor(text: $viewModel.attributedText, context: contextRT, format: .archivedData)
                     .padding(8)
                 //                    .background(Color.background)
                     .foregroundStyle(Color.background)
                     .focused($isTextEditorFocused)
-                
+//                    .focusedValue(\.richTextContext, contextRT)
+
 #if os(iOS)
                 RichTextKeyboardToolbar(
                     context: contextRT,
                     leadingButtons: { $0 },
                     trailingButtons: {
-//                        $0
                         _ in
                         // Add this
                         Button(action: {
@@ -99,12 +99,27 @@ struct NoteEditorView: View {
                     )
                 )
 //                // changes is not published in contextRT
-//                .onReceive(contextRT.actionPublisher) { action in
-//                    // Capture all formatting actions and update the view model
-//                    print("contextRT.attributedString", contextRT.attributedString)
-//                    print("viewModel.attributedText", viewModel.attributedText)
-//                    //                     contextRT.attributedString = viewModel.attributedText
-//                }
+                .onReceive(contextRT.actionPublisher) { action in
+                    // Capture all formatting actions and update  the view model
+                    
+                    // DEBUG: Currently, sometimes font gets updated in contextRT but not viewModel + context
+                    // SOLUTION: manually overwrite the string in viewModel because it's what's going to be saved
+
+                    print("Received Change: ", action)
+                    print("contextRT.fontSize:", contextRT.fontSize)
+                    print("contextRT.fontName:", contextRT.fontName)
+                    print("contextRT.styles:", contextRT.styles)
+                    
+                    let mutable = NSMutableAttributedString(attributedString: viewModel.attributedText)
+                    
+                    if contextRT.hasSelectedRange {
+                        let range = contextRT.selectedRange
+                    }
+
+                    print("contextRT.attributedString", contextRT.attributedString)
+                    print("viewModel.attributedText", viewModel.attributedText)
+                }
+                
                 .onChange(of: viewModel.attributedText) { old, new in
                     print("Old value (viewModel.attributedText):", old)
                     print("New value (viewModel.attributedText):", new)
@@ -184,19 +199,32 @@ struct NoteEditorView: View {
                 }
             )
             .sheet(isPresented: $isShowingImagePicker, onDismiss: {
-                // Once the sheet is dismissed, see if we got a valid UIImage
-                if let inputImage {
-                    // Insert that image into the RichTextEditor at the cursor
-                    let cursorLocation = contextRT.selectedRange.location
-                    let insertion = RichTextInsertion<UIImage>.image(inputImage,
-                                                                     at: cursorLocation,
-                                                                     moveCursor: true)
-                    let action = RichTextAction.pasteImage(insertion)
-                    contextRT.handle(action)
-                
-                    // Clear out the input
-                    self.inputImage = nil
-                }
+                guard let rawImage = inputImage else { return }
+
+                // Choose a maximum width that fits inside your text view.
+                let maxWidth: CGFloat = UIScreen.main.bounds.width - 32     // ≈ side padding
+
+                // ---- Resize while keeping the aspect ratio ----
+                let scale = min(1, maxWidth / rawImage.size.width)
+                let newSize = CGSize(width:  rawImage.size.width  * scale,
+                                     height: rawImage.size.height * scale)
+
+                UIGraphicsBeginImageContextWithOptions(newSize, false, rawImage.scale)
+                rawImage.draw(in: CGRect(origin: .zero, size: newSize))
+                let resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? rawImage
+                UIGraphicsEndImageContext()
+                // ----------------------------------------------
+
+                // Insert the (already‑sized) bitmap
+                let cursor = contextRT.selectedRange.location
+                let insertion = RichTextInsertion<UIImage>.image(
+                    resizedImage,
+                    at: cursor,
+                    moveCursor: true
+                )
+                contextRT.handle(.pasteImage(insertion))
+
+                inputImage = nil
             }) {
                 switch imageSourceType {
                 case .camera:
@@ -360,4 +388,37 @@ struct CategoryButton: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
+}
+
+    
+
+private func processImageForStorage(_ image: UIImage) -> UIImage {
+    // Resize large images to prevent excessive storage usage
+    let maxDimension: CGFloat = 1200
+    
+    let originalSize = image.size
+    var newSize = originalSize
+    
+    if originalSize.width > maxDimension || originalSize.height > maxDimension {
+        if originalSize.width > originalSize.height {
+            let ratio = maxDimension / originalSize.width
+            newSize = CGSize(width: maxDimension, height: originalSize.height * ratio)
+        } else {
+            let ratio = maxDimension / originalSize.height
+            newSize = CGSize(width: originalSize.width * ratio, height: maxDimension)
+        }
+    }
+    
+    // If no resizing needed, return original
+    if newSize == originalSize {
+        return image
+    }
+    
+    // Create a new resized image
+    UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
+    image.draw(in: CGRect(origin: .zero, size: newSize))
+    let resizedImage = UIGraphicsGetImageFromCurrentImageContext() ?? image
+    UIGraphicsEndImageContext()
+    
+    return resizedImage
 }
