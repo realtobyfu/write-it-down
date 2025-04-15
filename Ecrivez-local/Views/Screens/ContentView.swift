@@ -8,6 +8,9 @@ import UIKit
 
 struct ContentView: View {
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    private var isIPad: Bool { horizontalSizeClass == .regular }
+    
     // MARK: - Core Data & Environment
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
@@ -69,118 +72,201 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Top Bar
-                HStack {
-                    Text("Ideas")
-                        .italic()
-                        .font(.title)
-                        .fontWeight(.medium)
-                    Spacer()
-                    Button(action: {
-                        showingAuthView = true
-                    }) {
-                        Image(systemName: "person.crop.circle")
-                            .font(.system(size: 24))
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.top, 10)
-                .padding(.bottom, 15)
-
-                // Category Filter + Fold/Sort Toggles
-                CategoryFilterView(
-                    selectedCategory: $selectedCategory,
-                    categories: Array(categories),
-                    foldAll: $foldAll,
-                    sortByDateDesc: $sortByDateDesc
-                )
-                .font(.subheadline)
-                .padding(.bottom, 5)
-
-                // NOTES LIST
-                List {
-                    ForEach(displayedNotes) { note in
-                        NoteView(
-                            note: note,
-                            foldAll: foldAll,
-                            buttonTapped: {
-                                selectedNote = note
-//                                showingNoteEditor = true
+            Group {
+                if isIPad {
+                    // iPad-optimized two-column layout
+                    HStack(spacing: 0) {
+                        // Sidebar with notes list
+                        VStack(spacing: 0) {
+                            // Top Bar
+                            HStack {
+                                Text("Ideas")
+                                    .italic()
+                                    .font(.title)
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Button(action: {
+                                    showingAuthView = true
+                                }) {
+                                    Image(systemName: "person.crop.circle")
+                                        .font(.system(size: 24))
+                                }
                             }
-                        )
-                        .listRowSeparator(.hidden)
-                    }
-                    
-                    .onDelete { indexSet in
-                        // Store the indexSet for later use
-                        indexSetToDelete = indexSet
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                            .padding(.bottom, 15)
+                            
+                            // Category filter
+                            CategoryFilterView(
+                                selectedCategory: $selectedCategory,
+                                categories: Array(categories),
+                                foldAll: $foldAll,
+                                sortByDateDesc: $sortByDateDesc
+                            )
+                            .font(.subheadline)
+                            .padding(.bottom, 5)
+                            
+                            // Notes list
+                            List {
+                                ForEach(displayedNotes) { note in
+                                    NoteView(
+                                        note: note,
+                                        foldAll: foldAll,
+                                        buttonTapped: {
+                                            selectedNote = note
+                                        }
+                                    )
+                                    .listRowSeparator(.hidden)
+                                }
+                                .onDelete { indexSet in
+                                    indexSetToDelete = indexSet
+                                    if let index = indexSet.first {
+                                        noteToDelete = displayedNotes[index]
+                                        showDeleteConfirmation = true
+                                    }
+                                }
+                                .onMove(perform: moveNote)
+                                .moveDisabled(selectedCategory != nil || sortByDateDesc)
+                            }
+                            .listStyle(PlainListStyle())
+                        }
+                        .frame(width: 380)
+                        .background(Color(UIColor.systemGroupedBackground))
                         
-                        // Get the first note to delete (for the confirmation message)
-                        if let index = indexSet.first {
-                            noteToDelete = displayedNotes[index]
-                            showDeleteConfirmation = true
-                        }
-                    }
-                    // Only allow reordering if no category & no date sort
-                    .onMove(perform: moveNote)
-                    .moveDisabled(selectedCategory != nil || sortByDateDesc)
-                }
-                .listStyle(PlainListStyle())
-                .safeAreaInset(edge: .bottom) {
-                    // Horizontal Bubble Menu
-                    BubbleMenuView(
-                        showBubbles: $showBubbles,
-                        selectedCategory: $selectedCategory,
-                        categories: Array(categories),
-                        onCategorySelected: {
-                            showingAddNoteView = true
-                        }
-                    )
-                }
-
-                Spacer()
-
-                // PLUS Button & Nav Buttons
-                ZStack {
-                    HStack {
-                        Spacer()
-                        Button(action: {
-                            withAnimation {
-                                showBubbles.toggle()
+                        // Detail view (right side)
+                        if let note = selectedNote {
+                            // Show selected note detail
+                            NoteView(note: note, foldAll: foldAll,           buttonTapped: {
+                                selectedNote = note
+                            })
+                        } else {
+                            // Placeholder when no note is selected
+                            VStack {
+                                Image(systemName: "note.text")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(.gray)
+                                Text("Select a note or create a new one")
+                                    .font(.title3)
+                                    .foregroundColor(.gray)
+                                    .padding(.top)
                             }
-                        }) {
-                            Image(systemName: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
-                                .font(.system(size: 52))
-                                .foregroundColor(.red)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        Spacer()
                     }
-
-                    HStack {
-                        NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
-                            Image(systemName: "text.bubble")
-                                .font(.system(size: 30))
-                                .foregroundColor(.blue)
-                                .padding(5)
-                                .clipShape(Circle())
+                    // Add note and navigation buttons at the bottom
+                    .overlay(alignment: .bottomLeading) {
+                        noteControlButtons
+                            .padding(20)
+                    }
+                } else {
+                    // Original iPhone layout
+                    VStack(spacing: 0) {
+                        // Top Bar
+                        HStack {
+                            Text("Ideas")
+                                .italic()
+                                .font(.title)
+                                .fontWeight(.medium)
+                            Spacer()
+                            Button(action: {
+                                showingAuthView = true
+                            }) {
+                                Image(systemName: "person.crop.circle")
+                                    .font(.system(size: 24))
+                            }
                         }
-                        .padding(.leading, 50)
-
-                        Spacer()
-
-                        NavigationLink(destination: SettingsView()) {
-                            Image(systemName: "gear")
-                                .font(.system(size: 26))
-                                .foregroundColor(.white)
-                                .padding(5)
-                                .background(Color.blue)
-                                .clipShape(Circle())
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+                        .padding(.bottom, 15)
+                        
+                        // Category Filter + Fold/Sort Toggles
+                        CategoryFilterView(
+                            selectedCategory: $selectedCategory,
+                            categories: Array(categories),
+                            foldAll: $foldAll,
+                            sortByDateDesc: $sortByDateDesc
+                        )
+                        .font(.subheadline)
+                        .padding(.bottom, 5)
+                        
+                        // NOTES LIST
+                        List {
+                            ForEach(displayedNotes) { note in
+                                NoteView(
+                                    note: note,
+                                    foldAll: foldAll,
+                                    buttonTapped: {
+                                        selectedNote = note
+                                    }
+                                )
+                                .listRowSeparator(.hidden)
+                            }
+                            .onDelete { indexSet in
+                                indexSetToDelete = indexSet
+                                if let index = indexSet.first {
+                                    noteToDelete = displayedNotes[index]
+                                    showDeleteConfirmation = true
+                                }
+                            }
+                            .onMove(perform: moveNote)
+                            .moveDisabled(selectedCategory != nil || sortByDateDesc)
                         }
-                        .padding(.trailing, 50)
+                        .listStyle(PlainListStyle())
+                        .safeAreaInset(edge: .bottom) {
+                            BubbleMenuView(
+                                showBubbles: $showBubbles,
+                                selectedCategory: $selectedCategory,
+                                categories: Array(categories),
+                                onCategorySelected: {
+                                    showingAddNoteView = true
+                                }
+                            )
+                        }
+                        
+                        // PLUS Button & Nav Buttons
+                        ZStack {
+                            HStack {
+                                Spacer()
+                                Button(action: {
+                                    withAnimation {
+                                        showBubbles.toggle()
+                                    }
+                                }) {
+                                    Image(systemName: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
+                                        .font(.system(size: 52))
+                                        .foregroundColor(.red)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                            
+                            HStack {
+                                NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
+                                    Image(systemName: "text.bubble")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.blue)
+                                        .padding(5)
+                                        .clipShape(Circle())
+                                }
+                                .padding(.leading, 50)
+                                
+                                Spacer()
+                                
+                                NavigationLink(destination: SettingsView()) {
+                                    Image(systemName: "gear")
+                                        .font(.system(size: 26))
+                                        .foregroundColor(.white)
+                                        .padding(5)
+                                        .background(Color.blue)
+                                        .clipShape(Circle())
+                                }
+                                .padding(.trailing, 50)
+                            }
+                        }
                     }
                 }
             }
+
         }
         
         .confirmationDialog(
@@ -244,6 +330,44 @@ struct ContentView: View {
                 AuthenticationView(authVM: authVM)
             }
         }
+    }
+
+    private var noteControlButtons: some View {
+        HStack(spacing: 24) {
+            // Create new note button
+            Button(action: {
+                // Show category selection or use default
+                withAnimation {
+                    showBubbles.toggle()
+                }
+            }) {
+                Label("New Note", systemImage: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
+                    .font(.headline)
+                    .padding(12)
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(15)
+            }
+            
+            NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
+                Label("Feed", systemImage: "text.bubble")
+                    .font(.headline)
+                    .padding(12)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(15)
+            }
+            
+            NavigationLink(destination: SettingsView()) {
+                Label("Settings", systemImage: "gear")
+                    .font(.headline)
+                    .padding(12)
+                    .background(Color.purple)
+                    .foregroundColor(.white)
+                    .cornerRadius(15)
+            }
+        }
+        .padding(.top, showBubbles ? 5: 0)
     }
 
     // MARK: - Deletions & Reordering
@@ -346,6 +470,7 @@ struct CategoryFilterView: View {
                 }
             }
             .padding(.horizontal)
+            
 
             // Bubbles, if expanded
             if isExpanded {

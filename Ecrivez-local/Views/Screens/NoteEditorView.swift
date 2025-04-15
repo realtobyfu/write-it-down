@@ -5,6 +5,7 @@ import RichTextKit
 import CoreData
 
 struct NoteEditorView: View {
+    
     enum Mode {
         case edit(Note)
         case create(Category)

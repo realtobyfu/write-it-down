@@ -56,15 +56,15 @@ struct DonationView: View {
                     VStack(spacing: 0) {
                         // Title section with proper spacing
                         VStack(spacing: 10) {
-                            Text("Tip the Developer")
+                            Text("Name Your Price")
                                 .font(.system(size: 30, weight: .bold))
                                 .multilineTextAlignment(.center)
                             
-                            Text("Choose any price to help us continue improving the app")
+                            Text("Pay any price you want to use our app")
                                 .font(.system(size: 17))
                                 .foregroundColor(.gray)
                                 .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
+                                .padding(.horizontal, 10)
                         }
                         .padding(.top, geometry.size.height * 0.06)
                         .padding(.bottom, geometry.size.height * 0.01)
@@ -75,16 +75,16 @@ struct DonationView: View {
                             .configure(\.contentMode, to: .scaleAspectFill)
                             .currentFrame(currentFrame)
                             .frame(
-                                width: min(360, geometry.size.width * 0.8),
-                                height: min(360, geometry.size.width * 0.8)
+                                width: min(400, geometry.size.width * 0.95),
+                                height: min(400, geometry.size.width * 0.95)
                             )
-                            .padding(.bottom, geometry.size.height * 0.02)
+                            .padding(.bottom, geometry.size.height * 0.01)
                         
                         // Price display
                         Text(closestDonationStep == 0 ? "Free" : String(format: "$%.2f", Float(closestDonationStep * 15 - 0.01)))
                             .font(.system(size: 36, weight: .bold))
                             .foregroundColor(donationColor)
-                            .padding(.bottom, geometry.size.height * 0.04)
+                            .padding(.bottom, geometry.size.height * 0.02)
                         
                         // Slider with padding
                         VStack(spacing: 12) {
@@ -101,7 +101,7 @@ struct DonationView: View {
                                         .frame(maxWidth: .infinity)
                                 }
                             }
-                            .padding(.horizontal, geometry.size.width * 0.08)
+                            .padding(.horizontal, geometry.size.width * 0.07)
                         }
                         .padding(.bottom, geometry.size.height * 0.07)
                         
