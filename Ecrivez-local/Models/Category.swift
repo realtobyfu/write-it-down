@@ -15,3 +15,18 @@ extension Category {
     }
 }
 
+
+extension Category {
+    func toSyncedCategory(ownerID: UUID) -> SyncedCategory {
+        return SyncedCategory(
+            id: self.id ?? UUID(),
+            owner_id: ownerID,
+            name: self.name ?? "",
+            symbol: self.symbol ?? "",
+            colorString: self.colorString ?? "",
+            index: Int(self.index),
+            created_at: nil, // set by db
+            last_modified: Date()
+        )
+    }
+}

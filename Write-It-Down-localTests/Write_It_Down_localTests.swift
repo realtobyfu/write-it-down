@@ -58,7 +58,7 @@ struct Write_It_Down_localTests {
         let note = results.first!
         #expect(note.attributedText.string == "Hello from create mode!")
         #expect(!note.isPublic)
-        #expect(!note.isAnnonymous)
+        #expect(!note.isAnonymous)
         #expect(note.date != nil)
         #expect(note.category != nil)
         

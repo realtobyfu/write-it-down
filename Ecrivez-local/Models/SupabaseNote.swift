@@ -19,7 +19,7 @@ struct SupabaseNote: Codable, Identifiable {
     var locationLocality: String?  // Add new field
     var locationLongitude: String?
     var locationLatitude: String?
-    var isAnnonymous: Bool?
+    var isAnonymous: Bool?
     let colorString: String
     let symbol: String
     var archived_content: String?
@@ -33,7 +33,7 @@ struct SupabaseNote: Codable, Identifiable {
         case id, owner_id, category_id
         case content, rtf_content, archived_content
         case date, locationName, locationLocality, locationLongitude, locationLatitude
-        case isAnnonymous
+        case isAnonymous
         case colorString, symbol
         case profiles
     }
@@ -60,7 +60,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.locationLocality = try container.decodeIfPresent(String.self, forKey: .locationLocality)
         self.locationLongitude = try container.decodeIfPresent(String.self, forKey: .locationLongitude)
         self.locationLatitude = try container.decodeIfPresent(String.self, forKey: .locationLatitude)
-        self.isAnnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnnonymous)
+        self.isAnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnonymous)
         
         self.colorString = try container.decode(String.self, forKey: .colorString)
         self.symbol = try container.decode(String.self, forKey: .symbol)
@@ -82,7 +82,7 @@ struct SupabaseNote: Codable, Identifiable {
          locationLongitude: String?,
          colorString: String,
          symbol: String,
-         isAnnonymous: Bool?
+         isAnonymous: Bool?
     ) {
         self.id = id
         self.owner_id = owner_id
@@ -95,7 +95,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.locationLocality = locationLocality
         self.locationLongitude = locationLongitude
         self.locationLatitude = locationLatitude
-        self.isAnnonymous = isAnnonymous
+        self.isAnonymous = isAnonymous
         self.colorString = colorString
         self.symbol = symbol
         self.profiles = nil

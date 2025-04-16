@@ -74,7 +74,7 @@ class NoteRepository {
     func fetchAllPublicNotes() async throws -> [SupabaseNote] {
         try await client
             .from("public_notes")
-            .select("id, owner_id, category_id, content, date, locationLongitude, locationLatitude, colorString, symbol, isAnnonymous, profiles (username)")
+            .select("id, owner_id, category_id, content, date, locationLongitude, locationLatitude, colorString, symbol, isAnonymous, profiles (username)")
             .order("created_at", ascending: false)
             .execute()
             .value
@@ -121,7 +121,7 @@ class NoteRepository {
             locationLongitude: note.locationLongitude?.stringValue,
             colorString: note.category?.colorString ?? "",
             symbol: note.category?.symbol ?? "",
-            isAnnonymous: note.isAnnonymous
+            isAnonymous: note.isAnonymous
         )
         return supaNote
     }

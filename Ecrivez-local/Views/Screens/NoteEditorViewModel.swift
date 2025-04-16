@@ -38,7 +38,7 @@ class NoteEditorViewModel: ObservableObject {
             self.attributedText = note.attributedText
             self.selectedDate   = note.date
             self.isPublic       = note.isPublic
-            self.isAnonymous    = note.isAnnonymous
+            self.isAnonymous    = note.isAnonymous
             self.location       = note.location?.coordinate
             self.locationName   = note.locationName
             self.locationLocality = note.locationLocality // Initialize locality from note
@@ -63,10 +63,12 @@ class NoteEditorViewModel: ObservableObject {
         noteToSave.category = category
         noteToSave.date = selectedDate
         noteToSave.isPublic = isPublic
-        noteToSave.isAnnonymous = isAnonymous
+        noteToSave.isAnonymous = isAnonymous
         noteToSave.locationName = locationName
         noteToSave.locationLocality = locationLocality // Save locality field
         noteToSave.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+        
+        noteToSave.lastModified = Date()
 
         do {
             try context.save()

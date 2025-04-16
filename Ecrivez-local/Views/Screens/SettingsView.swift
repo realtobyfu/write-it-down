@@ -42,6 +42,8 @@ struct SettingsView: View {
                 .foregroundColor(.yellow)
             }
             
+
+            
             // MARK: - New Section for font & color mode
             Section(header: Text("Default Editor Settings")) {
                 

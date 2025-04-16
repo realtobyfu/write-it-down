@@ -133,7 +133,7 @@ struct PublicNoteDetailView: View {
             VStack(alignment: .leading, spacing: 50) {
                 // Author info
                 
-                if note.isAnnonymous == true {
+                if note.isAnonymous ?? false {
                     Text("Anonymous")
                         .font(.custom("Baskerville", size: 25))
                         .italic()

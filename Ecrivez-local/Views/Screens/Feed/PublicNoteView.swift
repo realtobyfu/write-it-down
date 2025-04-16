@@ -48,7 +48,7 @@ struct PublicNoteView: View {
                         
                         // If anonymous or user's username
                         HStack {
-                            if note.isAnnonymous == true {
+                            if note.isAnonymous == true {
 //                                Text("Anonymous")
 //                                    .font(.subheadline)
 //                                    .foregroundColor(secondaryTextColor)

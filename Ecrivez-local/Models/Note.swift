@@ -120,11 +120,50 @@ extension Note {
             locationLongitude: self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",
             symbol: self.category?.symbol ?? "",
-            isAnnonymous: self.isAnnonymous
+            isAnonymous: self.isAnonymous
         )
     }
 }
 
 // For Note Syncing
-
-
+extension Note {
+    var syncLastModified: Date? {
+        
+        if (self.lastModified != nil) {
+            return self.lastModified
+        }
+        
+        return Date()
+    }
+    func toSyncedNote(ownerID: UUID) -> SyncedNote {
+        let plainText = self.attributedText.string
+        
+        var base64Archived: String? = nil
+        do {
+            let archivedData = try self.attributedText.richTextData(for: .archivedData)
+            base64Archived = archivedData.base64EncodedString()
+        } catch {
+            print("Failed to get archived data: \(error)")
+        }
+        
+        return SyncedNote(
+            id: self.id ?? UUID(),
+            owner_id: ownerID,
+            category_id: self.category?.id,
+            content: plainText,
+            attributedTextData: base64Archived,
+            date: self.date,
+            locationName: self.locationName,
+            locationLocality: self.locationLocality,
+            locationLatitude: self.locationLatitude?.stringValue,
+            locationLongitude: self.locationLongitude?.stringValue,
+            colorString: self.category?.colorString ?? "",
+            symbol: self.category?.symbol ?? "",
+            last_modified: syncLastModified,
+            is_deleted: false,
+            created_at: nil, // set by db
+            isAnonymous: self.isAnonymous, // Added to match your table
+            isPublic: self.isPublic // Added to match your table
+        )
+    }
+}

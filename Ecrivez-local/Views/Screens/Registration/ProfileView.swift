@@ -74,7 +74,29 @@ struct ProfileView: View {
                         .foregroundColor(.red)
                 }
                 
+                // In ProfileView.swift
+                Section(header: Text("Data Synchronization").font(.headline)) {
+                    if authVM.isAuthenticated {
+                        SyncControlView()
+                            .padding(.vertical, 8)
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Sign in to enable syncing across devices")
+                                .foregroundColor(.secondary)
+                            
+                            Button("Sign In") {
+                                // Trigger sign in process
+                                // This depends on your auth flow
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                }
+                .padding(.horizontal)
                 Divider()
+                
+
                 
                 // MARK: - My Public Notes Section
                 VStack(alignment: .leading, spacing: 10) {
