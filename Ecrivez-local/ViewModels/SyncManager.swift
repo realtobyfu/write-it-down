@@ -324,12 +324,12 @@ class SyncManager: ObservableObject {
                 // Attempt the insert operation, but if it fails with a duplicate error, try update instead
                 do {
                     let response = try await client
-                        .from("synced_categories")
-                        .insert(syncedCategory)
-                        .execute()
+                    .from("synced_categories")
+                    .insert(syncedCategory)
+                    .execute()
                     
                     print("Insert response status: \(response.status)")
-                    print("Successfully uploaded category: \(syncedCategory.id)")
+                print("Successfully uploaded category: \(syncedCategory.id)")
                 } catch let error {
                     print("Insert failed with error: \(error.localizedDescription)")
                     print("Attempting update operation instead...")
@@ -447,8 +447,8 @@ class SyncManager: ObservableObject {
             }
             
             if context.hasChanges {
-                try context.save()
-                print("Successfully saved downloaded categories to Core Data")
+            try context.save()
+            print("Successfully saved downloaded categories to Core Data")
             } else {
                 print("No changes to save to Core Data")
             }
@@ -630,8 +630,8 @@ class SyncManager: ObservableObject {
             }
             
             if context.hasChanges {
-                try context.save()
-                print("Successfully saved downloaded notes to Core Data")
+            try context.save()
+            print("Successfully saved downloaded notes to Core Data")
             } else {
                 print("No changes to save to Core Data")
             }

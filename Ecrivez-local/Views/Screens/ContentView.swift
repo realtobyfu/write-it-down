@@ -27,7 +27,6 @@ struct ContentView: View {
     ) var categories: FetchedResults<Category>
 
     // MARK: - Local State
-//    @State private var showingNoteEditor = false
     @State private var selectedNote: Note?
     @State private var showingAddNoteView = false
     @State private var showingAuthView = false
@@ -38,11 +37,16 @@ struct ContentView: View {
     @State private var showDeleteConfirmation = false
     @State private var indexSetToDelete: IndexSet?
 
+    // Grid layout for iPad
+    private let gridColumns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible(), spacing: 16)
+    ]
 
-    // For “Fold All”
+    // For "Fold All"
     @State private var foldAll = false
 
-    // For “Sort by Date” toggle
+    // For "Sort by Date" toggle
     @State private var sortByDateDesc = false
 
     @Environment(\.scenePhase) private var scenePhase
@@ -74,9 +78,8 @@ struct ContentView: View {
         NavigationStack {
             Group {
                 if isIPad {
-                    // iPad-optimized two-column layout
-                    HStack(spacing: 0) {
-                        // Sidebar with notes list
+                    // iPad two-column grid layout
+                    ZStack {
                         VStack(spacing: 0) {
                             // Top Bar
                             HStack {
@@ -106,57 +109,47 @@ struct ContentView: View {
                             .font(.subheadline)
                             .padding(.bottom, 5)
                             
-                            // Notes list
-                            List {
-                                ForEach(displayedNotes) { note in
-                                    NoteView(
-                                        note: note,
-                                        foldAll: foldAll,
-                                        buttonTapped: {
-                                            selectedNote = note
-                                        }
-                                    )
-                                    .listRowSeparator(.hidden)
-                                }
-                                .onDelete { indexSet in
-                                    indexSetToDelete = indexSet
-                                    if let index = indexSet.first {
-                                        noteToDelete = displayedNotes[index]
-                                        showDeleteConfirmation = true
+                            // Two-column grid of notes
+                            ScrollView {
+                                LazyVGrid(columns: gridColumns, spacing: 16) {
+                                    ForEach(displayedNotes) { note in
+                                        NoteView(
+                                            note: note,
+                                            foldAll: foldAll,
+                                            buttonTapped: {
+                                                selectedNote = note
+                                            }
+                                        )
+                                        .background(Color(.systemBackground))
+                                        .cornerRadius(12)
+                                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                                     }
                                 }
-                                .onMove(perform: moveNote)
-                                .moveDisabled(selectedCategory != nil || sortByDateDesc)
+                                .padding()
                             }
-                            .listStyle(PlainListStyle())
+                            .background(Color(.systemGroupedBackground))
+                            .safeAreaInset(edge: .bottom) {
+                                // Add bubble menu for iPad in same position as iPhone
+                                if showBubbles {
+                                    BubbleMenuView(
+                                        showBubbles: $showBubbles,
+                                        selectedCategory: $selectedCategory,
+                                        categories: Array(categories),
+                                        onCategorySelected: {
+                                            showingAddNoteView = true
+                                        }
+                                    )
+                                }
+                            }
                         }
-                        .frame(width: 380)
-                        .background(Color(UIColor.systemGroupedBackground))
                         
-                        // Detail view (right side)
-                        if let note = selectedNote {
-                            // Show selected note detail
-                            NoteView(note: note, foldAll: foldAll,           buttonTapped: {
-                                selectedNote = note
-                            })
-                        } else {
-                            // Placeholder when no note is selected
-                            VStack {
-                                Image(systemName: "note.text")
-                                    .font(.system(size: 60))
-                                    .foregroundColor(.gray)
-                                Text("Select a note or create a new one")
-                                    .font(.title3)
-                                    .foregroundColor(.gray)
-                                    .padding(.top)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        // Floating Controls - only the buttons
+                        VStack {
+                            Spacer()
+                            iPadControlButtons
                         }
-                    }
-                    // Add note and navigation buttons at the bottom
-                    .overlay(alignment: .bottomLeading) {
-                        noteControlButtons
-                            .padding(20)
+                        .padding(20)
+                        .edgesIgnoringSafeArea(.bottom)
                     }
                 } else {
                     // Original iPhone layout
@@ -296,21 +289,19 @@ struct ContentView: View {
                 saveContext()
             }
         }
-        // Present Note Editor
+        
+        // Present Note Editor when a note is selected (for both iPhone and iPad)
         .sheet(item: $selectedNote, onDismiss: {
             selectedNote = nil
         }) { note in
-//            if let note = selectedNote {
-                NoteEditorView(
-                    mode: .edit(note),
-                    categories: Array(categories), context: context,
-                    isAuthenticated: authVM.isAuthenticated,
-                    onSave: { saveContext() }
-                )
-//            } else {
-//                Text("No note selected")
-//            }
+            NoteEditorView(
+                mode: .edit(note),
+                categories: Array(categories), context: context,
+                isAuthenticated: authVM.isAuthenticated,
+                onSave: { saveContext() }
+            )
         }
+        
         // Present "Add Note" after picking category bubble
         .sheet(isPresented: $showingAddNoteView, onDismiss: {
             selectedCategory = nil
@@ -332,42 +323,55 @@ struct ContentView: View {
         }
     }
 
-    private var noteControlButtons: some View {
-        HStack(spacing: 24) {
+    // Floating control buttons with transparent background
+    private var iPadControlButtons: some View {
+        HStack {
+            Spacer()
+            
             // Create new note button
             Button(action: {
-                // Show category selection or use default
+                // Show category selection
                 withAnimation {
                     showBubbles.toggle()
                 }
             }) {
-                Label("New Note", systemImage: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
-                    .font(.headline)
-                    .padding(12)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(15)
+                Image(systemName: showBubbles ? "minus.circle.fill" : "plus.circle.fill")
+                    .font(.system(size: 52))
+                    .foregroundColor(.red)
+                    .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
             }
+            .padding(.horizontal, 20)
             
+            // Feed button
             NavigationLink(destination: FeedView(isAuthenticated: authVM.isAuthenticated)) {
-                Label("Feed", systemImage: "text.bubble")
-                    .font(.headline)
-                    .padding(12)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(15)
+                ZStack {
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 44, height: 44)
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                    
+                    Image(systemName: "text.bubble")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                }
             }
+            .padding(.horizontal, 10)
             
+            // Settings button
             NavigationLink(destination: SettingsView()) {
-                Label("Settings", systemImage: "gear")
-                    .font(.headline)
-                    .padding(12)
-                    .background(Color.purple)
-                    .foregroundColor(.white)
-                    .cornerRadius(15)
+                ZStack {
+                    Circle()
+                        .fill(Color.purple)
+                        .frame(width: 44, height: 44)
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                    
+                    Image(systemName: "gear")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white)
+                }
             }
+            .padding(.horizontal, 10)
         }
-        .padding(.top, showBubbles ? 5: 0)
     }
 
     // MARK: - Deletions & Reordering
@@ -413,14 +417,12 @@ struct ContentView: View {
 }
 
 
-
-
 // MARK: - CategoryFilterView
 struct CategoryFilterView: View {
     @Binding var selectedCategory: Category?
     var categories: [Category]
 
-    // For “Fold All” & “Sort by Date”
+    // For "Fold All" & "Sort by Date"
     @Binding var foldAll: Bool
     @Binding var sortByDateDesc: Bool
 
@@ -428,7 +430,7 @@ struct CategoryFilterView: View {
     @State private var isExpanded: Bool = false
 
     var body: some View {
-        VStack {
+        VStack(spacing: 10) {
             // Title row
             HStack {
                 Text("Categories")
@@ -440,7 +442,7 @@ struct CategoryFilterView: View {
                 HStack(spacing: 16) {
                     // Expand/collapse categories
                     Button(action: {
-                        withAnimation {
+                        withAnimation(.easeInOut(duration: 0.3)) {
                             isExpanded.toggle()
                         }
                     }) {
@@ -474,37 +476,40 @@ struct CategoryFilterView: View {
 
             // Bubbles, if expanded
             if isExpanded {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        // "All" button
-                        Button(action: {
-                            selectedCategory = nil
-                        }) {
-                            Text("All")
-                                .padding(8)
-                                .background(selectedCategory == nil ? Color.blue : Color.gray)
-                                .foregroundColor(.white)
-                                .cornerRadius(20)
-                        }
-
-                        // Each category bubble
-                        ForEach(categories, id: \.self) { category in
+                VStack {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            // "All" button
                             Button(action: {
-                                selectedCategory = category
+                                selectedCategory = nil
                             }) {
-                                Circle()
-                                    .fill(category.color)
-                                    .frame(width: 30, height: 30)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
-                                    )
+                                Text("All")
+                                    .padding(8)
+                                    .background(selectedCategory == nil ? Color.blue : Color.gray)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(20)
+                            }
+
+                            // Each category bubble
+                            ForEach(categories, id: \.self) { category in
+                                Button(action: {
+                                    selectedCategory = category
+                                }) {
+                                    Circle()
+                                        .fill(category.color)
+                                        .frame(width: 30, height: 30)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
+                                        )
+                                }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
-                .transition(.slide)
+                .transition(.opacity)
+                .padding(.bottom, 5)
             }
         }
     }

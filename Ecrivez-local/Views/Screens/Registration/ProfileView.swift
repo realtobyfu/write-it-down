@@ -41,92 +41,180 @@ struct ProfileView: View {
 
     // Pre-fetch categories in onAppear rather than during sheet presentation
     @State private var cachedCategories: [Category] = []
+    
+    // Add state for showing authentication view
+    @State private var showingAuthView = false
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                
-                // MARK: - Profile Photo
-                profilePhotoSection
-                
-                // MARK: - Username & Display Name
-                if isEditing {
-                    editingFields
-                } else {
-                    staticProfileFields
-                }
-                
-                HStack {
-                    // Edit Profile button
-                    Button("Edit Profile") {
-                        isEditing = true
-                    }
-                    .padding(.trailing, 10)
-
-                    Button("Log out") {
-                        authVM.signOut()
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
-                // Show any error messages
-                if let errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                }
-                
-                // In ProfileView.swift
-                Section(header: Text("Data Synchronization").font(.headline)) {
-                    if authVM.isAuthenticated {
-                        SyncControlView()
-                            .padding(.vertical, 8)
-                    } else {
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Sign in to enable syncing across devices")
-                                .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                // Header with profile photo and name
+                ZStack {
+                    Rectangle()
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.purple.opacity(0.5)]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
+                        .frame(height: 180)
+                    
+                    VStack(spacing: 12) {
+                        profilePhotoSection
+                            .shadow(radius: 4)
+                        
+                        if !isEditing {
+                            Text(editedProfile.display_name ?? "Display Name")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.white)
                             
-                            Button("Sign In") {
-                                // Trigger sign in process
-                                // This depends on your auth flow
+                            Text("@\(editedProfile.username ?? "username")")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.9))
+                        }
+                    }
+                    .padding(.top, 20)
+                }
+                
+                // Main content area
+                VStack(spacing: 24) {
+                    // Edit form or Action buttons
+                    if isEditing {
+                        editingFields
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemGray6))
+                            )
+                    } else {
+                        HStack(spacing: 16) {
+                            Button(action: { isEditing = true }) {
+                                Label("Edit Profile", systemImage: "pencil")
+                                    .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.borderedProminent)
+                            
+                            Button(action: { authVM.signOut() }) {
+                                Label("Log out", systemImage: "rectangle.portrait.and.arrow.right")
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
                         }
-                        .padding(.vertical, 8)
+                        .padding(.top, 16)
                     }
+                    
+                    // Error message
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    
+                    // Data Sync section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Data Synchronization")
+                            .font(.headline)
+                            .padding(.horizontal)
+                        
+                        if authVM.isAuthenticated {
+                            SyncControlView()
+                                .padding(.vertical, 8)
+                        } else {
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Image(systemName: "exclamationmark.triangle")
+                                        .foregroundColor(.orange)
+                                    Text("Sign in to enable syncing across devices")
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.horizontal)
+                                
+                                Button(action: {
+                                    // Present the authentication view
+                                    showingAuthView = true
+                                }) {
+                                    Label("Sign In", systemImage: "person.fill.badge.plus")
+                                        .frame(maxWidth: .infinity)
+                                }
+                                .buttonStyle(.borderedProminent)
+                                .padding(.horizontal)
+                            }
+                            .padding(.vertical, 8)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                    )
+                    
+                    // My Public Notes section
+                    VStack(alignment: .leading, spacing: 16) {
+                        HStack {
+                            Text("My Public Notes")
+                                .font(.headline)
+                            
+                            Spacer()
+                            
+                            if !myNotes.isEmpty {
+                                Text("\(myNotes.count) notes")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.horizontal)
+                        
+                        if isLoadingMyNotes {
+                            HStack {
+                                Spacer()
+                                ProgressView()
+                                    .padding()
+                                Spacer()
+                            }
+                        } else if myNotes.isEmpty {
+                            HStack {
+                                Spacer()
+                                VStack(spacing: 12) {
+                                    Image(systemName: "doc.text.magnifyingglass")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.gray.opacity(0.7))
+                                    Text("No public notes found.")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding()
+                                Spacer()
+                            }
+                        } else {
+                            // Card-style notes list
+                            VStack(spacing: 10) {
+                                ForEach(myNotes) { supaNote in
+                                    buildNoteCard(for: supaNote)
+                                }
+                            }
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                            .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                    )
                 }
                 .padding(.horizontal)
-                Divider()
-                
-
-                
-                // MARK: - My Public Notes Section
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("My Public Notes")
-                        .font(.headline)
-                    
-                    if isLoadingMyNotes {
-                        ProgressView("Loading your notes...")
-                    } else if myNotes.isEmpty {
-                        Text("No public notes found.")
-                            .foregroundColor(.gray)
-                    } else {
-                        // Show each note in a vertical list
-                        ForEach(myNotes) { supaNote in
-                            buildRow(for: supaNote)
-                            Divider()
-                        }
-                    }
-                }
-                
-                Spacer()
+                .padding(.bottom, 20)
             }
-            .padding()
         }
-        .navigationTitle("Your Profile")
+        .edgesIgnoringSafeArea(.top)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
-            Task { try await loadMyPublicNotes() }
+            Task { 
+                try await loadMyPublicNotes() 
+                cachedCategories = await fetchCategoriesAsync()
+            }
         }
-        // Optional sheet for local note editing
         .sheet(isPresented: $showingNoteEditor) {
             if let note = selectedLocalNote {
                 NoteEditorView(
@@ -141,30 +229,163 @@ struct ProfileView: View {
                 )
             }
         }
-        .onAppear {
-            // Ensure quick presentation with loading indicator
-            isLoadingEditor = true
+        // Present authentication sheet when showingAuthView is true
+        .sheet(isPresented: $showingAuthView) {
+            AuthenticationView(authVM: authVM)
+        }
+    }
+    
+    // MARK: - Profile Photo
+    @ViewBuilder
+    var profilePhotoSection: some View {
+        ZStack {
+            Circle()
+                .fill(Color.white)
+                .frame(width: 100, height: 100)
             
-            // Load resources on a background thread
-            Task {
-                // Fetch the categories asynchronously
-                cachedCategories = await fetchCategoriesAsync()
-                
-                // Signal that loading is complete
-                isLoadingEditor = false
+            Image(systemName: "person.crop.circle.fill")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 90, height: 90)
+                .foregroundColor(.blue)
+                .clipShape(Circle())
+                .overlay(
+                    Circle()
+                        .stroke(Color.white, lineWidth: 3)
+                )
+            
+            if isEditing {
+                Button(action: { isConfirmationDialogPresented = true }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 30, height: 30)
+                        
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.white)
+                    }
+                }
+                .offset(x: 35, y: 35)
             }
         }
-
-//        // Camera picker sheet
-//        .sheet(isPresented: $isShowingCameraPicker, onDismiss: {
-//            if let imageData = selectedImageData {
-//                print("Camera picker dismissed with \(imageData.count) bytes of image data")
-//            } else {
-//                print("Camera picker dismissed without setting image data")
-//            }
-//        }) {
-//            CameraImagePicker(image: $selectedImageData, sourceType: .camera)
-//        }
+    }
+    
+    // MARK: - Editing Fields
+    @ViewBuilder
+    var editingFields: some View {
+        VStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Username")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                HStack {
+                    Image(systemName: "at")
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Username", text: $editedProfile.username.orEmpty)
+                        .autocapitalization(.none)
+                        .disableAutocorrection(true)
+                }
+                .padding(12)
+                .background(Color(.systemGray5))
+                .cornerRadius(8)
+            }
+            
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Display Name")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                HStack {
+                    Image(systemName: "person")
+                        .foregroundColor(.secondary)
+                    
+                    TextField("Display Name", text: $editedProfile.display_name.orEmpty)
+                }
+                .padding(12)
+                .background(Color(.systemGray5))
+                .cornerRadius(8)
+            }
+            
+            HStack(spacing: 16) {
+                Button(action: { cancelEditing() }) {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .disabled(isSaving || isUploading)
+                
+                Button(action: { Task { await saveProfileEdits() } }) {
+                    if isSaving || isUploading {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("Save")
+                    }
+                    
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+                .disabled(isSaving || isUploading)
+            }
+        }
+    }
+    
+    // MARK: - Note Card
+    @ViewBuilder
+    func buildNoteCard(for supaNote: SupabaseNote) -> some View {
+        let localNote = fetchLocalNote(with: supaNote.id)
+        
+        VStack(alignment: .leading, spacing: 12) {
+            // Content preview
+            Text(supaNote.content.prefix(40) + (supaNote.content.count > 40 ? "..." : ""))
+                .lineLimit(2)
+                .font(.body)
+            
+            // Date and action buttons
+            HStack {
+//                if let date = supaNote.created_at {
+//                    Text(date, style: .date)
+//                        .font(.caption)
+//                        .foregroundColor(.secondary)
+//                }
+//                
+                Spacer()
+                
+                if localNote != nil {
+                    Button(action: {
+                        selectedLocalNote = localNote
+                        showingNoteEditor = true
+                    }) {
+                        Label("Edit", systemImage: "pencil")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+                
+                Button(action: {
+                    Task { try await NoteRepository.shared.deletePublicNote(supaNote.id) }
+                }) {
+                    Label("Delete", systemImage: "trash")
+                        .font(.caption)
+                }
+                .buttonStyle(.bordered)
+                .tint(.red)
+                .controlSize(.small)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemGray6))
+        )
+        .padding(.horizontal)
     }
     
     // MARK: - Load Public Notes
@@ -195,166 +416,6 @@ extension ProfileView {
         }
     }
 
-    // MARK: Profile Photo
-    @ViewBuilder
-    var profilePhotoSection: some View {
-        ZStack {
-//            if let selectedImageData,
-//               let uiImage = UIImage(data: selectedImageData) {
-//                // Show the newly picked image (if in edit mode)
-//                Image(uiImage: uiImage)
-//                    .resizable()
-//                    .scaledToFill()
-//                    .frame(width: 120, height: 120)
-//                    .clipShape(Circle())
-//                    .onAppear {
-//                        print("Displaying newly selected image: \(selectedImageData.count) bytes")
-//                    }
-//            }
-//            else if let profilePhotoUrl = editedProfile.profile_photo_url,
-//                    let url = URL(string: profilePhotoUrl) {
-//                // Show the existing photo from URL
-//                AsyncImage(url: url) { phase in
-//                    switch phase {
-//                    case .empty:
-//                        ProgressView()
-//                            .frame(width: 80, height: 80)
-//                    case .success(let image):
-//                        image
-//                            .resizable()
-//                            .scaledToFill()
-//                            .frame(width: 120, height: 120)
-//                            .clipShape(Circle())
-//                    case .failure(let error):
-//                        Image(systemName: "person.crop.circle")
-//                            .resizable()
-//                            .scaledToFill()
-//                            .frame(width: 120, height: 120)
-//                            .foregroundColor(.gray)
-//                            .onAppear {
-//                                print("Failed to load profile image URL: \(error)")
-//                            }
-//                    @unknown default:
-//                        EmptyView()
-//                    }
-//                }
-//            }
-//            else {
-                // No image set, fallback to user icon
-                Image(systemName: "person.crop.circle")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 70, height: 70)
-                    .foregroundColor(.blue)
-//            }
-            
-            // Show uploading indicator if applicable
-        }
-    }
-    
-    // MARK: Editing Fields
-    @ViewBuilder
-    var editingFields: some View {
-        TextField("Username", text: $editedProfile.username.orEmpty)
-            .textFieldStyle(.roundedBorder)
-            .padding(.horizontal)
-        
-        TextField("Display Name", text: $editedProfile.display_name.orEmpty)
-            .textFieldStyle(.roundedBorder)
-            .padding(.horizontal)
-        
-        // Use a combination of confirmation dialog for camera and PhotosPicker for library
-//        VStack(spacing: 12) {
-//            Button("Change Profile Photo") {
-//                isConfirmationDialogPresented = true
-//            }
-//            .confirmationDialog(
-//                "Select Image Source",
-//                isPresented: $isConfirmationDialogPresented,
-//                actions: {
-//                    Button("Take Photo") {
-//                        isShowingCameraPicker = true
-//                    }
-//
-//                    // Instead of a button for photo library, we'll use the PhotosPicker below
-//                    Button("Cancel", role: .cancel) { }
-//                },
-//                message: {
-//                    Text("How would you like to add a photo?")
-//                }
-//            )
-//
-//            // Using the native PhotosPicker that is known to work
-//            PhotosPicker("Select from Photos", selection: $selectedImageItem, matching: .images)
-//                .onChange(of: selectedImageItem) { newItem in
-//                    Task {
-//                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
-//                            selectedImageData = data
-//                            print("PhotosPicker: Image data loaded successfully: \(data.count) bytes")
-//                        }
-//                    }
-//                }
-//        }
-        
-        // Save/Cancel buttons
-        HStack(spacing: 20) {
-            Button("Save") {
-                Task { await saveProfileEdits() }
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(isSaving || isUploading)
-            
-            Button("Cancel") {
-                cancelEditing()
-            }
-            .buttonStyle(.bordered)
-            .disabled(isSaving || isUploading)
-        }
-    }
-    
-    // MARK: Static Fields
-    @ViewBuilder
-    var staticProfileFields: some View {
-        VStack(spacing: 5) {
-            // Optional styling
-            Text(editedProfile.username ?? "Username")
-                .font(.headline)
-            
-            Text(editedProfile.display_name ?? "Display Name")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-        }
-        
-    }
-    
-    // MARK: Building the MyPublicNotes row
-    @ViewBuilder
-    func buildRow(for supaNote: SupabaseNote) -> some View {
-        // Attempt to find a matching local note
-        if let localNote = fetchLocalNote(with: supaNote.id) {
-            // If local note exists, let user edit it
-            HStack {
-                Text(supaNote.content.prefix(40)) // or a custom UI
-                Spacer()
-                Button("Edit Note") {
-                    selectedLocalNote = localNote
-                    showingNoteEditor = true
-                }
-            }
-        } else {
-            // If note not found locally, only show a "Delete" button
-            HStack {
-                Text(supaNote.content.prefix(40))
-                Spacer()
-                Button(role: .destructive) {
-                    Task { try await NoteRepository.shared.deletePublicNote(supaNote.id) }
-                } label: {
-                    Image(systemName: "trash")
-                }
-            }
-        }
-    }
-    
     // MARK: Local fetch
     private func fetchLocalNote(with id: UUID) -> Note? {
         let request = NSFetchRequest<Note>(entityName: "Note")

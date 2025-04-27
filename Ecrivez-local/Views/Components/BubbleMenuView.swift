@@ -21,7 +21,7 @@ struct BubbleMenuView: View {
         ZStack {
             if showBubbles {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: isIPad ? 30 : 20) {
+                    HStack(spacing: 20) {
                         ForEach(categories.sorted(by: {$0.index < $1.index }), id: \.self) { category in
                             Button(action: {
                                 selectedCategory = category
@@ -31,30 +31,34 @@ struct BubbleMenuView: View {
                                 VStack(spacing: 4) {
                                     Circle()
                                         .fill(category.color)
-                                        .frame(width: isIPad ? 60 : 45, height: isIPad ? 60 : 45)
+                                        .frame(width: 45, height: 45)
                                         .overlay(
                                             Image(systemName: category.symbol ?? "circle")
                                                 .foregroundColor(Color.background)
-                                                .font(isIPad ? .title2 : .body)
+                                                .font(.body)
                                         )
                                     
+                                    // Hide category names on both iPhone and iPad for consistent look
+                                    // Uncomment if you want to show names only on iPad
+                                    /*
                                     if isIPad, let name = category.name {
                                         Text(name)
                                             .font(.caption)
                                             .foregroundColor(.primary)
                                     }
+                                    */
                                 }
                             }
                         }
                     }
-                    .padding(.horizontal, isIPad ? 20 : 10)
+                    .padding(.horizontal, 10)
                     .padding(.top, 5)
-                    .padding(.bottom, isIPad ? 20 : 15)
-                    .background(Color.background)
+                    .padding(.bottom, 15)
+                    .background(isIPad ? Color.clear : Color.background) // Transparent background on iPad
                 }
                 .padding(.top, showBubbles ? 8: 0)
                 .animation(.spring(response: 0.5, dampingFraction: 0.6))
-                .background(Color.background)
+                .background(isIPad ? Color.clear : Color.background) // Transparent background on iPad
             }
         }
     }
