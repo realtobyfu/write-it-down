@@ -125,16 +125,8 @@ extension Note {
     }
 }
 
-// For Note Syncing
+// Add extension to help with conversion from Core Data models
 extension Note {
-    var syncLastModified: Date? {
-        
-        if (self.lastModified != nil) {
-            return self.lastModified
-        }
-        
-        return Date()
-    }
     func toSyncedNote(ownerID: UUID) -> SyncedNote {
         let plainText = self.attributedText.string
         
@@ -144,6 +136,7 @@ extension Note {
             base64Archived = archivedData.base64EncodedString()
         } catch {
             print("Failed to get archived data: \(error)")
+            // Continue with nil archived data - will fall back to plain text
         }
         
         return SyncedNote(
@@ -159,11 +152,13 @@ extension Note {
             locationLongitude: self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",
             symbol: self.category?.symbol ?? "",
-            last_modified: syncLastModified,
+            last_modified: self.lastModified ?? Date(),
             is_deleted: false,
             created_at: nil, // set by db
-            isAnonymous: self.isAnonymous, // Added to match your table
-            isPublic: self.isPublic // Added to match your table
+            isAnonymous: self.isAnonymous,
+            isPublic: self.isPublic
         )
     }
 }
+
+// Extension for Category to provide easy conversion to SyncedCategory

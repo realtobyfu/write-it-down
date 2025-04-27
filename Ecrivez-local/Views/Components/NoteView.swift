@@ -38,7 +38,7 @@ struct NoteView: View {
             }
             .background(note.category?.color ?? .gray)
             .cornerRadius(20)
-            .padding(.vertical, 2)
+//            .padding(.vertical, 2)
             .listRowSeparator(.hidden) // So the row separator doesn't overlay
             .foregroundColor(.white)
         }

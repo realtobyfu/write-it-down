@@ -9,7 +9,6 @@ import CoreData
 
 @main
 struct NoteApp: App {
-    
     // at the root level, define the behaviors for when app is opened again
     // if auth screen is still open -> dismiss it
     // optional: show a message indicating the user is logged in
@@ -37,6 +36,7 @@ struct NoteApp: App {
                 ContentView()
                     .environment(\.managedObjectContext, dataController.container.viewContext)
                     .environmentObject(authVM)
+                    .environmentObject(dataController)
                     .preferredColorScheme(isDarkMode ? .dark : .light)
                 
                     .onOpenURL { url in
@@ -47,6 +47,12 @@ struct NoteApp: App {
                     .task {
                         // On launch, check if there's an existing valid session
                         await authVM.checkIsAuthenticated()
+                        
+                        // Check database health on app launch
+                        let isHealthy = dataController.checkDatabaseHealth()
+                        if !isHealthy {
+                            print("WARNING: Database health check failed on app launch")
+                        }
                         
                         appOpenCount += 1
                         

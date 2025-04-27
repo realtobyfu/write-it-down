@@ -38,6 +38,7 @@ struct SupabaseNote: Codable, Identifiable {
         case profiles
     }
     
+    
     // MARK: - Decoder for fetching from DB
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)

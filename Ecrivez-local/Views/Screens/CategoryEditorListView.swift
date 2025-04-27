@@ -52,6 +52,7 @@ struct CategoryEditorListView: View {
             // "+" Button
             Button(action: {
                 newCategory = Category(context: context)
+                newCategory?.id = UUID()  // Explicitly assign a UUID
                 showingAddCategoryView = true
             }) {
                 Image(systemName: "plus")

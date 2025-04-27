@@ -10,11 +10,18 @@ import SwiftUI
 struct SyncControlView: View {
     @ObservedObject var syncManager = SyncManager.shared
     @Environment(\.managedObjectContext) private var context
+    @EnvironmentObject private var coreDataManager: CoreDataManager
+    
+    @FetchRequest(
+        entity: Category.entity(),
+        sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
+    ) var categories: FetchedResults<Category>
     
     @State private var syncOperation: SyncOperation? = nil
     @State private var syncError: String? = nil
     @State private var lastUploadTime: Date? = UserDefaults.standard.object(forKey: "lastUploadTime") as? Date
     @State private var lastDownloadTime: Date? = UserDefaults.standard.object(forKey: "lastDownloadTime") as? Date
+    @State private var showingDatabaseResetAlert = false
     
     enum SyncOperation {
         case upload, download, fullSync
@@ -81,13 +88,24 @@ struct SyncControlView: View {
                 
                 // Error message
                 if let error = syncError {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                        .padding(.horizontal)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(error)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                        
+                        if error.contains("no persistent stores") || error.contains("schema mismatch") {
+                            Button("Reset Database") {
+                                showingDatabaseResetAlert = true
+                            }
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            
         }
         .padding(.vertical)
         .background(
@@ -95,6 +113,14 @@ struct SyncControlView: View {
                 .fill(Color(.systemBackground))
                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
         )
+        .alert("Reset Database", isPresented: $showingDatabaseResetAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) {
+                resetDatabase()
+            }
+        } message: {
+            Text("This will delete and recreate your local database. All local data will be lost, but any data you've synced to the server can be downloaded again. Continue?")
+        }
     }
     
     private var syncInfoSection: some View {
@@ -156,6 +182,12 @@ struct SyncControlView: View {
             syncOperation = nil
         }
     }
+    
+    private func resetDatabase() {
+        coreDataManager.forceResetDatabase()
+        syncError = "Database has been reset. Try downloading your data now."
+    }
+    
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
