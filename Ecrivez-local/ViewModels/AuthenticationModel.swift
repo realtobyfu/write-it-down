@@ -90,14 +90,15 @@ class AuthViewModel: ObservableObject {
         guard let nonce = currentNonce else {
             throw URLError(.badServerResponse)
         }
-        // Clear the nonce so it’s only used once
+        // Clear the nonce so it's only used once
         currentNonce = nil
 
         // Supabase sign in using Apple ID token
         let session = try await SupabaseManager.shared.client.auth.signInWithIdToken(
             credentials: .init(
               provider: .apple,
-              idToken: idTokenString
+              idToken: idTokenString,
+              nonce: nonce
             )
         )
         print("Signed in with Apple. Supabase session: \(session)")
