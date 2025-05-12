@@ -112,21 +112,21 @@ struct ContentView: View {
                             // Two-column grid of notes
                             ScrollView {
                                 LazyVGrid(columns: gridColumns, spacing: 16) {
-                                    ForEach(displayedNotes) { note in
-                                        NoteView(
-                                            note: note,
-                                            foldAll: foldAll,
-                                            buttonTapped: {
-                                                selectedNote = note
-                                            }
-                                        )
+                                ForEach(displayedNotes) { note in
+                                    NoteView(
+                                        note: note,
+                                        foldAll: foldAll,
+                                        buttonTapped: {
+                                            selectedNote = note
+                                        }
+                                    )
                                         .background(Color(.systemBackground))
                                         .cornerRadius(12)
                                         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                                     }
-                                }
-                                .padding()
                             }
+                                .padding()
+                        }
                             .background(Color(.systemGroupedBackground))
                             .safeAreaInset(edge: .bottom) {
                                 // Add bubble menu for iPad in same position as iPhone
@@ -144,11 +144,11 @@ struct ContentView: View {
                         }
                         
                         // Floating Controls - only the buttons
-                        VStack {
+                            VStack {
                             Spacer()
                             iPadControlButtons
                         }
-                        .padding(20)
+                            .padding(20)
                         .edgesIgnoringSafeArea(.bottom)
                     }
                 } else {
@@ -294,12 +294,12 @@ struct ContentView: View {
         .sheet(item: $selectedNote, onDismiss: {
             selectedNote = nil
         }) { note in
-            NoteEditorView(
-                mode: .edit(note),
-                categories: Array(categories), context: context,
-                isAuthenticated: authVM.isAuthenticated,
-                onSave: { saveContext() }
-            )
+                NoteEditorView(
+                    mode: .edit(note),
+                    categories: Array(categories), context: context,
+                    isAuthenticated: authVM.isAuthenticated,
+                    onSave: { saveContext() }
+                )
         }
         
         // Present "Add Note" after picking category bubble
@@ -352,7 +352,7 @@ struct ContentView: View {
                     
                     Image(systemName: "text.bubble")
                         .font(.system(size: 20))
-                        .foregroundColor(.white)
+                    .foregroundColor(.white)
                 }
             }
             .padding(.horizontal, 10)
@@ -367,7 +367,7 @@ struct ContentView: View {
                     
                     Image(systemName: "gear")
                         .font(.system(size: 20))
-                        .foregroundColor(.white)
+                    .foregroundColor(.white)
                 }
             }
             .padding(.horizontal, 10)
@@ -477,36 +477,36 @@ struct CategoryFilterView: View {
             // Bubbles, if expanded
             if isExpanded {
                 VStack {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            // "All" button
-                            Button(action: {
-                                selectedCategory = nil
-                            }) {
-                                Text("All")
-                                    .padding(8)
-                                    .background(selectedCategory == nil ? Color.blue : Color.gray)
-                                    .foregroundColor(.white)
-                                    .cornerRadius(20)
-                            }
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        // "All" button
+                        Button(action: {
+                            selectedCategory = nil
+                        }) {
+                            Text("All")
+                                .padding(8)
+                                .background(selectedCategory == nil ? Color.blue : Color.gray)
+                                .foregroundColor(.white)
+                                .cornerRadius(20)
+                        }
 
-                            // Each category bubble
-                            ForEach(categories, id: \.self) { category in
-                                Button(action: {
-                                    selectedCategory = category
-                                }) {
-                                    Circle()
-                                        .fill(category.color)
-                                        .frame(width: 30, height: 30)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
-                                        )
-                                }
+                        // Each category bubble
+                        ForEach(categories, id: \.self) { category in
+                            Button(action: {
+                                selectedCategory = category
+                            }) {
+                                Circle()
+                                    .fill(category.color)
+                                    .frame(width: 30, height: 30)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(selectedCategory == category ? Color.blue : Color.clear, lineWidth: 2)
+                                    )
                             }
                         }
-                        .padding(.horizontal)
                     }
+                    .padding(.horizontal)
+                }
                 }
                 .transition(.opacity)
                 .padding(.bottom, 5)

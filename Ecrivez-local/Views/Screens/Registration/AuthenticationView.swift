@@ -12,6 +12,7 @@ struct AuthenticationView: View {
     @ObservedObject var authVM: AuthViewModel
     
     @State private var signInResult: Result<Void, Error>?
+    @State private var isAppleLoading: Bool = false
 
     var body: some View {
         VStack(spacing: 18) {
@@ -91,27 +92,34 @@ struct AuthenticationView: View {
             Divider().padding(.vertical, 10)
             
             // MARK: Sign in with Apple
-            SignInWithAppleButton(
-                .signIn,
-                onRequest: { request in
-                    let nonce = authVM.randomNonceString()
-                    authVM.currentNonce = nonce
-                    request.requestedScopes = [.fullName, .email]
-                    request.nonce = sha256(nonce)
-                },
-                onCompletion: { outcome in
-                    switch outcome {
-                    case .success(let authorization):
-                        handleAppleSignIn(authorization)
-                    case .failure(let error):
-                        print("Apple sign-in failed: \(error)")
+            if isAppleLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .frame(height: 50)
+                    .padding(.horizontal, 20)
+            } else {
+                SignInWithAppleButton(
+                    .signIn,
+                    onRequest: { request in
+                        let nonce = authVM.randomNonceString()
+                        authVM.currentNonce = nonce
+                        request.requestedScopes = [.fullName, .email]
+                        request.nonce = sha256(nonce)
+                    },
+                    onCompletion: { outcome in
+                        switch outcome {
+                        case .success(let authorization):
+                            handleAppleSignIn(authorization)
+                        case .failure(let error):
+                            print("Apple sign-in failed: \(error)")
+                        }
                     }
-                }
-            )
-            .signInWithAppleButtonStyle(.black)
-            .frame(height: 50)
-            .cornerRadius(8)
-            .padding(.horizontal, 20)
+                )
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 50)
+                .cornerRadius(8)
+                .padding(.horizontal, 20)
+            }
 
             Spacer()
         }
@@ -164,11 +172,9 @@ extension AuthenticationView {
         print("Apple ID token obtained successfully, length: \(idTokenString.count)")
         print("Current nonce exists: \(authVM.currentNonce != nil)")
         
+        isAppleLoading = true
         Task {
             do {
-                authVM.isLoading = true
-                
-                // Attempt to sign in with Apple
                 try await authVM.signInWithApple(idTokenString: idTokenString)
                 print("Apple sign-in completed successfully")
                 signInResult = .success(())
@@ -178,7 +184,7 @@ extension AuthenticationView {
             }
             
             await MainActor.run {
-                authVM.isLoading = false
+                isAppleLoading = false
             }
         }
     }

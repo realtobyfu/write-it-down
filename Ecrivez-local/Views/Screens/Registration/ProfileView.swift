@@ -41,7 +41,7 @@ struct ProfileView: View {
 
     // Pre-fetch categories in onAppear rather than during sheet presentation
     @State private var cachedCategories: [Category] = []
-    
+
     // Add state for showing authentication view
     @State private var showingAuthView = false
 
@@ -59,7 +59,7 @@ struct ProfileView: View {
                         .frame(height: 180)
                     
                     VStack(spacing: 12) {
-                        profilePhotoSection
+                profilePhotoSection
                             .shadow(radius: 4)
                         
                         if !isEditing {
@@ -97,53 +97,53 @@ struct ProfileView: View {
                             Button(action: { authVM.signOut() }) {
                                 Label("Log out", systemImage: "rectangle.portrait.and.arrow.right")
                                     .frame(maxWidth: .infinity)
-                            }
+                    }
                             .buttonStyle(.bordered)
                         }
                         .padding(.top, 16)
-                    }
+                }
                     
                     // Error message
-                    if let errorMessage {
-                        Text(errorMessage)
+                if let errorMessage {
+                    Text(errorMessage)
                             .font(.caption)
-                            .foregroundColor(.red)
+                        .foregroundColor(.red)
                             .padding(.horizontal)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    
+                }
+                
                     // Data Sync section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Data Synchronization")
                             .font(.headline)
                             .padding(.horizontal)
                         
-                        if authVM.isAuthenticated {
-                            SyncControlView()
-                                .padding(.vertical, 8)
-                        } else {
-                            VStack(alignment: .leading, spacing: 12) {
+                    if authVM.isAuthenticated {
+                        SyncControlView()
+                            .padding(.vertical, 8)
+                    } else {
+                        VStack(alignment: .leading, spacing: 12) {
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle")
                                         .foregroundColor(.orange)
-                                    Text("Sign in to enable syncing across devices")
-                                        .foregroundColor(.secondary)
+                            Text("Sign in to enable syncing across devices")
+                                .foregroundColor(.secondary)
                                 }
                                 .padding(.horizontal)
-                                
+                            
                                 Button(action: {
                                     // Present the authentication view
                                     showingAuthView = true
                                 }) {
                                     Label("Sign In", systemImage: "person.fill.badge.plus")
                                         .frame(maxWidth: .infinity)
-                                }
-                                .buttonStyle(.borderedProminent)
-                                .padding(.horizontal)
                             }
-                            .padding(.vertical, 8)
+                            .buttonStyle(.borderedProminent)
+                                .padding(.horizontal)
                         }
+                        .padding(.vertical, 8)
                     }
+                }
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
@@ -154,8 +154,8 @@ struct ProfileView: View {
                     // My Public Notes section
                     VStack(alignment: .leading, spacing: 16) {
                         HStack {
-                            Text("My Public Notes")
-                                .font(.headline)
+                    Text("My Public Notes")
+                        .font(.headline)
                             
                             Spacer()
                             
@@ -166,43 +166,43 @@ struct ProfileView: View {
                             }
                         }
                         .padding(.horizontal)
-                        
-                        if isLoadingMyNotes {
+                    
+                    if isLoadingMyNotes {
                             HStack {
                                 Spacer()
                                 ProgressView()
                                     .padding()
                                 Spacer()
                             }
-                        } else if myNotes.isEmpty {
+                    } else if myNotes.isEmpty {
                             HStack {
                                 Spacer()
                                 VStack(spacing: 12) {
                                     Image(systemName: "doc.text.magnifyingglass")
                                         .font(.largeTitle)
                                         .foregroundColor(.gray.opacity(0.7))
-                                    Text("No public notes found.")
-                                        .foregroundColor(.gray)
+                        Text("No public notes found.")
+                            .foregroundColor(.gray)
                                 }
                                 .padding()
                                 Spacer()
                             }
-                        } else {
+                    } else {
                             // Card-style notes list
                             VStack(spacing: 10) {
-                                ForEach(myNotes) { supaNote in
+                        ForEach(myNotes) { supaNote in
                                     buildNoteCard(for: supaNote)
                                 }
-                            }
                         }
                     }
+                }
                     .padding(.vertical, 8)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(.systemBackground))
                             .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                     )
-                }
+            }
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
@@ -415,7 +415,7 @@ extension ProfileView {
             return []
         }
     }
-
+    
     // MARK: Local fetch
     private func fetchLocalNote(with id: UUID) -> Note? {
         let request = NSFetchRequest<Note>(entityName: "Note")
