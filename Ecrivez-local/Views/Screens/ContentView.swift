@@ -5,6 +5,7 @@ import PhotosUI
 import CoreLocation
 import MapKit
 import UIKit
+import UniformTypeIdentifiers
 
 struct ContentView: View {
 
@@ -123,33 +124,47 @@ struct ContentView: View {
                                         .background(Color(.systemBackground))
                                         .cornerRadius(12)
                                         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                                    .onDrag {
+                                        let provider = NSItemProvider(object: NSString(string: note.id?.uuidString ?? ""))
+                                        provider.localObject = note
+                                        return provider
                                     }
+                                    .onDrop(of: [UTType.plainText], delegate: NoteDropDelegate(note: note, notes: notes, onMoveNote: moveNote))
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            if let idx = displayedNotes.firstIndex(of: note) {
+                                                indexSetToDelete = IndexSet(integer: idx)
+                                                showDeleteConfirmation = true
+                                            }
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                                }
                             }
                                 .padding()
                         }
                             .background(Color(.systemGroupedBackground))
-                            .safeAreaInset(edge: .bottom) {
-                                // Add bubble menu for iPad in same position as iPhone
-                                if showBubbles {
-                                    BubbleMenuView(
-                                        showBubbles: $showBubbles,
-                                        selectedCategory: $selectedCategory,
-                                        categories: Array(categories),
-                                        onCategorySelected: {
-                                            showingAddNoteView = true
-                                        }
-                                    )
+                            // Combined bubble menu and control buttons overlay for iPad
+                            VStack {
+                                Spacer()
+                                HStack(alignment: .bottom, spacing: 16) {
+                                    if showBubbles {
+                                        BubbleMenuView(
+                                            showBubbles: $showBubbles,
+                                            selectedCategory: $selectedCategory,
+                                            categories: Array(categories),
+                                            onCategorySelected: {
+                                                showingAddNoteView = true
+                                            }
+                                        )
+                                    }
+                                    iPadControlButtons
                                 }
                             }
-                        }
-                        
-                        // Floating Controls - only the buttons
-                            VStack {
-                            Spacer()
-                            iPadControlButtons
-                        }
                             .padding(20)
-                        .edgesIgnoringSafeArea(.bottom)
+                            .edgesIgnoringSafeArea(.bottom)
+                        }
                     }
                 } else {
                     // Original iPhone layout
@@ -416,6 +431,26 @@ struct ContentView: View {
     }
 }
 
+// MARK: - Drag & Drop Delegate for iPad reordering
+struct NoteDropDelegate: DropDelegate {
+    let note: Note
+    let notes: FetchedResults<Note>
+    let onMoveNote: (IndexSet, Int) -> Void
+
+    func dropEntered(info: DropInfo) {
+        guard let source = info.itemProviders(for: [UTType.plainText])
+            .first?.localObject as? Note else { return }
+        guard let fromIndex = notes.firstIndex(of: source),
+              let toIndex = notes.firstIndex(of: note),
+              fromIndex != toIndex else { return }
+        onMoveNote(IndexSet(integer: fromIndex),
+                   toIndex > fromIndex ? toIndex + 1 : toIndex)
+    }
+
+    func performDrop(info: DropInfo) -> Bool {
+        true
+    }
+}
 
 // MARK: - CategoryFilterView
 struct CategoryFilterView: View {
