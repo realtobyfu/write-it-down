@@ -114,56 +114,45 @@ struct ContentView: View {
                             ScrollView {
                                 LazyVGrid(columns: gridColumns, spacing: 16) {
                                 ForEach(displayedNotes) { note in
-                                    NoteView(
+                                    NoteGridCell(
                                         note: note,
                                         foldAll: foldAll,
-                                        buttonTapped: {
-                                            selectedNote = note
-                                        }
-                                    )
-                                        .background(Color(.systemBackground))
-                                        .cornerRadius(12)
-                                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                                    .onDrag {
-                                        let provider = NSItemProvider(object: NSString(string: note.id?.uuidString ?? ""))
-                                        provider.localObject = note
-                                        return provider
-                                    }
-                                    .onDrop(of: [UTType.plainText], delegate: NoteDropDelegate(note: note, notes: notes, onMoveNote: moveNote))
-                                    .swipeActions(edge: .trailing) {
-                                        Button(role: .destructive) {
+                                        onTap: { selectedNote = note },
+                                        onDelete: {
                                             if let idx = displayedNotes.firstIndex(of: note) {
                                                 indexSetToDelete = IndexSet(integer: idx)
                                                 showDeleteConfirmation = true
                                             }
-                                        } label: {
-                                            Label("Delete", systemImage: "trash")
+                                        },
+                                        onMove: { fromID, toID in
+                                            if let fromIdx = notes.firstIndex(where: { $0.id?.uuidString == fromID }),
+                                               let toIdx = notes.firstIndex(where: { $0.id?.uuidString == toID }) {
+                                                moveNote(from: IndexSet(integer: fromIdx), to: toIdx > fromIdx ? toIdx + 1 : toIdx)
+                                            }
                                         }
+                                    )
                                     }
-                                }
                             }
                                 .padding()
+                                .frame(maxHeight: .infinity)
                         }
                             .background(Color(.systemGroupedBackground))
                             // Combined bubble menu and control buttons overlay for iPad
-                            VStack {
-                                Spacer()
-                                HStack(alignment: .bottom, spacing: 16) {
-                                    if showBubbles {
-                                        BubbleMenuView(
-                                            showBubbles: $showBubbles,
-                                            selectedCategory: $selectedCategory,
-                                            categories: Array(categories),
-                                            onCategorySelected: {
-                                                showingAddNoteView = true
-                                            }
-                                        )
-                                    }
-                                    iPadControlButtons
+                            HStack(alignment: .bottom, spacing: 16) {
+                                if showBubbles {
+                                    BubbleMenuView(
+                                        showBubbles: $showBubbles,
+                                        selectedCategory: $selectedCategory,
+                                        categories: Array(categories),
+                                        onCategorySelected: {
+                                            showingAddNoteView = true
+                                        }
+                                    )
                                 }
+                            iPadControlButtons
                             }
-                            .padding(20)
-                            .edgesIgnoringSafeArea(.bottom)
+                            .padding(.top, 10)
+                        .edgesIgnoringSafeArea(.bottom)
                         }
                     }
                 } else {
@@ -431,27 +420,6 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Drag & Drop Delegate for iPad reordering
-struct NoteDropDelegate: DropDelegate {
-    let note: Note
-    let notes: FetchedResults<Note>
-    let onMoveNote: (IndexSet, Int) -> Void
-
-    func dropEntered(info: DropInfo) {
-        guard let source = info.itemProviders(for: [UTType.plainText])
-            .first?.localObject as? Note else { return }
-        guard let fromIndex = notes.firstIndex(of: source),
-              let toIndex = notes.firstIndex(of: note),
-              fromIndex != toIndex else { return }
-        onMoveNote(IndexSet(integer: fromIndex),
-                   toIndex > fromIndex ? toIndex + 1 : toIndex)
-    }
-
-    func performDrop(info: DropInfo) -> Bool {
-        true
-    }
-}
-
 // MARK: - CategoryFilterView
 struct CategoryFilterView: View {
     @Binding var selectedCategory: Category?
@@ -545,6 +513,47 @@ struct CategoryFilterView: View {
                 }
                 .transition(.opacity)
                 .padding(.bottom, 5)
+            }
+        }
+    }
+}
+
+struct NoteGridCell: View {
+    let note: Note
+    let foldAll: Bool
+    let onTap: () -> Void
+    let onDelete: () -> Void
+    let onMove: (String, String) -> Void // (fromID, toID)
+
+    var body: some View {
+        NoteView(
+            note: note,
+            foldAll: foldAll,
+            buttonTapped: onTap
+        )
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .onDrag {
+            NSItemProvider(object: NSString(string: note.id?.uuidString ?? ""))
+        }
+        .onDrop(of: [.plainText], isTargeted: nil) { providers in
+            if let provider = providers.first {
+                let toID = note.id?.uuidString // capture before closure
+                _ = provider.loadObject(ofClass: NSString.self) { (item, error) in
+                    if let fromID = item as? String, let toID = toID {
+                        DispatchQueue.main.async {
+                            onMove(fromID, toID)
+                        }
+                    }
+                }
+                return true
+            }
+            return false
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
             }
         }
     }
