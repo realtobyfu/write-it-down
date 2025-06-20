@@ -496,7 +496,9 @@ struct PublicNoteDetailView: View {
             if let placemark = placemarks?.first, error == nil {
                 let locality = placemark.locality ?? ""
                 if !locality.isEmpty {
-                    locationString = locality
+                    DispatchQueue.main.async {
+                        locationString = locality
+                    }
                 }
             }
         }

@@ -122,16 +122,21 @@ struct PublicNoteView: View {
     
     private func reverseGeocodeIfNeeded() {
         guard let loc = note.location else {
-            locationString = ""
+            DispatchQueue.main.async {
+                locationString = ""
+            }
             return
         }
         CLGeocoder().reverseGeocodeLocation(loc) { placemarks, error in
             guard error == nil, let place = placemarks?.first else {
-                locationString = ""
+                DispatchQueue.main.async {
+                    locationString = ""
+                }
                 return
             }
-            
-            locationString = place.locality ?? ""
+            DispatchQueue.main.async {
+                locationString = place.locality ?? ""
+            }
         }
     }
 

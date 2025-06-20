@@ -48,15 +48,21 @@ struct LocationBar: View {
         geocoder.reverseGeocodeLocation(location) { placemarks, error in
             if let error = error {
                 print("Error reverse geocoding location: \(error)")
-                locationString = ""
+                DispatchQueue.main.async {
+                    locationString = ""
+                }
             } else if let placemark = placemarks?.first {
-                locationString = [
-                    placemark.locality,
-//                    placemark.administrativeArea,
-                    placemark.country
-                ].compactMap { $0 }.joined(separator: ", ")
+                DispatchQueue.main.async {
+                    locationString = [
+                        placemark.locality,
+//                        placemark.administrativeArea,
+                        placemark.country
+                    ].compactMap { $0 }.joined(separator: ", ")
+                }
             } else {
-                locationString = ""
+                DispatchQueue.main.async {
+                    locationString = ""
+                }
             }
         }
     }
