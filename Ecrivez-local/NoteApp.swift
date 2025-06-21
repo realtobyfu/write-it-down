@@ -16,22 +16,15 @@ struct NoteApp: App {
     @StateObject private var dataController = CoreDataManager()
     @StateObject private var authVM = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
-    @State private var showOnboarding = false
-    
-    @AppStorage("onboardingVersion") private var onboardingVersion = 0
-    let currentOnboardingVersion = 0 // Increase this when you update onboarding
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @State private var showDonationView = false
     
     @AppStorage("appOpenCount") private var appOpenCount = 0
-    @State private var showDonationView = false
 
     var body: some Scene {
         WindowGroup {
-            if onboardingVersion < currentOnboardingVersion {
-                OnboardingView(showOnboarding: $showOnboarding)
-                    .onDisappear {
-                        onboardingVersion = currentOnboardingVersion
-                    }
+            if !hasCompletedOnboarding {
+                OnboardingView()
             } else {
                 ContentView()
                     .environment(\.managedObjectContext, dataController.container.viewContext)
