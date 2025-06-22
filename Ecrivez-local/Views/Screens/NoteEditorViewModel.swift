@@ -22,6 +22,7 @@ class NoteEditorViewModel: ObservableObject {
     @Published var locationName: String?
     @Published var locationLocality: String?
     @Published var showDeleteConfirmation = false
+    @Published var isSaving: Bool = false
 
     // MARK: - Private properties
     private let context: NSManagedObjectContext
@@ -54,6 +55,8 @@ class NoteEditorViewModel: ObservableObject {
 
     // MARK: - Save note logic
     func saveNote(isAuthenticated: Bool) async {
+        isSaving = true
+        defer { isSaving = false }
         
         print("Attributed Text to be saved \(attributedText)")
         

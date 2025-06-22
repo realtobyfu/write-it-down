@@ -12,17 +12,29 @@ class LocationManager: NSObject, ObservableObject {
     private let locationManager = CLLocationManager()
     
     @Published var location: CLLocation?
+    @Published var currentLocation: CLLocation?
+    @Published var isLoading: Bool = false
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     
     override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        requestPermission()
+        requestLocationPermission()
     }
     
-    func requestPermission() {
+    func requestLocationPermission() {
         locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func requestLocation() {
+        guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else {
+            requestLocationPermission()
+            return
+        }
+        
+        isLoading = true
+        locationManager.requestLocation()
     }
 }
 
@@ -31,15 +43,25 @@ extension LocationManager: CLLocationManagerDelegate {
         authorizationStatus = manager.authorizationStatus
         
         if authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways {
-            locationManager.startUpdatingLocation()
+            // Don't automatically start updating, wait for explicit request
         } else {
             // Handle denied access
             print("Location access denied")
+            isLoading = false
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Update user's current location
-        location = locations.last
+        if let newLocation = locations.last {
+            location = newLocation
+            currentLocation = newLocation
+            isLoading = false
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location manager failed with error: \(error)")
+        isLoading = false
     }
 }

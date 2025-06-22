@@ -23,5 +23,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>To attach your current location to a note.</string>
 </dict>
 </plist>

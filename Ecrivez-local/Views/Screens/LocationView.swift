@@ -60,9 +60,10 @@ struct LocationView: View {
     }
 }
 
-//extension CLLocationCoordinate2D: @retroactive Identifiable {
-//    public var id: String {
-//        "\(latitude),\(longitude)"
-//    }
-//}
-//
+// Extend CLLocationCoordinate2D to conform to Identifiable and Equatable for Map annotation and onChange
+extension CLLocationCoordinate2D: Identifiable, Equatable {
+    public var id: String { "\(latitude),\(longitude)" }
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude
+    }
+}

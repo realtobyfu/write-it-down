@@ -62,50 +62,39 @@ struct NoteEditorView: View {
     // MARK: - Computed Properties
     var body: some View {
         NavigationStack {
-            VStack {
-                
+            VStack(spacing: 16) {
 #if os(macOS)
                 RichTextFormat.Toolbar(context: contextRT)
 #endif
                 
-                // Category Selection
-                categorySelectionView
+                EnhancedCategorySelectionView(
+                    selectedCategory: $viewModel.category,
+                    categories: categories
+                )
                 
                 RichTextEditor(text: $viewModel.attributedText, context: contextRT, format: .archivedData)
+                    .frame(minHeight: 200)
                     .padding(8)
-                //                    .background(Color.background)
-                    .foregroundStyle(Color.background)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.systemBackground))
+                    )
                     .focused($isTextEditorFocused)
-//                    .focusedValue(\.richTextContext, contextRT)
 
 #if os(iOS)
                 RichTextKeyboardToolbar(
                     context: contextRT,
                     leadingButtons: { $0 },
-                    trailingButtons: {
-                        _ in
-                        // Add this
-                        Button(action: {
-                            isConfirmationDialogPresented = true
-                        }, label: {
-                            Image(systemName: "photo")
-                        })
-                    },
+                    trailingButtons: { _ in EmptyView() },
                     formatSheet: { $0 }
                 )
                 .richTextKeyboardToolbarConfig(
                     .init(
-                        leadingActions: [ .undo, .redo ],           // no .textColor
-                        trailingActions: [ ]          // no .highlightColor
+                        leadingActions: [ .undo, .redo ],
+                        trailingActions: [ ]
                     )
                 )
-//                // changes is not published in contextRT
                 .onReceive(contextRT.actionPublisher) { action in
-                    // Capture all formatting actions and update  the view model
-                    
-                    // DEBUG: Currently, sometimes font gets updated in contextRT but not viewModel + context
-                    // SOLUTION: manually overwrite the string in viewModel because it's what's going to be saved
-
                     print("Received Change: ", action)
                     print("contextRT.fontSize:", contextRT.fontSize)
                     print("contextRT.fontName:", contextRT.fontName)
@@ -120,66 +109,31 @@ struct NoteEditorView: View {
                     print("contextRT.attributedString", contextRT.attributedString)
                     print("viewModel.attributedText", viewModel.attributedText)
                 }
-                
                 .onChange(of: viewModel.attributedText) { old, new in
                     print("Old value (viewModel.attributedText):", old)
                     print("New value (viewModel.attributedText):", new)
                 }
-                
 #endif
                 
-                if isAuthenticated {
-                    HStack(spacing: 16) {
-                        // Public Toggle
-                        Toggle("Make Public", isOn: $viewModel.isPublic)
-                            .toggleStyle(SwitchToggleStyle(tint: .blue))
-                        
-                        // Only show Anonymous toggle when Public is enabled
-                        if viewModel.isPublic {
-                            Divider()
-                                .frame(height: 24)
-                            
-                            Toggle("Anonymous", isOn: $viewModel.isAnonymous)
-                                .toggleStyle(SwitchToggleStyle(tint: .gray))
-                        }
-                    }
-                    .padding(.vertical, 8)
-                }
-                // Location Picker View
-                HStack {
-                    if let location = viewModel.location {
-                        // Display the location bar if location is selected
-                        LocationSelectionBar(location: viewModel.location!, placeName: viewModel.locationName!)
-                            .onTapGesture {
-                                showingLocationPicker.toggle()
-                            }
-                    } else {
-                        // Show a button to select location if none is selected
-                        Button(action: {
-                            showingLocationPicker.toggle()
-                        }) {
-                            HStack {
-                                Image(systemName: "location.circle.fill")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.purple)
-                                Text("Select Location")
-                            }
-                        }
-                    }
-                    Spacer()
-                    // Displaying selected date or date picker
-                    DateView(selectedDate: $viewModel.selectedDate)
-                        .padding(.leading, 5)
-                    
-                    if !viewModel.weather.isEmpty {
-                        WeatherBar(weather: viewModel.weather)
-                            .padding(.leading, 5)
-                            .padding(.bottom, 25)
-                            .fixedSize(horizontal: true, vertical: false)
-                    }
-                    
-                }
+                PrivacyToggleView(
+                    isPublic: $viewModel.isPublic,
+                    isAnonymous: $viewModel.isAnonymous,
+                    isAuthenticated: isAuthenticated
+                )
+
+                NoteMetadataView(
+                    selectedDate: $viewModel.selectedDate,
+                    location: $viewModel.location,
+                    locationName: $viewModel.locationName,
+                    locationLocality: $viewModel.locationLocality,
+                    weather: $viewModel.weather,
+                    showingLocationPicker: $showingLocationPicker,
+                    showingWeatherPicker: $showingWeatherPicker,
+                    showingImagePicker: $isShowingImagePicker,
+                    imageSourceType: $imageSourceType
+                )
             }
+            .padding()
             .confirmationDialog(
                 "Select Image Source",
                 isPresented: $isConfirmationDialogPresented,
@@ -254,51 +208,48 @@ struct NoteEditorView: View {
                 print("Updated note:", viewModel.attributedText) // Just to confirm
             }
             
-            .padding([.leading, .trailing])
-            .navigationBarTitle(navigationTitleText, displayMode: .inline)
-            .navigationBarItems(trailing:
-                Button("Done") {
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .foregroundColor(.red)
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(navigationTitleText)
+                        .font(.headline)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
                     Task {
                         await viewModel.saveNote(isAuthenticated: isAuthenticated)
                         presentationMode.wrappedValue.dismiss()
                         onSave()
                     }
-                }.disabled(viewModel.attributedText.string.isEmpty)
-            )
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    
-                    Button(action: {
-                        showingWeatherPicker.toggle()
                     }) {
-                        Image(systemName: "cloud.drizzle")
-                            .font(.system(size: 20))
-                            .foregroundColor(.purple)
-                    }
-                    
-                    Button(action: {
-                        isShowingImagePicker = true
-                    }) {
-                        Image(systemName: "photo.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.purple)
-                            .padding(5)
-                    }
+                        if viewModel.isSaving {
+                            ProgressView()
+                        } else {
+                            Text("Save").bold()
                 }
             }
-            .sheet(isPresented: $showingWeatherPicker) {
-                WeatherPicker(weather: $viewModel.weather)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
+                    .disabled(viewModel.attributedText.string.isEmpty || viewModel.isSaving)
+                }
             }
             .sheet(isPresented: $showingLocationPicker) {
-                // pass $location, $locationName AND $locationLocality
                 LocationPickerView(
                     location: $viewModel.location,
                     locationName: $viewModel.locationName,
                     locationLocality: $viewModel.locationLocality
                 )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showingWeatherPicker) {
+                WeatherPicker(weather: $viewModel.weather)
+                    .presentationDetents([.medium, .large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
@@ -423,3 +374,49 @@ private func processImageForStorage(_ image: UIImage) -> UIImage {
     
     return resizedImage
 }
+
+#if DEBUG
+struct NoteEditorView_Previews: PreviewProvider {
+    static var previews: some View {
+        // In-memory Core Data container for preview
+        let container: NSPersistentContainer = {
+            let c = NSPersistentContainer(name: "Model")
+            let desc = NSPersistentStoreDescription()
+            desc.type = NSInMemoryStoreType
+            c.persistentStoreDescriptions = [desc]
+            c.loadPersistentStores { _, error in
+                if let error = error {
+                    fatalError("Unresolved error \(error)")
+                }
+            }
+            return c
+        }()
+        let context = container.viewContext
+        
+        // Sample categories
+        let cat1 = Category(context: context)
+        cat1.id = UUID()
+        cat1.name = "Personal"
+        cat1.symbol = "person"
+        cat1.colorString = "blue"
+        cat1.index = 0
+        
+        let cat2 = Category(context: context)
+        cat2.id = UUID()
+        cat2.name = "Work"
+        cat2.symbol = "briefcase"
+        cat2.colorString = "green"
+        cat2.index = 1
+        
+        let categories = [cat1, cat2]
+        
+        return NoteEditorView(
+            mode: .create(categories.first!),
+            categories: categories,
+            context: context,
+            isAuthenticated: true,
+            onSave: {}
+        )
+    }
+}
+#endif
