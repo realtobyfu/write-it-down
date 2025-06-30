@@ -101,17 +101,22 @@ struct AuthenticationView: View {
                 SignInWithAppleButton(
                     .signIn,
                     onRequest: { request in
+                        print("Sign in with Apple button tapped")
                         let nonce = authVM.randomNonceString()
                         authVM.currentNonce = nonce
                         request.requestedScopes = [.fullName, .email]
                         request.nonce = sha256(nonce)
+                        print("Request configured with nonce: \(nonce)")
                     },
                     onCompletion: { outcome in
+                        print("Sign in with Apple completion handler called")
                         switch outcome {
                         case .success(let authorization):
+                            print("Apple sign-in succeeded, handling authorization")
                             handleAppleSignIn(authorization)
                         case .failure(let error):
                             print("Apple sign-in failed: \(error)")
+                            print("Error description: \(error.localizedDescription)")
                         }
                     }
                 )

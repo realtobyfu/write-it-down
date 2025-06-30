@@ -43,6 +43,7 @@ struct NoteEditorView: View {
     //    // MARK: - States
     @State private var showingWeatherPicker = false
     @State private var showingLocationPicker = false
+    @State private var showPrivacySettings = false
     @FocusState private var isTextEditorFocused: Bool
     
     @StateObject private var contextRT = RichTextContext()
@@ -115,11 +116,17 @@ struct NoteEditorView: View {
                 }
 #endif
                 
-                PrivacyToggleView(
-                    isPublic: $viewModel.isPublic,
-                    isAnonymous: $viewModel.isAnonymous,
-                    isAuthenticated: isAuthenticated
-                )
+                if showPrivacySettings {
+                    PrivacyToggleView(
+                        isPublic: $viewModel.isPublic,
+                        isAnonymous: $viewModel.isAnonymous,
+                        isAuthenticated: isAuthenticated
+                    )
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .top).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
+                }
 
                 NoteMetadataView(
                     selectedDate: $viewModel.selectedDate,
@@ -221,20 +228,34 @@ struct NoteEditorView: View {
                         .font(.headline)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: {
-                    Task {
-                        await viewModel.saveNote(isAuthenticated: isAuthenticated)
-                        presentationMode.wrappedValue.dismiss()
-                        onSave()
+                    HStack(spacing: 12) {
+                        if isAuthenticated {
+                            Button(action: {
+                                withAnimation(.spring()) {
+                                    showPrivacySettings.toggle()
+                                }
+                            }) {
+                                Image(systemName: showPrivacySettings ? "person.badge.shield.checkmark.fill" : "person.badge.shield.checkmark")
+                                    .font(.body)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        
+                        Button(action: {
+                            Task {
+                                await viewModel.saveNote(isAuthenticated: isAuthenticated)
+                                presentationMode.wrappedValue.dismiss()
+                                onSave()
+                            }
+                        }) {
+                            if viewModel.isSaving {
+                                ProgressView()
+                            } else {
+                                Text("Save").bold()
+                            }
+                        }
+                        .disabled(viewModel.attributedText.string.isEmpty || viewModel.isSaving)
                     }
-                    }) {
-                        if viewModel.isSaving {
-                            ProgressView()
-                        } else {
-                            Text("Save").bold()
-                }
-            }
-                    .disabled(viewModel.attributedText.string.isEmpty || viewModel.isSaving)
                 }
             }
             .sheet(isPresented: $showingLocationPicker) {

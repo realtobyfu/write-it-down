@@ -69,129 +69,90 @@ struct NoteMetadataView: View {
             
             // Selected Items Display
             if hasSelectedMetadata {
-                VStack(spacing: 8) {
-                    // Date and Location Display (same row if both exist)
-                    if selectedDate != nil && location != nil {
-                        HStack(spacing: 8) {
-                            // Date Display
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .foregroundColor(.blue)
+                VStack(alignment: .leading, spacing: 8) {
+                    // Date Display
+                    if let date = selectedDate {
+                        HStack {
+                            Image(systemName: "calendar")
+                                .foregroundColor(.blue)
+                                .font(.caption)
+                            Text(dateFormatter.string(from: date))
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Button(action: { selectedDate = nil }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary.opacity(0.6))
                                     .font(.caption)
-                                Text(dateFormatter.string(from: selectedDate!))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Button(action: { selectedDate = nil }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary.opacity(0.6))
-                                        .font(.caption)
-                                }
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.blue.opacity(0.1))
-                            )
-                            
-                            // Location Display
-                            HStack {
-                                Image(systemName: "location.fill")
-                                    .foregroundColor(.purple)
-                                    .font(.caption)
-                                Text(locationDisplayText)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                                Button(action: { 
-                                    location = nil
-                                    locationName = nil
-                                    locationLocality = nil
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary.opacity(0.6))
-                                        .font(.caption)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.purple.opacity(0.1))
-                            )
                         }
-                    } else {
-                        // Date Display (when only date is selected)
-                        if let date = selectedDate {
-                            HStack {
-                                Image(systemName: "calendar")
-                                    .foregroundColor(.blue)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.blue.opacity(0.1))
+                        )
+                    }
+                    
+                    // Location Display
+                    if location != nil {
+                        HStack {
+                            Image(systemName: "location.fill")
+                                .foregroundColor(.purple)
+                                .font(.caption)
+                            Text(locationDisplayText)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                            Spacer()
+                            Button(action: { 
+                                location = nil
+                                locationName = nil
+                                locationLocality = nil
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary.opacity(0.6))
                                     .font(.caption)
-                                Text(dateFormatter.string(from: date))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Button(action: { selectedDate = nil }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary.opacity(0.6))
-                                        .font(.caption)
-                                }
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.blue.opacity(0.1))
-                            )
                         }
-                        
-                        // Location Display (when only location is selected)
-                        if location != nil {
-                            HStack {
-                                Image(systemName: "location.fill")
-                                    .foregroundColor(.purple)
-                                    .font(.caption)
-                                Text(locationDisplayText)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                                Spacer()
-                                Button(action: { 
-                                    location = nil
-                                    locationName = nil
-                                    locationLocality = nil
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.secondary.opacity(0.6))
-                                        .font(.caption)
-                                }
-                            }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.purple.opacity(0.1))
-                            )
-                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.purple.opacity(0.1))
+                        )
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(.vertical, hasSelectedMetadata ? 12 : 8)
+        .padding(.vertical, hasSelectedMetadata ? 16 : 12)
         .padding(.horizontal)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray6))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            colorScheme == .dark ? Color(.systemGray6) : Color(.systemGray6),
+                            colorScheme == .dark ? Color(.systemGray5).opacity(0.5) : Color(.systemGray6).opacity(0.8)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         )
         .sheet(isPresented: $showDatePicker) {
             NavigationStack {
                 VStack(spacing: 16) {
-                    DatePicker("Select Date", selection: Binding(
+                    DatePicker("", selection: Binding(
                         get: { selectedDate ?? Date() },
                         set: { selectedDate = $0 }
                     ), displayedComponents: .date)
-                    .datePickerStyle(WheelDatePickerStyle())
+                    .datePickerStyle(GraphicalDatePickerStyle())
                     .padding(.horizontal)
+                    .labelsHidden()
                     
                     if selectedDate != nil {
                         Button("Clear Date") {
