@@ -1,0 +1,239 @@
+{
+  "identifier": "F6CF96EC",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "donation.tier1",
+      "localizations": [
+        {
+          "description": "Buy me a coffee",
+          "displayName": "Small Tip",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write_it_down.donation.tier1",
+      "referenceName": "Donation Tier 1",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "donation.tier2",
+      "localizations": [
+        {
+          "description": "Buy me lunch",
+          "displayName": "Medium Tip",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write_it_down.donation.tier2",
+      "referenceName": "Donation Tier 2",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "7.99",
+      "familyShareable": false,
+      "internalID": "donation.tier3",
+      "localizations": [
+        {
+          "description": "Buy me dinner",
+          "displayName": "Large Tip",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write_it_down.donation.tier3",
+      "referenceName": "Donation Tier 3",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "11.99",
+      "familyShareable": false,
+      "internalID": "donation.tier4a",
+      "localizations": [
+        {
+          "description": "Buy me a nice meal",
+          "displayName": "Generous Tip",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write_it_down.donation.tier4a",
+      "referenceName": "Donation Tier 4",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "14.99",
+      "familyShareable": false,
+      "internalID": "donation.tier5",
+      "localizations": [
+        {
+          "description": "You're amazing!",
+          "displayName": "Super Tip",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write_it_down.donation.tier5",
+      "referenceName": "Donation Tier 5",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "1.99",
+      "familyShareable": false,
+      "internalID": "categorypack",
+      "localizations": [
+        {
+          "description": "Add 10 more categories",
+          "displayName": "Category Pack",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write-it-down.categorypack",
+      "referenceName": "Category Pack",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "2.99",
+      "familyShareable": false,
+      "internalID": "themepack",
+      "localizations": [
+        {
+          "description": "Unlock additional themes",
+          "displayName": "Theme Pack",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write-it-down.themepack",
+      "referenceName": "Theme Pack",
+      "type": "NonConsumable"
+    },
+    {
+      "displayPrice": "99.99",
+      "familyShareable": false,
+      "internalID": "lifetime",
+      "localizations": [
+        {
+          "description": "Lifetime access to all premium features",
+          "displayName": "Lifetime Pro",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.tobiasfu.write-it-down.lifetime",
+      "referenceName": "Lifetime Access",
+      "type": "NonConsumable"
+    }
+  ],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": [
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Load Products"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Purchase"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Verification"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "App Store Sync"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Subscription Status"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "App Transaction"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Manage Subscriptions Sheet"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Refund Request Sheet"
+      },
+      {
+        "current": null,
+        "enabled": false,
+        "name": "Offer Code Redeem Sheet"
+      }
+    ]
+  },
+  "subscriptionGroups": [
+    {
+      "id": "21533745",
+      "localizations": [
+        {
+          "description": "Premium Features",
+          "displayName": "Write It Down Premium",
+          "locale": "en_US"
+        }
+      ],
+      "name": "Premium",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "4.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "premium.monthly",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Unlimited notes, categories, and all features",
+              "displayName": "Monthly Premium",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.tobiasfu.write-it-down.premium.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Monthly Subscription",
+          "subscriptionGroupID": "21533745",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "39.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "premium.yearly",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Save 33% with yearly billing",
+              "displayName": "Yearly Premium",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.tobiasfu.write-it-down.premium.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Yearly Subscription",
+          "subscriptionGroupID": "21533745",
+          "type": "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

@@ -7,10 +7,12 @@ struct CategoryEditorListView: View {
         entity: Category.entity(),
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.index, ascending: true)]
     ) var categories: FetchedResults<Category>
-
+    @StateObject private var premiumManager = PremiumManager.shared
     
     @State private var showingAddCategoryView = false
     @State private var newCategory: Category? = nil
+    @State private var showLimitAlert = false
+    @State private var showPaywall = false
 
 
     var body: some View {
@@ -51,9 +53,13 @@ struct CategoryEditorListView: View {
             
             // "+" Button
             Button(action: {
-                newCategory = Category(context: context)
-                newCategory?.id = UUID()  // Explicitly assign a UUID
-                showingAddCategoryView = true
+                if premiumManager.canCreateMoreCategories(currentCount: categories.count) {
+                    newCategory = Category(context: context)
+                    newCategory?.id = UUID()  // Explicitly assign a UUID
+                    showingAddCategoryView = true
+                } else {
+                    showLimitAlert = true
+                }
             }) {
                 Image(systemName: "plus")
                     .font(.system(size: 24))
@@ -81,6 +87,17 @@ struct CategoryEditorListView: View {
             }
         }
         .navigationTitle("Categories")
+        .alert("Category Limit Reached", isPresented: $showLimitAlert) {
+            Button("Upgrade") {
+                showPaywall = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("You've reached the free tier limit of \(premiumManager.freeCategoryLimit) category. Upgrade to Premium for unlimited categories!")
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
 
     private func moveCategory(from source: IndexSet, to destination: Int) {

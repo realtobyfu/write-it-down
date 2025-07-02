@@ -15,6 +15,7 @@ struct ContentView: View {
     // MARK: - Core Data & Environment
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
+    @StateObject private var premiumManager = PremiumManager.shared
 
     // MARK: - FetchRequests
     @FetchRequest(
@@ -37,6 +38,10 @@ struct ContentView: View {
     @State private var noteToDelete: Note?
     @State private var showDeleteConfirmation = false
     @State private var indexSetToDelete: IndexSet?
+    
+    // Premium limiting states
+    @State private var showLimitAlert = false
+    @State private var showPaywall = false
 
     // Grid layout for iPad
     private let gridColumns = [
@@ -151,7 +156,11 @@ struct ContentView: View {
                                         selectedCategory: $selectedCategory,
                                         categories: Array(categories),
                                         onCategorySelected: {
-                                            showingAddNoteView = true
+                                            if premiumManager.canCreateMoreNotes(currentCount: notes.count) {
+                                                showingAddNoteView = true
+                                            } else {
+                                                showLimitAlert = true
+                                            }
                                         }
                                     )
                                 }
@@ -227,7 +236,11 @@ struct ContentView: View {
                                 selectedCategory: $selectedCategory,
                                 categories: Array(categories),
                                 onCategorySelected: {
-                                    showingAddNoteView = true
+                                    if premiumManager.canCreateMoreNotes(currentCount: notes.count) {
+                                        showingAddNoteView = true
+                                    } else {
+                                        showLimitAlert = true
+                                    }
                                 }
                             )
                         }
@@ -336,6 +349,21 @@ struct ContentView: View {
             } else {
                 AuthenticationView(authVM: authVM)
             }
+        }
+        // Note limit alert
+        .alert("Note Limit Reached", isPresented: $showLimitAlert) {
+            Button("Upgrade") {
+                showPaywall = true
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let remaining = premiumManager.getRemainingNotes(currentCount: notes.count) {
+                Text("You've reached the free tier limit of \(premiumManager.freeNoteLimit) notes. Upgrade to Premium for unlimited notes!")
+            }
+        }
+        // Paywall sheet
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 

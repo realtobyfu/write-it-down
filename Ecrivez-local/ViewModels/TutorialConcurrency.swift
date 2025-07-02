@@ -165,21 +165,21 @@ class Counter {
     work(self)
   }
 }
-let counter = Counter()
-
-
-for _ in 0..<1_000 {
-  Thread.detachNewThread {
-    Thread.sleep(forTimeInterval: 0.01)
-    counter.modify { $0.count += 1 + $0.count/100 }
-
+func threadSafetyExample() {
+  let counter = Counter()
+  
+  for _ in 0..<1_000 {
+    Thread.detachNewThread {
+      Thread.sleep(forTimeInterval: 0.01)
+      counter.modify { $0.count += 1 + $0.count/100 }
+      
 //    lock.lock()
 //    let count = counter.count
 //    lock.unlock()
 //    lock.lock()
 //    counter.count += 1 + count/100
 //    lock.unlock()
-
+      
 //    var count1 = counter.count
 //    var count2 = counter.count
 //    count1 += 1
@@ -188,9 +188,10 @@ for _ in 0..<1_000 {
 //    counter.count = count2
 //    counter.increment()
 //    counter.modify { $0.count += 1 }
+    }
   }
+  Thread.sleep(forTimeInterval: 2)
+  print("count", counter.count)
+  
+  Thread.sleep(forTimeInterval: 5)
 }
-Thread.sleep(forTimeInterval: 2)
-print("count", counter.count)
-
-Thread.sleep(forTimeInterval: 5)

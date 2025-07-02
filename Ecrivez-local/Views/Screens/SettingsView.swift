@@ -3,64 +3,280 @@ import CoreData
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
-
-    // Store user preferences in UserDefaults
-//    @AppStorage("defaultFontSize") private var defaultFontSize = 18
-//    @AppStorage("defaultFontName") private var defaultFontName = "Helvetica"
+    @StateObject private var settingsManager = UserSettingsManager.shared
+    @StateObject private var premiumManager = PremiumManager.shared
+    @StateObject private var authViewModel = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
-    
-    // A small list of fonts for demonstration
-    private let availableFonts = [
-        "Helvetica",
-        "Courier",
-        "Times New Roman",
-        "AvenirNext-Regular",
-        "Georgia"
-    ]
+    @State private var showPaywall = false
     
     var body: some View {
         List {
-            // Existing links
-            NavigationLink(destination: CategoryEditorListView()) {
-                Text("Edit Categories")
+            // Premium Status Section
+            premiumStatusSection
+            
+            // Account & Sync Section
+            accountSection
+            
+            // Editor Preferences Section
+            editorSection
+            
+            // Privacy & Security Section
+            privacySection
+            
+            // Appearance Section
+            appearanceSection
+            
+            // Notifications Section
+            notificationsSection
+            
+            // Categories & Organization
+            organizationSection
+            
+            // Support Section
+            supportSection
+        }
+        .navigationTitle("Settings")
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
+    }
+    
+    // MARK: - Premium Status Section
+    private var premiumStatusSection: some View {
+        Section {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(premiumManager.currentTier.displayName)
+                            .font(.headline)
+                        
+                        if premiumManager.currentTier == .premium || premiumManager.currentTier == .lifetime {
+                            PremiumBadge()
+                        }
+                    }
+                    
+                    if premiumManager.currentTier == .free {
+                        Text("Upgrade to unlock all features")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else if let expiryDate = premiumManager.subscriptionExpiryDate {
+                        Text("Expires: \(expiryDate, style: .date)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    } else if premiumManager.hasLifetimeAccess {
+                        Text("Lifetime access")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
+                }
+                
+                Spacer()
+                
+                if premiumManager.currentTier == .free {
+                    Button("Upgrade") {
+                        showPaywall = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            .padding(.vertical, 4)
+            
+            if premiumManager.currentTier == .free {
+                VStack(alignment: .leading, spacing: 8) {
+                    FeatureRow(feature: .unlimitedNotes, isUnlocked: false)
+                    FeatureRow(feature: .cloudSync, isUnlocked: false)
+                    FeatureRow(feature: .richTextFormatting, isUnlocked: false)
+                }
+            }
+        } header: {
+            Text("Subscription")
+        }
+    }
+    
+    // MARK: - Account Section
+    private var accountSection: some View {
+        Section(header: Text("Account & Sync")) {
+            if authViewModel.isAuthenticated {
+                NavigationLink(destination: ProfileView()) {
+                    HStack {
+                        Image(systemName: "person.circle.fill")
+                        Text("Profile")
+                    }
+                }
+                
+                NavigationLink(destination: SyncControlView()) {
+                    HStack {
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                        Text("Sync Settings")
+                    }
+                }
+            } else {
+                NavigationLink(destination: AuthenticationView()) {
+                    HStack {
+                        Image(systemName: "person.crop.circle.badge.plus")
+                        Text("Sign In")
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Editor Section
+    private var editorSection: some View {
+        Section(header: Text("Editor Preferences")) {
+            NavigationLink(destination: EditorPreferencesView()) {
+                HStack {
+                    Image(systemName: "textformat")
+                    Text("Text & Formatting")
+                    Spacer()
+                    if premiumManager.currentTier == .free {
+                        PremiumBadge()
+                    }
+                }
+            }
+            .premiumGate(.richTextFormatting)
+            
+            Picker("Default Note Type", selection: $settingsManager.settings.defaultNoteType) {
+                Text("Note").tag("note")
+                Text("List").tag("list")
+                Text("Task").tag("task")
             }
             
-//            NavigationLink(destination: CategoryEditorListView()) {
-//                Text("Account Settings")
-//            }
-
+            HStack {
+                Label("Default Color", systemImage: "paintpalette")
+                Spacer()
+                Circle()
+                    .fill(Color(settingsManager.settings.defaultNoteColor))
+                    .frame(width: 24, height: 24)
+            }
+        }
+    }
+    
+    // MARK: - Privacy Section
+    private var privacySection: some View {
+        Section(header: Text("Privacy & Security")) {
+            NavigationLink(destination: PrivacySettingsView()) {
+                HStack {
+                    Image(systemName: "lock.shield")
+                    Text("Privacy Settings")
+                    Spacer()
+                    if premiumManager.currentTier == .free {
+                        PremiumBadge()
+                    }
+                }
+            }
+            .premiumGate(.publicNoteSharing)
+            
+            Toggle(isOn: $settingsManager.settings.enableLocationServices) {
+                Label("Location Services", systemImage: "location")
+            }
+            .premiumGate(.locationTagging)
+        }
+    }
+    
+    // MARK: - Appearance Section
+    private var appearanceSection: some View {
+        Section(header: Text("Appearance")) {
+            Toggle(isOn: $isDarkMode) {
+                Label("Dark Mode", systemImage: "moon.fill")
+                    .badge(premiumManager.currentTier == .free ? Text("PRO") : nil)
+            }
+            .premiumGate(.darkMode)
+            
+            Picker("Theme", selection: $settingsManager.settings.appTheme) {
+                Text("System").tag("system")
+                Text("Light").tag("light")
+                Text("Dark").tag("dark")
+            }
+            .premiumGate(.customThemes)
+            
+            Picker("Note List Density", selection: $settingsManager.settings.noteListDensity) {
+                Text("Compact").tag("compact")
+                Text("Standard").tag("standard")
+                Text("Comfortable").tag("comfortable")
+            }
+        }
+    }
+    
+    // MARK: - Notifications Section
+    private var notificationsSection: some View {
+        Section(header: Text("Notifications")) {
+            Toggle(isOn: $settingsManager.settings.enableSyncNotifications) {
+                Label("Sync Notifications", systemImage: "arrow.triangle.2.circlepath")
+            }
+            
+            Toggle(isOn: $settingsManager.settings.enableDailyReminder) {
+                Label("Daily Writing Reminder", systemImage: "bell")
+            }
+            
+            if settingsManager.settings.enableDailyReminder {
+                DatePicker("Reminder Time",
+                          selection: $settingsManager.settings.dailyReminderTime,
+                          displayedComponents: .hourAndMinute)
+            }
+            
+            Toggle(isOn: $settingsManager.settings.enableSocialNotifications) {
+                Label("Social Interactions", systemImage: "heart")
+            }
+            .premiumGate(.socialFeatures)
+        }
+    }
+    
+    // MARK: - Organization Section
+    private var organizationSection: some View {
+        Section(header: Text("Organization")) {
+            NavigationLink(destination: CategoryEditorListView()) {
+                HStack {
+                    Image(systemName: "folder")
+                    Text("Categories")
+                    Spacer()
+                    if premiumManager.currentTier == .free {
+                        Text("1/\(premiumManager.freeCategoryLimit)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            
+            NavigationLink(destination: LocationPickerView()) {
+                HStack {
+                    Image(systemName: "map")
+                    Text("Map Pin Customization")
+                    Spacer()
+                    if premiumManager.currentTier == .free {
+                        PremiumBadge()
+                    }
+                }
+            }
+            .premiumGate(.mapPinCustomization)
+        }
+    }
+    
+    // MARK: - Support Section
+    private var supportSection: some View {
+        Section(header: Text("Support & Feedback")) {
             NavigationLink(destination: SuggestFeatureView()) {
-                Text("Suggest an Update")
+                Label("Suggest a Feature", systemImage: "lightbulb")
             }
             
             NavigationLink(destination: DonationView()) {
                 HStack {
-                    Text("Support the developer ")
-                    Image(systemName: "dollarsign.arrow.circlepath")
-                        .font(.system(size: 24))
+                    Image(systemName: "heart.fill")
+                        .foregroundColor(.red)
+                    Text("Support the Developer")
+                    Spacer()
+                    Image(systemName: "dollarsign.circle.fill")
+                        .foregroundColor(.yellow)
                 }
-                .foregroundColor(.yellow)
             }
             
-
-            
-            // MARK: - New Section for font & color mode
-            Section(header: Text("Default Editor Settings")) {
-                
-//                // Font name picker
-//                Picker("Font Family", selection: $defaultFontName) {
-//                    ForEach(availableFonts, id: \.self) { font in
-//                        Text(font).tag(font)
-//                    }
-//                }
-//                
-//                // Font size stepper
-//                Stepper("Font Size: \(defaultFontSize)", value: $defaultFontSize, in: 8...48)
-                
-                // Toggle for Dark/Light mode
-                Toggle("Dark Mode", isOn: $isDarkMode)
+            Button(action: {
+                // Reset all settings
+                settingsManager.reset()
+            }) {
+                Label("Reset All Settings", systemImage: "arrow.counterclockwise")
+                    .foregroundColor(.red)
             }
         }
-        .navigationTitle("Settings")
     }
 }
