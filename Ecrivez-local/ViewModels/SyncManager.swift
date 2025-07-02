@@ -9,6 +9,10 @@ import SwiftUI
 import Supabase
 import CoreData
 
+extension Notification.Name {
+    static let syncEnabledNotification = Notification.Name("syncEnabledNotification")
+}
+
 @MainActor
 class SyncManager: ObservableObject {
     static let shared = SyncManager()
@@ -18,12 +22,28 @@ class SyncManager: ObservableObject {
     @Published var syncEnabled = UserDefaults.standard.bool(forKey: "syncEnabled") {
         didSet {
             UserDefaults.standard.set(syncEnabled, forKey: "syncEnabled")
+            if syncEnabled && oldValue == false {
+                // Notify that sync was just enabled
+                NotificationCenter.default.post(name: .syncEnabledNotification, object: nil)
+            }
         }
     }
+    @Published var syncStatus: SyncStatus = .idle
     
     private let client = SupabaseManager.shared.client
+    private var syncTimer: Timer?
+    private var lastAutoSyncTime: Date?
     
-    private init() {}
+    enum SyncStatus: Equatable {
+        case idle
+        case syncing
+        case success
+        case error(String)
+    }
+    
+    private init() {
+        setupAutoSync()
+    }
     
     // MARK: - Main Sync Functions
     // Download data from Supabase to Core Data
@@ -34,6 +54,7 @@ class SyncManager: ObservableObject {
         }
         
         isSyncing = true
+        syncStatus = .syncing
         defer {
             isSyncing = false
             lastSyncTime = Date()
@@ -57,6 +78,7 @@ class SyncManager: ObservableObject {
         }
         
         isSyncing = true
+        syncStatus = .syncing
         defer {
             isSyncing = false
             lastSyncTime = Date()
@@ -80,6 +102,7 @@ class SyncManager: ObservableObject {
         }
         
         isSyncing = true
+        syncStatus = .syncing
         defer {
             isSyncing = false
             lastSyncTime = Date()
@@ -91,6 +114,79 @@ class SyncManager: ObservableObject {
         
         // 2. Then sync notes (which may reference categories)
         try await syncNotes(context: context, userID: userID)
+    }
+    
+    // MARK: - Automatic Sync Functions
+    
+    private func setupAutoSync() {
+        // Note: Automatic sync timer removed since we don't have direct access to context
+        // Sync will be triggered from UI components that have context access
+        
+        // Listen for app lifecycle events
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appWillEnterForeground),
+            name: UIApplication.willEnterForegroundNotification,
+            object: nil
+        )
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func appWillEnterForeground() {
+        // Will be triggered from app delegate with context
+    }
+    
+    @objc private func appDidBecomeActive() {
+        // Will be triggered from app delegate with context
+    }
+    
+    func performAutoSync(context: NSManagedObjectContext? = nil) async {
+        guard syncEnabled else { return }
+        
+        // Check if we've synced recently (within last 30 seconds)
+        if let lastSync = lastAutoSyncTime,
+           Date().timeIntervalSince(lastSync) < 30 {
+            return
+        }
+        
+        // If no context provided, we can't sync
+        guard let context = context else {
+            print("Cannot perform auto sync without context")
+            return
+        }
+        
+        do {
+            syncStatus = .syncing
+            try await performFullSync(context: context)
+            syncStatus = .success
+            lastAutoSyncTime = Date()
+            
+            // Clear success status after 3 seconds
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if case .success = syncStatus {
+                syncStatus = .idle
+            }
+        } catch {
+            syncStatus = .error(error.localizedDescription)
+            print("Auto sync error: \(error)")
+        }
+    }
+    
+    // Trigger sync after note save with debounce
+    private var syncDebounceTask: Task<Void, Never>?
+    
+    func triggerSyncAfterSave(context: NSManagedObjectContext) {
+        syncDebounceTask?.cancel()
+        syncDebounceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 second debounce
+            await performAutoSync(context: context)
+        }
     }
     
     // MARK: - Category Sync Functions

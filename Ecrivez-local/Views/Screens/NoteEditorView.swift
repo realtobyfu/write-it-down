@@ -116,17 +116,6 @@ struct NoteEditorView: View {
                 }
 #endif
                 
-                if showPrivacySettings {
-                    PrivacyToggleView(
-                        isPublic: $viewModel.isPublic,
-                        isAnonymous: $viewModel.isAnonymous,
-                        isAuthenticated: isAuthenticated
-                    )
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .top).combined(with: .opacity),
-                        removal: .move(edge: .top).combined(with: .opacity)
-                    ))
-                }
 
                 NoteMetadataView(
                     selectedDate: $viewModel.selectedDate,
@@ -137,7 +126,9 @@ struct NoteEditorView: View {
                     showingLocationPicker: $showingLocationPicker,
                     showingWeatherPicker: $showingWeatherPicker,
                     showingImagePicker: $isShowingImagePicker,
-                    imageSourceType: $imageSourceType
+                    imageSourceType: $imageSourceType,
+                    showingPrivacySettings: $showPrivacySettings,
+                    isAuthenticated: isAuthenticated
                 )
             }
             .padding()
@@ -228,34 +219,21 @@ struct NoteEditorView: View {
                         .font(.headline)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 12) {
-                        if isAuthenticated {
-                            Button(action: {
-                                withAnimation(.spring()) {
-                                    showPrivacySettings.toggle()
-                                }
-                            }) {
-                                Image(systemName: showPrivacySettings ? "person.badge.shield.checkmark.fill" : "person.badge.shield.checkmark")
-                                    .font(.body)
-                                    .foregroundColor(.blue)
-                            }
+                    Button(action: {
+                        Task {
+                            await viewModel.saveNote(isAuthenticated: isAuthenticated)
+                            onSave()
+                            presentationMode.wrappedValue.dismiss()
                         }
-                        
-                        Button(action: {
-                            Task {
-                                await viewModel.saveNote(isAuthenticated: isAuthenticated)
-                                presentationMode.wrappedValue.dismiss()
-                                onSave()
-                            }
-                        }) {
-                            if viewModel.isSaving {
-                                ProgressView()
-                            } else {
-                                Text("Save").bold()
-                            }
+                    }) {
+                        if viewModel.isSaving {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                        } else {
+                            Text("Save").bold()
                         }
-                        .disabled(viewModel.attributedText.string.isEmpty || viewModel.isSaving)
                     }
+                    .disabled(viewModel.attributedText.string.isEmpty || viewModel.isSaving)
                 }
             }
             .sheet(isPresented: $showingLocationPicker) {
@@ -271,6 +249,34 @@ struct NoteEditorView: View {
                 WeatherPicker(weather: $viewModel.weather)
                     .presentationDetents([.medium, .large])
                     .presentationDragIndicator(.visible)
+            }
+            .sheet(isPresented: $showPrivacySettings) {
+                NavigationStack {
+                    VStack(spacing: 20) {
+                        Text("Privacy Settings")
+                            .font(.title2)
+                            .bold()
+                            .padding(.top)
+                        
+                        PrivacyToggleView(
+                            isPublic: $viewModel.isPublic,
+                            isAnonymous: $viewModel.isAnonymous,
+                            isAuthenticated: isAuthenticated
+                        )
+                        .padding(.horizontal)
+                        
+                        Spacer()
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showPrivacySettings = false
+                            }
+                        }
+                    }
+                }
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
             }
         }
     }

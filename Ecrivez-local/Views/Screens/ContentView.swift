@@ -89,6 +89,12 @@ struct ContentView: View {
                                     .font(.title)
                                     .fontWeight(.medium)
                                 Spacer()
+                                
+                                // Sync Status Indicator
+                                if authVM.isAuthenticated && SyncManager.shared.syncEnabled {
+                                    SyncStatusView()
+                                }
+                                
                                 Button(action: {
                                     showingAuthView = true
                                 }) {
@@ -165,6 +171,12 @@ struct ContentView: View {
                                 .font(.title)
                                 .fontWeight(.medium)
                             Spacer()
+                            
+                            // Sync Status Indicator
+                            if authVM.isAuthenticated && SyncManager.shared.syncEnabled {
+                                SyncStatusView()
+                            }
+                            
                             Button(action: {
                                 showingAuthView = true
                             }) {
@@ -556,6 +568,38 @@ struct NoteGridCell: View {
                 Label("Delete", systemImage: "trash")
             }
         }
+    }
+}
+
+// MARK: - Sync Status View
+struct SyncStatusView: View {
+    @ObservedObject private var syncManager = SyncManager.shared
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            switch syncManager.syncStatus {
+            case .idle:
+                Image(systemName: "checkmark.icloud.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.blue)
+                
+            case .syncing:
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(0.7)
+                
+            case .success:
+                Image(systemName: "checkmark.icloud.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.green)
+                
+            case .error(_):
+                Image(systemName: "exclamationmark.icloud.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(.red)
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: syncManager.syncStatus)
     }
 }
 

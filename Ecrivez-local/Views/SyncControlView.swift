@@ -17,83 +17,94 @@ struct SyncControlView: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
     ) var categories: FetchedResults<Category>
     
-    @State private var syncOperation: SyncOperation? = nil
-    @State private var syncError: String? = nil
-    @State private var lastUploadTime: Date? = UserDefaults.standard.object(forKey: "lastUploadTime") as? Date
-    @State private var lastDownloadTime: Date? = UserDefaults.standard.object(forKey: "lastDownloadTime") as? Date
     @State private var showingDatabaseResetAlert = false
     
-    enum SyncOperation {
-        case upload, download, fullSync
-    }
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Toggle("Enable Syncing", isOn: $syncManager.syncEnabled)
-                .padding(.horizontal)
+        VStack(alignment: .leading, spacing: 16) {
+            // Enable Sync Toggle
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: $syncManager.syncEnabled) {
+                    HStack {
+                        Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(syncManager.syncEnabled ? .green : .gray)
+                        VStack(alignment: .leading) {
+                            Text("Sync Enabled")
+                                .font(.headline)
+                            Text("Automatically sync your notes across devices")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .toggleStyle(SwitchToggleStyle(tint: .green))
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemGray6))
+            )
             
             if syncManager.syncEnabled {
-                // Last sync times
-                syncInfoSection
-                
-                // Operation buttons
-                HStack(spacing: 16) {
-                    Button(action: { startSync(.upload) }) {
-                        VStack {
-                            Image(systemName: "arrow.up.to.line")
-                                .font(.system(size: 24))
-                            Text("Upload")
-                                .font(.caption)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(syncOperation != nil)
-                    
-                    Button(action: { startSync(.download) }) {
-                        VStack {
-                            Image(systemName: "arrow.down.to.line")
-                                .font(.system(size: 24))
-                            Text("Download")
-                                .font(.caption)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(syncOperation != nil)
-                    
-                    Button(action: { startSync(.fullSync) }) {
-                        VStack {
-                            Image(systemName: "arrow.up.arrow.down")
-                                .font(.system(size: 24))
-                            Text("Full Sync")
-                                .font(.caption)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                    .disabled(syncOperation != nil)
-                }
-                .padding(.horizontal)
-                
-                // Progress indicator
-                if let operation = syncOperation {
+                // Sync Status
+                VStack(alignment: .leading, spacing: 12) {
+                    // Status indicator
                     HStack {
-                        ProgressView()
-                        Text(operationLabel(for: operation))
+                        switch syncManager.syncStatus {
+                        case .idle:
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Synced")
+                                .font(.subheadline)
+                        case .syncing:
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle())
+                                .scaleEffect(0.8)
+                            Text("Syncing...")
+                                .font(.subheadline)
+                        case .success:
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Sync Complete")
+                                .font(.subheadline)
+                        case .error(let message):
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(.red)
+                            Text("Sync Error")
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                        }
+                        
+                        Spacer()
+                        
+                        // Manual sync button
+                        Button(action: {
+                            Task {
+                                await syncManager.performAutoSync(context: context)
+                            }
+                        }) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.body)
+                                .foregroundColor(.blue)
+                        }
+                        .disabled(syncManager.isSyncing)
                     }
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 4)
-                }
-                
-                // Error message
-                if let error = syncError {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(error)
+                    
+                    // Last sync time
+                    if let lastSync = syncManager.lastSyncTime {
+                        Text("Last synced \(lastSync, style: .relative) ago")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    // Error details
+                    if case .error(let message) = syncManager.syncStatus {
+                        Text(message)
                             .font(.caption)
                             .foregroundColor(.red)
+                            .lineLimit(2)
                         
-                        if error.contains("no persistent stores") || error.contains("schema mismatch") {
+                        if message.contains("no persistent stores") || message.contains("schema mismatch") {
                             Button("Reset Database") {
                                 showingDatabaseResetAlert = true
                             }
@@ -101,18 +112,21 @@ struct SyncControlView: View {
                             .foregroundColor(.blue)
                         }
                     }
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray6))
+                )
             }
-            
         }
-        .padding(.vertical)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(.systemBackground))
-                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
-        )
+        .padding(.horizontal)
+        .onReceive(NotificationCenter.default.publisher(for: .syncEnabledNotification)) { _ in
+            // Trigger initial sync when sync is enabled
+            Task {
+                await syncManager.performAutoSync(context: context)
+            }
+        }
         .alert("Reset Database", isPresented: $showingDatabaseResetAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Reset", role: .destructive) {
@@ -123,76 +137,7 @@ struct SyncControlView: View {
         }
     }
     
-    private var syncInfoSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if let lastUploadTime = lastUploadTime {
-                Text("Last upload: \(lastUploadTime, formatter: dateFormatter)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            if let lastDownloadTime = lastDownloadTime {
-                Text("Last download: \(lastDownloadTime, formatter: dateFormatter)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.horizontal)
-    }
-    
-    private func operationLabel(for operation: SyncOperation) -> String {
-        switch operation {
-        case .upload:
-            return "Uploading your data..."
-        case .download:
-            return "Downloading your data..."
-        case .fullSync:
-            return "Syncing all data..."
-        }
-    }
-    
-    private func startSync(_ operation: SyncOperation) {
-        syncOperation = operation
-        syncError = nil
-        
-        Task {
-            do {
-                switch operation {
-                case .upload:
-                    try await syncManager.uploadData(context: context)
-                    self.lastUploadTime = Date()
-                    UserDefaults.standard.set(self.lastUploadTime, forKey: "lastUploadTime")
-                    
-                case .download:
-                    try await syncManager.downloadData(context: context)
-                    self.lastDownloadTime = Date()
-                    UserDefaults.standard.set(self.lastDownloadTime, forKey: "lastDownloadTime")
-                    
-                case .fullSync:
-                    try await syncManager.performFullSync(context: context)
-                    self.lastUploadTime = Date()
-                    self.lastDownloadTime = Date()
-                    UserDefaults.standard.set(self.lastUploadTime, forKey: "lastUploadTime")
-                    UserDefaults.standard.set(self.lastDownloadTime, forKey: "lastDownloadTime")
-                }
-            } catch {
-                syncError = error.localizedDescription
-            }
-            
-            syncOperation = nil
-        }
-    }
-    
     private func resetDatabase() {
         coreDataManager.forceResetDatabase()
-        syncError = "Database has been reset. Try downloading your data now."
     }
-    
-    
-    private let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        formatter.timeStyle = .short
-        return formatter
-    }()
 }

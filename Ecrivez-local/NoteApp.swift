@@ -47,6 +47,11 @@ struct NoteApp: App {
                             print("WARNING: Database health check failed on app launch")
                         }
                         
+                        // Trigger sync on app launch if authenticated and enabled
+                        if authVM.isAuthenticated && SyncManager.shared.syncEnabled {
+                            await SyncManager.shared.performAutoSync(context: dataController.container.viewContext)
+                        }
+                        
                         appOpenCount += 1
                         
                         // Show donation view after 3 opens
@@ -54,6 +59,14 @@ struct NoteApp: App {
                             // Delay showing the donation view slightly for better UX
                             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                                 showDonationView = true
+                            }
+                        }
+                    }
+                    .onChange(of: authVM.isAuthenticated) { oldValue, newValue in
+                        // Trigger sync when user becomes authenticated
+                        if !oldValue && newValue && SyncManager.shared.syncEnabled {
+                            Task {
+                                await SyncManager.shared.performAutoSync(context: dataController.container.viewContext)
                             }
                         }
                     }

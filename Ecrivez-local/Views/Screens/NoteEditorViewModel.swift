@@ -94,6 +94,11 @@ class NoteEditorViewModel: ObservableObject {
                     }
                 }
             }
+            
+            // Trigger sync after save if sync is enabled
+            if SyncManager.shared.syncEnabled {
+                SyncManager.shared.triggerSyncAfterSave(context: context)
+            }
         } catch {
             print("Failed to save note:", error)
         }
