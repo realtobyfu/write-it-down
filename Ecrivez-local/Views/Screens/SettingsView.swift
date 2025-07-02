@@ -97,7 +97,10 @@ struct SettingsView: View {
     private var accountSection: some View {
         Section(header: Text("Account & Sync")) {
             if authViewModel.isAuthenticated {
-                NavigationLink(destination: ProfileView()) {
+                NavigationLink(destination: ProfileView(
+                    authVM: authViewModel,
+                    editedProfile: Profile(id: authViewModel.email)
+                )) {
                     HStack {
                         Image(systemName: "person.circle.fill")
                         Text("Profile")
@@ -111,7 +114,7 @@ struct SettingsView: View {
                     }
                 }
             } else {
-                NavigationLink(destination: AuthenticationView()) {
+                NavigationLink(destination: AuthenticationView(authVM: authViewModel)) {
                     HStack {
                         Image(systemName: "person.crop.circle.badge.plus")
                         Text("Sign In")
@@ -238,7 +241,11 @@ struct SettingsView: View {
                 }
             }
             
-            NavigationLink(destination: LocationPickerView()) {
+            NavigationLink(destination: Text("Map Pin Customization Coming Soon")
+                .font(.title3)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ) {
                 HStack {
                     Image(systemName: "map")
                     Text("Map Pin Customization")

@@ -92,6 +92,9 @@
 		3EA998672E156B7000F8C774 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EA998022E156B7000F8C774 /* SettingsView.swift */; };
 		3EC75B872D55AD5D00A4605A /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 3EC75B862D55AD5D00A4605A /* Lottie */; };
 		3EDAA28C2D80A18D00CC0F91 /* TestPlan.xctestplan in Resources */ = {isa = PBXBuildFile; fileRef = 3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */; };
+		7C3D647D18B8E1719BB535A7 /* EnhancedCategorySelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDA476B111B2D2E9293DF617 /* EnhancedCategorySelectionView.swift */; };
+		D63ADA2EF9D49EF0A086D85C /* PrivacyToggleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1306ADEC451779BCD04509C /* PrivacyToggleView.swift */; };
+		DFDEE5E0F71F31A32316BB27 /* NoteMetadataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FA7D4B02D006E045F2AB1F /* NoteMetadataView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -187,10 +190,23 @@
 		3ED0602D2C4EE7ED00392BDC /* Ecrivez-local.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Ecrivez-local.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3EDAA28B2D80A18D00CC0F91 /* TestPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = TestPlan.xctestplan; sourceTree = "<group>"; };
 		3EDAA2912D80A20600CC0F91 /* Write-It-Down-localTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Write-It-Down-localTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1306ADEC451779BCD04509C /* PrivacyToggleView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PrivacyToggleView.swift; path = "Ecrivez-local/Views/Components/PrivacyToggleView.swift"; sourceTree = "<group>"; };
+		C1FA7D4B02D006E045F2AB1F /* NoteMetadataView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoteMetadataView.swift; path = "Ecrivez-local/Views/Components/NoteMetadataView.swift"; sourceTree = "<group>"; };
+		FDA476B111B2D2E9293DF617 /* EnhancedCategorySelectionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EnhancedCategorySelectionView.swift; path = "Ecrivez-local/Views/Components/EnhancedCategorySelectionView.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = "Write-It-Down-localTests"; sourceTree = "<group>"; };
+		3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = "Write-It-Down-localTests";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -289,6 +305,9 @@
 				3EA997E72E156B7000F8C774 /* NoteView.swift */,
 				3EA997E82E156B7000F8C774 /* PremiumFeatureView.swift */,
 				3EA997E92E156B7000F8C774 /* ToastModifier.swift */,
+				FDA476B111B2D2E9293DF617 /* EnhancedCategorySelectionView.swift */,
+				C1FA7D4B02D006E045F2AB1F /* NoteMetadataView.swift */,
+				A1306ADEC451779BCD04509C /* PrivacyToggleView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -449,8 +468,6 @@
 				3EDAA2922D80A20600CC0F91 /* Write-It-Down-localTests */,
 			);
 			name = "Write-It-Down-localTests";
-			packageProductDependencies = (
-			);
 			productName = "Write-It-Down-localTests";
 			productReference = 3EDAA2912D80A20600CC0F91 /* Write-It-Down-localTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -597,6 +614,9 @@
 				3EA998662E156B7000F8C774 /* SyncManager.swift in Sources */,
 				3EA998672E156B7000F8C774 /* SettingsView.swift in Sources */,
 				3E7B743F2CC547B600569AE7 /* Model.xcdatamodeld in Sources */,
+				7C3D647D18B8E1719BB535A7 /* EnhancedCategorySelectionView.swift in Sources */,
+				DFDEE5E0F71F31A32316BB27 /* NoteMetadataView.swift in Sources */,
+				D63ADA2EF9D49EF0A086D85C /* PrivacyToggleView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
