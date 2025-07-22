@@ -22,12 +22,30 @@ enum PremiumFeature: String, CaseIterable {
     case unlimitedNotes
     case unlimitedCategories
     case cloudSync
+    case locationTagging
+    case weatherTagging
+    case imageInsertion
+    case richTextFormatting
+    case publicNoteSharing
+    case darkMode
+    case customThemes
+    case socialFeatures
+    case mapPinCustomization
     
     var displayName: String {
         switch self {
         case .unlimitedNotes: return "Unlimited Notes"
         case .unlimitedCategories: return "Custom Categories"
         case .cloudSync: return "Cloud Sync & Backup"
+        case .locationTagging: return "Location Tagging"
+        case .weatherTagging: return "Weather Tagging"
+        case .imageInsertion: return "Image Insertion"
+        case .richTextFormatting: return "Rich Text Formatting"
+        case .publicNoteSharing: return "Public Note Sharing"
+        case .darkMode: return "Dark Mode"
+        case .customThemes: return "Custom Themes"
+        case .socialFeatures: return "Social Features"
+        case .mapPinCustomization: return "Map Pin Customization"
         }
     }
     
@@ -36,6 +54,15 @@ enum PremiumFeature: String, CaseIterable {
         case .unlimitedNotes: return "Create more than 10 notes"
         case .unlimitedCategories: return "Create your own categories beyond defaults"
         case .cloudSync: return "Sync across all your devices"
+        case .locationTagging: return "Tag notes with locations"
+        case .weatherTagging: return "Add weather information to notes"
+        case .imageInsertion: return "Insert images in your notes"
+        case .richTextFormatting: return "Advanced text formatting options"
+        case .publicNoteSharing: return "Share notes publicly"
+        case .darkMode: return "Dark theme for comfortable viewing"
+        case .customThemes: return "Customize app appearance"
+        case .socialFeatures: return "Connect and interact with others"
+        case .mapPinCustomization: return "Customize map pin colors and styles"
         }
     }
 }

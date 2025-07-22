@@ -208,7 +208,7 @@ struct SettingsView: View {
     
     // MARK: - Notifications Section
     private var notificationsSection: some View {
-        Section(header: Text("Notifications")) {
+        Section {
             Toggle(isOn: $settingsManager.settings.enableSyncNotifications) {
                 Label("Sync Notifications", systemImage: "arrow.triangle.2.circlepath")
             }
@@ -227,12 +227,14 @@ struct SettingsView: View {
                 Label("Social Interactions", systemImage: "heart")
             }
             .premiumGate(.socialFeatures)
+        } header: {
+            Text("Notifications")
         }
     }
     
     // MARK: - Organization Section
     private var organizationSection: some View {
-        Section(header: Text("Organization")) {
+        Section {
             NavigationLink(destination: CategoryEditorListView()) {
                 HStack {
                     Image(systemName: "folder")
@@ -261,6 +263,8 @@ struct SettingsView: View {
                 }
             }
             .premiumGate(.mapPinCustomization)
+        } header: {
+            Text("Organization")
         }
     }
     

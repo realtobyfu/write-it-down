@@ -13,35 +13,90 @@ struct LocationPickerView: View {
     
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     private var isIPad: Bool { horizontalSizeClass == .regular }
+    
+    @State private var isCurrentLocationPressed = false
+    @State private var searchResults: [MKMapItem] = []
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading) {
-                // Search bar
-                HStack {
-                    TextField("Search for a location", text: $searchViewModel.searchText, onCommit: {
-                        searchViewModel.search()
-                    })
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.leading)
-
-                    Button(action: {
-                        searchViewModel.search()
-                    }) {
-                        Text("Search")
+            VStack(alignment: .leading, spacing: 0) {
+                // Search bar with current location button
+                VStack(spacing: 12) {
+                    HStack(spacing: 12) {
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .foregroundColor(.gray)
+                            TextField("Search for a location", text: $searchViewModel.searchText, onCommit: {
+                                searchViewModel.search()
+                            })
+                            .submitLabel(.search)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(16)
+                        
+                        Button(action: {
+                            searchViewModel.search()
+                        }) {
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
                     }
-                    .padding(.trailing)
+                    .padding(.horizontal)
+                    
+                    // Current location button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            isCurrentLocationPressed = true
+                        }
+                        searchViewModel.requestCurrentLocation()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isCurrentLocationPressed = false
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "location.circle.fill")
+                                .font(.title3)
+                            Text("Use Current Location")
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.blue.opacity(0.1))
+                        )
+                        .scaleEffect(isCurrentLocationPressed ? 0.95 : 1.0)
+                    }
                 }
                 .padding(.top, isIPad ? 15 : 8)
+                .padding(.bottom, 12)
 
                 // Selected location bubble
                 if let locationName = locationName {
-                    Text("📍 \(locationName)")
-                        .padding(8)
-                        .background(Color.blue.opacity(0.15))
-                        .foregroundColor(.blue)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
+                    HStack {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.title3)
+                        Text(locationName)
+                            .fontWeight(.medium)
+                    }
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(Color.green, lineWidth: 2)
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
+                    .padding(.horizontal)
+                    .transition(.scale.combined(with: .opacity))
                 }
 
                 // iPad-specific two-column layout
@@ -50,19 +105,37 @@ struct LocationPickerView: View {
                         // List of search results (left column)
                         List(searchViewModel.landmarks, id: \.self) { mapItem in
                             Button(action: {
-                                location = mapItem.placemark.coordinate
-                                locationName = mapItem.name
-                                locationLocality = mapItem.placemark.locality
-                                searchViewModel.region.center = mapItem.placemark.coordinate
-                                searchViewModel.searchText = mapItem.name ?? ""
-                            }) {
-                                VStack(alignment: .leading) {
-                                    Text(mapItem.name ?? "")
-                                        .font(.headline)
-                                    Text(mapItem.placemark.title ?? "")
-                                        .font(.subheadline)
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    location = mapItem.placemark.coordinate
+                                    locationName = mapItem.name
+                                    locationLocality = mapItem.placemark.locality
+                                    searchViewModel.region.center = mapItem.placemark.coordinate
+                                    searchViewModel.searchText = mapItem.name ?? ""
                                 }
+                            }) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "mappin.circle.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.blue)
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(mapItem.name ?? "")
+                                            .font(.headline)
+                                            .foregroundColor(.primary)
+                                        Text(mapItem.placemark.title ?? "")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.vertical, 8)
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
                         .frame(width: 300)
                         .listStyle(InsetGroupedListStyle())
@@ -89,20 +162,40 @@ struct LocationPickerView: View {
                     // Original iPhone layout
                     List(searchViewModel.landmarks, id: \.self) { mapItem in
                         Button(action: {
-                            location = mapItem.placemark.coordinate
-                            locationName = mapItem.name
-                            locationLocality = mapItem.placemark.locality
-                            searchViewModel.region.center = mapItem.placemark.coordinate
-                            searchViewModel.searchText = mapItem.name ?? ""
-                        }) {
-                            VStack(alignment: .leading) {
-                                Text(mapItem.name ?? "")
-                                    .font(.headline)
-                                Text(mapItem.placemark.title ?? "")
-                                    .font(.subheadline)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                location = mapItem.placemark.coordinate
+                                locationName = mapItem.name
+                                locationLocality = mapItem.placemark.locality
+                                searchViewModel.region.center = mapItem.placemark.coordinate
+                                searchViewModel.searchText = mapItem.name ?? ""
                             }
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "mappin.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                                
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(mapItem.name ?? "")
+                                        .font(.headline)
+                                        .foregroundColor(.primary)
+                                    Text(mapItem.placemark.title ?? "")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(2)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 4)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
+                    .listStyle(InsetGroupedListStyle())
 
                     // Map view showing the selected location
                     if let selectedLocation = location {

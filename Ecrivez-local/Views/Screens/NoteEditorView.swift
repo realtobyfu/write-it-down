@@ -244,6 +244,9 @@ struct NoteEditorView: View {
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
+                .presentationCornerRadius(20)
+                .presentationBackground(.regularMaterial)
+                .interactiveDismissDisabled(false)
             }
             .sheet(isPresented: $showingWeatherPicker) {
                 WeatherPicker(weather: $viewModel.weather)

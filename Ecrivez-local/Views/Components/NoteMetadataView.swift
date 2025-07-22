@@ -13,48 +13,87 @@ struct NoteMetadataView: View {
     @Binding var imageSourceType: UIImagePickerController.SourceType
     let premiumManager: PremiumManager
     
+    @State private var isDatePressed = false
+    @State private var isLocationPressed = false
+    
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 16) {
                 // Date button
                 Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isDatePressed.toggle()
+                    }
                     if selectedDate == nil {
                         selectedDate = Date()
                     } else {
                         selectedDate = nil
                     }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isDatePressed = false
+                    }
                 }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 8) {
                         Image(systemName: selectedDate != nil ? "calendar.badge.checkmark" : "calendar")
+                            .font(.title3)
+                            .foregroundColor(selectedDate != nil ? .blue : .gray)
                         if let date = selectedDate {
                             Text(date, style: .date)
-                                .font(.caption)
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(selectedDate != nil ? Color.blue.opacity(0.2) : Color(.systemGray6))
-                    .cornerRadius(16)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(selectedDate != nil ? Color.blue : Color.gray.opacity(0.3), lineWidth: 2)
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .scaleEffect(isDatePressed ? 0.95 : 1.0)
                 }
                 
                 // Location button
                 Button(action: {
                     if premiumManager.hasAccess(to: .locationTagging) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            isLocationPressed.toggle()
+                        }
                         showingLocationPicker = true
-                    }
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: location != nil ? "location.fill" : "location")
-                        if let name = locationName {
-                            Text(name)
-                                .font(.caption)
-                                .lineLimit(1)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isLocationPressed = false
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(location != nil ? Color.green.opacity(0.2) : Color(.systemGray6))
-                    .cornerRadius(16)
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: location != nil ? "location.fill" : "location")
+                            .font(.title3)
+                            .foregroundColor(location != nil ? .green : .gray)
+                        if let name = locationName {
+                            Text(name)
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .lineLimit(1)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 24)
+                            .fill(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24)
+                                    .stroke(location != nil ? Color.green : Color.gray.opacity(0.3), lineWidth: 2)
+                            )
+                    )
+                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .scaleEffect(isLocationPressed ? 0.95 : 1.0)
                 }
                 .disabled(!premiumManager.hasAccess(to: .locationTagging))
                 

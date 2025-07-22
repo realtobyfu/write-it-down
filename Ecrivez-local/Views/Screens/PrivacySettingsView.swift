@@ -52,17 +52,6 @@ struct PrivacySettingsView: View {
             .pickerStyle(SegmentedPickerStyle())
             
             Toggle("Enable Anonymous Posting", isOn: $settingsManager.settings.enableAnonymousPosting)
-                .disabled(!premiumManager.hasAccess(to: .anonymousPosting))
-            
-            if !premiumManager.hasAccess(to: .anonymousPosting) {
-                HStack {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(.blue)
-                    Text("Anonymous posting is a premium feature")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
         }
     }
     
@@ -111,7 +100,7 @@ struct PrivacySettingsView: View {
                     Text("Export All Data")
                 }
             }
-            .disabled(!premiumManager.hasAccess(to: .bulkExport))
+            // Export is available to all users
             
             Button(action: {
                 showDataDeletionAlert = true
@@ -128,23 +117,11 @@ struct PrivacySettingsView: View {
     private var socialPrivacySection: some View {
         Section(header: Text("Social Features"), footer: Text("Control who can interact with your public notes")) {
             Toggle("Allow Comments on Public Notes", isOn: .constant(true))
-                .disabled(!premiumManager.hasAccess(to: .socialFeatures))
             
             Toggle("Allow Likes on Public Notes", isOn: .constant(true))
-                .disabled(!premiumManager.hasAccess(to: .socialFeatures))
             
             Toggle("Show Username on Public Notes", isOn: .constant(true))
                 .disabled(!settingsManager.settings.enableAnonymousPosting)
-            
-            if !premiumManager.hasAccess(to: .socialFeatures) {
-                HStack {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(.blue)
-                    Text("Social features require premium")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
         }
     }
     
