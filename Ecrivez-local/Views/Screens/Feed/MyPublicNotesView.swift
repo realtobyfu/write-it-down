@@ -12,6 +12,7 @@ import CoreData
 struct MyPublicNotesView: View {
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject var authVM: AuthViewModel
+    @StateObject private var premiumManager = PremiumManager.shared
     
     @State private var myNotes: [SupabaseNote] = []
     @State private var isLoading = false
@@ -60,6 +61,7 @@ struct MyPublicNotesView: View {
                             }
                         }
                     )
+                    .environmentObject(premiumManager)
                 }
             }
         }

@@ -34,6 +34,9 @@ class SyncManager: ObservableObject {
     private var syncTimer: Timer?
     private var lastAutoSyncTime: Date?
     
+    // Serial queue for category operations to prevent duplicates
+    private let categoryQueue = DispatchQueue(label: "com.tobiasfu.write-it-down.categorySync")
+    
     enum SyncStatus: Equatable {
         case idle
         case syncing
@@ -114,6 +117,9 @@ class SyncManager: ObservableObject {
         
         // 2. Then sync notes (which may reference categories)
         try await syncNotes(context: context, userID: userID)
+        
+        // 3. Clean up any duplicate categories that may have been created
+        try await cleanupDuplicateCategories(context: context)
     }
     
     // MARK: - Automatic Sync Functions
@@ -294,7 +300,10 @@ class SyncManager: ObservableObject {
         // 3. Filter remote notes to only include those belonging to this user
         let userRemoteNotes = remoteNotes.filter { $0.owner_id == userID }
         
-        // 4. Determine notes to upload, update, and download
+        // 4. Get last sync time to determine deletions
+        let lastSyncTime = UserDefaults.standard.object(forKey: "lastNoteSyncTime") as? Date ?? Date.distantPast
+        
+        // 5. Determine notes to upload, update, download, and delete
         let localIDsSet = Set(localNotes.compactMap { $0.id })
         let remoteIDsSet = Set(userRemoteNotes.map { $0.id })
         
@@ -308,16 +317,47 @@ class SyncManager: ObservableObject {
             return remoteIDsSet.contains(id)
         }
         
-        let notesToDownload = userRemoteNotes.filter { note in
-            return !localIDsSet.contains(note.id)
+        // Only download notes that don't exist locally
+        // Check if remote notes were created after last sync to avoid re-downloading deleted notes
+        let notesToDownload = userRemoteNotes.filter { remoteNote in
+            if localIDsSet.contains(remoteNote.id) {
+                return false
+            }
+            // If the remote note was created after our last sync, it's a new note
+            // Otherwise, it might be a note we deleted locally
+            if let createdAt = remoteNote.created_at {
+                return createdAt > lastSyncTime
+            }
+            return true
         }
         
-        // 5. Perform the sync operations
+        // Notes that exist remotely but not locally and were created before last sync
+        // These are likely notes that were deleted locally
+        let possiblyDeletedNotes = userRemoteNotes.filter { remoteNote in
+            if localIDsSet.contains(remoteNote.id) {
+                return false
+            }
+            if let createdAt = remoteNote.created_at {
+                return createdAt <= lastSyncTime
+            }
+            return false
+        }
+        
+        // Delete notes from remote that were deleted locally
+        if !possiblyDeletedNotes.isEmpty {
+            print("Found \(possiblyDeletedNotes.count) notes that might have been deleted locally")
+            try await deleteRemoteNotes(possiblyDeletedNotes.map { $0.id })
+        }
+        
+        // 6. Perform the sync operations
         try await uploadNotes(notesToUpload, userID: userID)
         try await updateNotes(notesToUpdate, remoteNotes: userRemoteNotes, userID: userID)
         try await downloadNotes(notesToDownload, context: context)
         
-        print("Note sync completed. Uploaded: \(notesToUpload.count), Updated: \(notesToUpdate.count), Downloaded: \(notesToDownload.count)")
+        // 7. Update last sync time
+        UserDefaults.standard.set(Date(), forKey: "lastNoteSyncTime")
+        
+        print("Note sync completed. Uploaded: \(notesToUpload.count), Updated: \(notesToUpdate.count), Downloaded: \(notesToDownload.count), Deleted from remote: \(possiblyDeletedNotes.count)")
     }
     
     private func uploadNotes(context: NSManagedObjectContext, userID: UUID) async throws {
@@ -510,6 +550,17 @@ class SyncManager: ObservableObject {
             
             do {
                 let existingCategories = try context.fetch(request)
+                
+                if existingCategories.count > 1 {
+                    // Handle duplicates - keep the first one and delete the rest
+                    print("⚠️ Found \(existingCategories.count) duplicate categories with ID: \(remoteCategory.id)")
+                    for (index, duplicate) in existingCategories.enumerated() {
+                        if index > 0 {
+                            print("Deleting duplicate category: \(duplicate.name ?? "unnamed")")
+                            context.delete(duplicate)
+                        }
+                    }
+                }
                 
                 if let existingCategory = existingCategories.first {
                     // Update existing category
@@ -736,6 +787,78 @@ class SyncManager: ObservableObject {
             let nsError = error as NSError
             print("Domain: \(nsError.domain), Code: \(nsError.code)")
             print("User info: \(nsError.userInfo)")
+            throw error
+        }
+    }
+    
+    private func deleteRemoteNotes(_ noteIDs: [UUID]) async throws {
+        print("Deleting \(noteIDs.count) notes from remote")
+        
+        for noteID in noteIDs {
+            do {
+                try await client
+                    .from("synced_notes")
+                    .delete()
+                    .eq("id", value: noteID)
+                    .execute()
+                
+                print("Successfully deleted note \(noteID) from remote")
+            } catch {
+                print("Error deleting note \(noteID) from remote: \(error)")
+                // Continue with other deletions rather than failing all
+            }
+        }
+    }
+    
+    // MARK: - Cleanup Methods
+    
+    func cleanupDuplicateCategories(context: NSManagedObjectContext) async throws {
+        print("Starting cleanup of duplicate categories")
+        
+        // Fetch all categories
+        let request = NSFetchRequest<Category>(entityName: "Category")
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
+        
+        do {
+            let allCategories = try context.fetch(request)
+            var categoriesByID: [UUID: [Category]] = [:]
+            
+            // Group categories by ID
+            for category in allCategories {
+                if let id = category.id {
+                    if categoriesByID[id] == nil {
+                        categoriesByID[id] = []
+                    }
+                    categoriesByID[id]?.append(category)
+                }
+            }
+            
+            // Find and remove duplicates
+            var duplicatesRemoved = 0
+            for (id, categories) in categoriesByID {
+                if categories.count > 1 {
+                    print("Found \(categories.count) categories with ID: \(id)")
+                    
+                    // Keep the first category, delete the rest
+                    for (index, category) in categories.enumerated() {
+                        if index > 0 {
+                            print("Removing duplicate category: \(category.name ?? "unnamed")")
+                            context.delete(category)
+                            duplicatesRemoved += 1
+                        }
+                    }
+                }
+            }
+            
+            if duplicatesRemoved > 0 {
+                print("Removed \(duplicatesRemoved) duplicate categories")
+                try context.save()
+            } else {
+                print("No duplicate categories found")
+            }
+            
+        } catch {
+            print("Error cleaning up duplicate categories: \(error)")
             throw error
         }
     }

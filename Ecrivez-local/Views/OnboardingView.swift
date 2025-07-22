@@ -39,6 +39,9 @@ struct OnboardingView: View {
 
                     PublicSharingDemo()
                         .tag(4)
+                    
+                    PremiumOverviewStep()
+                        .tag(5)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 

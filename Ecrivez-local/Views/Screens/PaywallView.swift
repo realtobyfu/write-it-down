@@ -9,7 +9,7 @@ struct PaywallView: View {
     @State private var restoreMessage = ""
     
     enum PlanType {
-        case monthly, yearly, lifetime
+        case yearly
     }
     
     var body: some View {
@@ -66,8 +66,8 @@ struct PaywallView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            Text("Get unlimited access to all features")
-                .font(.subheadline)
+            Text("Just $5/year for unlimited access")
+                .font(.title2)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -81,14 +81,9 @@ struct PaywallView: View {
                 .padding(.horizontal)
             
             VStack(spacing: 12) {
-                FeatureItem(icon: "infinity", title: "Unlimited Notes", description: "Create as many notes as you want")
-                FeatureItem(icon: "folder.fill", title: "Unlimited Categories", description: "Organize with custom categories")
+                FeatureItem(icon: "infinity", title: "Unlimited Notes", description: "Create more than 10 notes")
+                FeatureItem(icon: "folder.fill", title: "Custom Categories", description: "Create your own categories")
                 FeatureItem(icon: "icloud.fill", title: "Cloud Sync", description: "Access notes on all devices")
-                FeatureItem(icon: "textformat", title: "Rich Text Editor", description: "Format with colors, styles & images")
-                FeatureItem(icon: "location.fill", title: "Location & Weather", description: "Tag notes with context")
-                FeatureItem(icon: "person.2.fill", title: "Social Features", description: "Share, like & comment")
-                FeatureItem(icon: "moon.fill", title: "Dark Mode", description: "Easy on the eyes")
-                FeatureItem(icon: "square.and.arrow.up", title: "Export Options", description: "PDF, bulk export & more")
             }
             .padding(.horizontal)
         }
@@ -99,37 +94,14 @@ struct PaywallView: View {
     
     private var plansSection: some View {
         VStack(spacing: 12) {
-            Text("Choose Your Plan")
-                .font(.headline)
-            
             PlanOption(
-                title: "Monthly",
-                price: premiumManager.getMonthlyPrice(),
-                description: "Billed monthly",
-                isSelected: selectedPlan == .monthly,
-                badge: nil
-            ) {
-                selectedPlan = .monthly
-            }
-            
-            PlanOption(
-                title: "Yearly",
+                title: "Annual Premium",
                 price: premiumManager.getYearlyPrice(),
-                description: "Save 33%",
-                isSelected: selectedPlan == .yearly,
-                badge: "BEST VALUE"
+                description: "Billed yearly",
+                isSelected: true,
+                badge: "ONLY $5/YEAR"
             ) {
                 selectedPlan = .yearly
-            }
-            
-            PlanOption(
-                title: "Lifetime",
-                price: premiumManager.getLifetimePrice(),
-                description: "One-time purchase",
-                isSelected: selectedPlan == .lifetime,
-                badge: "LIMITED OFFER"
-            ) {
-                selectedPlan = .lifetime
             }
         }
     }
@@ -137,14 +109,7 @@ struct PaywallView: View {
     private var ctaButton: some View {
         Button(action: {
             Task {
-                switch selectedPlan {
-                case .monthly:
-                    await premiumManager.purchaseMonthlySubscription()
-                case .yearly:
-                    await premiumManager.purchaseYearlySubscription()
-                case .lifetime:
-                    await premiumManager.purchaseLifetime()
-                }
+                await premiumManager.purchaseYearlySubscription()
                 
                 if premiumManager.purchaseError == nil {
                     dismiss()
@@ -178,14 +143,7 @@ struct PaywallView: View {
     }
     
     private var ctaButtonText: String {
-        switch selectedPlan {
-        case .monthly:
-            return "Start Monthly Plan"
-        case .yearly:
-            return "Start Yearly Plan"
-        case .lifetime:
-            return "Get Lifetime Access"
-        }
+        return "Unlock Premium - $5/year"
     }
     
     private var restoreButton: some View {

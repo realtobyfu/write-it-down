@@ -3,7 +3,7 @@ import CoreData
 
 struct EnhancedCategorySelectionView: View {
     @Binding var selectedCategory: Category?
-    let categories: FetchedResults<Category>
+    let categories: [Category]
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -40,7 +40,7 @@ struct CategoryChip: View {
             .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ? Color(hex: category.color ?? "#007AFF") : Color(.systemGray5))
+                    .fill(isSelected ? category.color : Color(.systemGray5))
             )
             .foregroundColor(isSelected ? .white : .primary)
         }

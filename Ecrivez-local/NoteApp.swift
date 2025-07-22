@@ -47,6 +47,13 @@ struct NoteApp: App {
                             print("WARNING: Database health check failed on app launch")
                         }
                         
+                        // Clean up any duplicate categories on app launch
+                        do {
+                            try await SyncManager.shared.cleanupDuplicateCategories(context: dataController.container.viewContext)
+                        } catch {
+                            print("Failed to cleanup duplicate categories: \(error)")
+                        }
+                        
                         // Trigger sync on app launch if authenticated and enabled
                         if authVM.isAuthenticated && SyncManager.shared.syncEnabled {
                             await SyncManager.shared.performAutoSync(context: dataController.container.viewContext)

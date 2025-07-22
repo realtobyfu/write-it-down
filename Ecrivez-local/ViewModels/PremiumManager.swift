@@ -1,6 +1,7 @@
 import Foundation
 import StoreKit
 import Combine
+import Supabase
 
 enum PremiumTier: String, CaseIterable {
     case free = "free"
@@ -17,72 +18,24 @@ enum PremiumTier: String, CaseIterable {
 }
 
 enum PremiumFeature: String, CaseIterable {
-    // Core Features
+    // Core Premium Features (simplified model)
     case unlimitedNotes
     case unlimitedCategories
     case cloudSync
-    case richTextFormatting
-    case imageInsertion
-    
-    // Advanced Features
-    case locationTagging
-    case weatherTagging
-    case publicNoteSharing
-    case anonymousPosting
-    case socialFeatures
-    
-    // Customization
-    case darkMode
-    case customThemes
-    case mapPinCustomization
-    case multipleAppIcons
-    
-    // Export & Integration
-    case exportPDF
-    case bulkExport
-    case importNotes
     
     var displayName: String {
         switch self {
         case .unlimitedNotes: return "Unlimited Notes"
-        case .unlimitedCategories: return "Unlimited Categories"
+        case .unlimitedCategories: return "Custom Categories"
         case .cloudSync: return "Cloud Sync & Backup"
-        case .richTextFormatting: return "Rich Text Formatting"
-        case .imageInsertion: return "Image Insertion"
-        case .locationTagging: return "Location Tagging"
-        case .weatherTagging: return "Weather Tagging"
-        case .publicNoteSharing: return "Public Note Sharing"
-        case .anonymousPosting: return "Anonymous Posting"
-        case .socialFeatures: return "Likes & Comments"
-        case .darkMode: return "Dark Mode"
-        case .customThemes: return "Custom Themes"
-        case .mapPinCustomization: return "Map Pin Customization"
-        case .multipleAppIcons: return "Multiple App Icons"
-        case .exportPDF: return "Export to PDF"
-        case .bulkExport: return "Bulk Export"
-        case .importNotes: return "Import Notes"
         }
     }
     
     var description: String {
         switch self {
-        case .unlimitedNotes: return "Create as many notes as you need"
-        case .unlimitedCategories: return "Organize with unlimited categories"
+        case .unlimitedNotes: return "Create more than 10 notes"
+        case .unlimitedCategories: return "Create your own categories beyond defaults"
         case .cloudSync: return "Sync across all your devices"
-        case .richTextFormatting: return "Bold, italic, colors, and more"
-        case .imageInsertion: return "Add photos to your notes"
-        case .locationTagging: return "Tag notes with locations"
-        case .weatherTagging: return "Add weather to your notes"
-        case .publicNoteSharing: return "Share notes with the community"
-        case .anonymousPosting: return "Post publicly without revealing identity"
-        case .socialFeatures: return "Like and comment on public notes"
-        case .darkMode: return "Easy on the eyes in low light"
-        case .customThemes: return "Personalize your app appearance"
-        case .mapPinCustomization: return "Custom map pin colors and icons"
-        case .multipleAppIcons: return "Choose from multiple app icons"
-        case .exportPDF: return "Export notes as PDF files"
-        case .bulkExport: return "Export multiple notes at once"
-        case .importNotes: return "Import from other note apps"
         }
     }
 }
@@ -98,23 +51,49 @@ class PremiumManager: ObservableObject {
     @Published var hasLifetimeAccess = false
     @Published var subscriptionExpiryDate: Date?
     
+    // Debug mode for testing
+    #if DEBUG
+    @Published var debugModeEnabled = UserDefaults.standard.bool(forKey: "debugPremiumMode") {
+        didSet {
+            UserDefaults.standard.set(debugModeEnabled, forKey: "debugPremiumMode")
+            if debugModeEnabled {
+                currentTier = debugTier
+            } else {
+                Task {
+                    await updatePurchaseStatus()
+                }
+            }
+        }
+    }
+    @Published var debugTier: PremiumTier = .premium {
+        didSet {
+            if debugModeEnabled {
+                currentTier = debugTier
+            }
+        }
+    }
+    #endif
+    
     // StoreKit properties
     private var products: [Product] = []
     private var purchaseTask: Task<Void, Error>?
     private var updateListenerTask: Task<Void, Error>?
     
-    // Product IDs
-    private let monthlySubscriptionID = "com.tobiasfu.write-it-down.premium.monthly"
+    // Product IDs (simplified to yearly only)
     private let yearlySubscriptionID = "com.tobiasfu.write-it-down.premium.yearly"
-    private let lifetimeID = "com.tobiasfu.write-it-down.lifetime"
-    private let categoryPackID = "com.tobiasfu.write-it-down.categorypack"
-    private let themePackID = "com.tobiasfu.write-it-down.themepack"
     
     // Free tier limits
-    let freeNoteLimit = 5
-    let freeCategoryLimit = 1
+    let freeNoteLimit = 10
+    let freeCategoryLimit = 0 // Only default categories allowed
     
     private init() {
+        #if DEBUG
+        if debugModeEnabled {
+            currentTier = debugTier
+            return
+        }
+        #endif
+        
         Task {
             await loadProducts()
             await updatePurchaseStatus()
@@ -131,7 +110,7 @@ class PremiumManager: ObservableObject {
     func hasAccess(to feature: PremiumFeature) -> Bool {
         switch currentTier {
         case .free:
-            return false // All premium features are locked
+            return false // Premium features (unlimited notes, custom categories, sync) are locked
         case .premium, .lifetime:
             return true // All features unlocked
         }
@@ -146,10 +125,10 @@ class PremiumManager: ObservableObject {
         }
     }
     
-    func canCreateMoreCategories(currentCount: Int) -> Bool {
+    func canCreateCustomCategories() -> Bool {
         switch currentTier {
         case .free:
-            return currentCount < freeCategoryLimit
+            return false // Free users can only use default categories
         case .premium, .lifetime:
             return true
         }
@@ -164,18 +143,73 @@ class PremiumManager: ObservableObject {
         }
     }
     
+    // MARK: - Cross-Platform Sync with Supabase
+    
+    @MainActor
+    func syncPremiumStatusWithSupabase(userID: UUID) async {
+        do {
+            // Check Supabase for premium status
+            let response = try await SupabaseManager.shared.client
+                .from("premium_subscriptions")
+                .select()
+                .eq("user_id", value: userID.uuidString)
+                .single()
+                .execute()
+            
+            let data = response.data
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            
+            struct PremiumStatus: Decodable {
+                let is_active: Bool
+                let expiry_date: Date?
+                let subscription_tier: String
+            }
+            
+            if let status = try? decoder.decode(PremiumStatus.self, from: data) {
+                if status.is_active {
+                    if let expiryDate = status.expiry_date, expiryDate > Date() {
+                        currentTier = .premium
+                        subscriptionExpiryDate = expiryDate
+                    }
+                }
+            }
+        } catch {
+            print("Error syncing premium status from Supabase: \(error)")
+        }
+    }
+    
+    @MainActor
+    private func updateSupabasePremiumStatus(userID: UUID, isActive: Bool, expiryDate: Date?, platform: String = "ios") async {
+        do {
+            struct UpdatePremiumParams: Encodable {
+                let p_user_id: String
+                let p_is_active: Bool
+                let p_expiry_date: String?
+                let p_platform: String
+            }
+            
+            let params = UpdatePremiumParams(
+                p_user_id: userID.uuidString,
+                p_is_active: isActive,
+                p_expiry_date: expiryDate?.ISO8601Format(),
+                p_platform: platform
+            )
+            
+            _ = try await SupabaseManager.shared.client
+                .rpc("update_premium_status", params: params)
+                .execute()
+        } catch {
+            print("Error updating premium status in Supabase: \(error)")
+        }
+    }
+    
     // MARK: - StoreKit Integration
     
     @MainActor
     private func loadProducts() async {
         do {
-            let productIDs = [
-                monthlySubscriptionID,
-                yearlySubscriptionID,
-                lifetimeID,
-                categoryPackID,
-                themePackID
-            ]
+            let productIDs = [yearlySubscriptionID]
             
             products = try await Product.products(for: productIDs)
         } catch {
@@ -193,15 +227,13 @@ class PremiumManager: ObservableObject {
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result {
                 switch transaction.productID {
-                case monthlySubscriptionID, yearlySubscriptionID:
+                case yearlySubscriptionID:
                     if let expiryDate = transaction.expirationDate, expiryDate > Date() {
                         hasActiveSubscription = true
                         if latestExpiryDate == nil || expiryDate > latestExpiryDate! {
                             latestExpiryDate = expiryDate
                         }
                     }
-                case lifetimeID:
-                    hasLifetime = true
                 default:
                     break
                 }
@@ -239,18 +271,8 @@ class PremiumManager: ObservableObject {
     // MARK: - Purchase Methods
     
     @MainActor
-    func purchaseMonthlySubscription() async {
-        await purchase(productID: monthlySubscriptionID)
-    }
-    
-    @MainActor
     func purchaseYearlySubscription() async {
         await purchase(productID: yearlySubscriptionID)
-    }
-    
-    @MainActor
-    func purchaseLifetime() async {
-        await purchase(productID: lifetimeID)
     }
     
     @MainActor
@@ -272,6 +294,16 @@ class PremiumManager: ObservableObject {
                 case .verified(let transaction):
                     await transaction.finish()
                     await updatePurchaseStatus()
+                    
+                    // Sync with Supabase for cross-platform
+                    if let userID = await getCurrentUserID() {
+                        await updateSupabasePremiumStatus(
+                            userID: userID,
+                            isActive: true,
+                            expiryDate: transaction.expirationDate,
+                            platform: "ios"
+                        )
+                    }
                 case .unverified:
                     purchaseError = "Purchase could not be verified"
                 }
@@ -305,24 +337,23 @@ class PremiumManager: ObservableObject {
     
     // MARK: - Pricing Info
     
-    func getMonthlyPrice() -> String {
-        guard let product = products.first(where: { $0.id == monthlySubscriptionID }) else {
-            return "$4.99/month"
-        }
-        return product.displayPrice
-    }
-    
     func getYearlyPrice() -> String {
         guard let product = products.first(where: { $0.id == yearlySubscriptionID }) else {
-            return "$39.99/year"
+            return "$5/year"
         }
         return product.displayPrice
     }
     
-    func getLifetimePrice() -> String {
-        guard let product = products.first(where: { $0.id == lifetimeID }) else {
-            return "$99.99"
+    // MARK: - Helper Methods
+    
+    @MainActor
+    private func getCurrentUserID() async -> UUID? {
+        // Get current user ID from Supabase auth
+        do {
+            let user = try await SupabaseManager.shared.client.auth.session.user
+            return UUID(uuidString: user.id.uuidString)
+        } catch {
+            return nil
         }
-        return product.displayPrice
     }
 }

@@ -8,6 +8,7 @@ import PhotosUI
 struct ProfileView: View {
     
     @ObservedObject var authVM: AuthViewModel
+    @StateObject private var premiumManager = PremiumManager.shared
     
     @State private var isEditing = false
     
@@ -227,6 +228,7 @@ struct ProfileView: View {
                         }
                     }
                 )
+                .environmentObject(premiumManager)
             }
         }
         // Present authentication sheet when showingAuthView is true

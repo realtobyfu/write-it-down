@@ -26,6 +26,7 @@ struct CategoryEditorListView: View {
                                 saveContext()
                             }
                         )
+                        .disabled(categories[index].isDefault) // Disable editing for default categories
                     ) {
                         HStack {
                             Circle()
@@ -40,6 +41,12 @@ struct CategoryEditorListView: View {
                                 .padding(.leading, 10)
 
                             Spacer()
+                            
+                            if categories[index].isDefault {
+                                Text("Default")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
@@ -53,7 +60,7 @@ struct CategoryEditorListView: View {
             
             // "+" Button
             Button(action: {
-                if premiumManager.canCreateMoreCategories(currentCount: categories.count) {
+                if premiumManager.canCreateCustomCategories() {
                     newCategory = Category(context: context)
                     newCategory?.id = UUID()  // Explicitly assign a UUID
                     showingAddCategoryView = true
@@ -93,7 +100,7 @@ struct CategoryEditorListView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("You've reached the free tier limit of \(premiumManager.freeCategoryLimit) category. Upgrade to Premium for unlimited categories!")
+            Text("Custom categories are a premium feature. Upgrade to Premium to create your own categories!")
         }
         .sheet(isPresented: $showPaywall) {
             PaywallView()
@@ -127,7 +134,10 @@ struct CategoryEditorListView: View {
     private func deleteCategory(at offsets: IndexSet) {
         for index in offsets {
             let categoryToDelete = categories[index]
-            context.delete(categoryToDelete)
+            // Prevent deletion of default categories
+            if !categoryToDelete.isDefault {
+                context.delete(categoryToDelete)
+            }
         }
         saveContext()
     }

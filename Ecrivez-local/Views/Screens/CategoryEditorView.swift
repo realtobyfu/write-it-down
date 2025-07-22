@@ -34,12 +34,27 @@ struct CategoryEditorView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            // Show notice for default categories
+            if category.isDefault {
+                HStack {
+                    Image(systemName: "info.circle.fill")
+                        .foregroundColor(.blue)
+                    Text("This is a default category and cannot be edited")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+            }
+            
             // Edit Category Name
             Text("Category Name")
                 .font(.headline)
             TextField("Enter category name", text: $name)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom, 10)
+                .disabled(category.isDefault)
             
             // Symbol selection
             Text("Select Icon")
@@ -59,6 +74,7 @@ struct CategoryEditorView: View {
                                         .stroke(self.symbol == symbol ? Color.blue : Color.clear, lineWidth: 2)
                                 )
                         }
+                        .disabled(category.isDefault)
                     }
                 }
                 .padding(.vertical, 10)
@@ -82,6 +98,7 @@ struct CategoryEditorView: View {
                                     Circle().stroke(self.colorString == colorString ? Color.blue : Color.clear, lineWidth: 3)
                                 )
                         }
+                        .disabled(category.isDefault)
                     }
                 }
                 .padding(.vertical, 10)
@@ -91,10 +108,12 @@ struct CategoryEditorView: View {
             
             // Confirm Button
             Button(action: {
-                // Update the existing category
-                category.name = self.name
-                category.symbol = self.symbol
-                category.colorString = self.colorString
+                // Update the existing category (only if not default)
+                if !category.isDefault {
+                    category.name = self.name
+                    category.symbol = self.symbol
+                    category.colorString = self.colorString
+                }
                                 
                 onSave()
                 presentationMode.wrappedValue.dismiss()

@@ -82,10 +82,14 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if isIPad {
+            ZStack {
+                Group {
+                    if isIPad {
                     // iPad two-column grid layout
                     ZStack {
+                        Color(.systemGroupedBackground)
+                            .ignoresSafeArea()
+                        
                         VStack(spacing: 0) {
                             // Top Bar
                             HStack {
@@ -167,12 +171,16 @@ struct ContentView: View {
                             iPadControlButtons
                             }
                             .padding(.top, 10)
-                        .edgesIgnoringSafeArea(.bottom)
                         }
                     }
+                    .ignoresSafeArea(edges: .bottom)
                 } else {
                     // Original iPhone layout
-                    VStack(spacing: 0) {
+                    ZStack {
+                        Color(.systemBackground)
+                            .ignoresSafeArea()
+                        
+                        VStack(spacing: 0) {
                         // Top Bar
                         HStack {
                             Text("Ideas")
@@ -286,9 +294,12 @@ struct ContentView: View {
                             }
                         }
                     }
+                    }
+                    .ignoresSafeArea(edges: .bottom)
                 }
             }
-
+            }
+            .toolbar(.hidden, for: .navigationBar)
         }
         
         .confirmationDialog(
@@ -329,6 +340,7 @@ struct ContentView: View {
                     isAuthenticated: authVM.isAuthenticated,
                     onSave: { saveContext() }
                 )
+                .environmentObject(premiumManager)
         }
         
         // Present "Add Note" after picking category bubble
@@ -341,6 +353,7 @@ struct ContentView: View {
                 isAuthenticated: authVM.isAuthenticated,
                 onSave: { saveContext() }
             )
+            .environmentObject(premiumManager)
         }
         // Auth / Profile sheet
         .sheet(isPresented: $showingAuthView) {
@@ -357,9 +370,7 @@ struct ContentView: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            if let remaining = premiumManager.getRemainingNotes(currentCount: notes.count) {
-                Text("You've reached the free tier limit of \(premiumManager.freeNoteLimit) notes. Upgrade to Premium for unlimited notes!")
-            }
+            Text("You've reached the free tier limit of \(premiumManager.freeNoteLimit) notes. Upgrade to Premium for unlimited notes!")
         }
         // Paywall sheet
         .sheet(isPresented: $showPaywall) {

@@ -15,8 +15,13 @@ class AuthViewModel: ObservableObject {
 
     func checkIsAuthenticated() async {
         do {
-            _ = try await SupabaseManager.shared.client.auth.session
+            let session = try await SupabaseManager.shared.client.auth.session
             isAuthenticated = true
+            
+            // Sync premium status from Supabase for cross-platform
+            if let userID = UUID(uuidString: session.user.id.uuidString) {
+                await PremiumManager.shared.syncPremiumStatusWithSupabase(userID: userID)
+            }
         } catch {
             print("No valid session found: \(error)")
             isAuthenticated = false
@@ -107,6 +112,18 @@ class AuthViewModel: ObservableObject {
 
     func didCompleteSignIn() {
         isAuthenticated = true
+        
+        // Sync premium status after successful sign in
+        Task {
+            do {
+                let session = try await SupabaseManager.shared.client.auth.session
+                if let userID = UUID(uuidString: session.user.id.uuidString) {
+                    await PremiumManager.shared.syncPremiumStatusWithSupabase(userID: userID)
+                }
+            } catch {
+                print("Error syncing premium status after sign in: \(error)")
+            }
+        }
     }
 }
 

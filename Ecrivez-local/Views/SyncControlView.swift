@@ -83,11 +83,19 @@ struct SyncControlView: View {
                                 await syncManager.performAutoSync(context: context)
                             }
                         }) {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.body)
-                                .foregroundColor(.blue)
+                            Image(systemName: syncManager.isSyncing ? "arrow.clockwise.circle.fill" : "arrow.clockwise")
+                                .font(.title2)
+                                .foregroundColor(syncManager.isSyncing ? .gray : .blue)
+                                .frame(width: 44, height: 44)
+                                .background(
+                                    Circle()
+                                        .fill(Color(.systemGray6))
+                                        .opacity(syncManager.isSyncing ? 0.5 : 0)
+                                )
                         }
                         .disabled(syncManager.isSyncing)
+                        .opacity(syncManager.isSyncing ? 0.6 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: syncManager.isSyncing)
                     }
                     
                     // Last sync time

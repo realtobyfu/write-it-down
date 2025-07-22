@@ -34,6 +34,11 @@ struct SettingsView: View {
             
             // Support Section
             supportSection
+            
+            // Debug Section (only in debug builds)
+            #if DEBUG
+            debugSection
+            #endif
         }
         .navigationTitle("Settings")
         .sheet(isPresented: $showPaywall) {
@@ -286,4 +291,33 @@ struct SettingsView: View {
             }
         }
     }
+    
+    // MARK: - Debug Section
+    #if DEBUG
+    private var debugSection: some View {
+        Section(header: Text("Debug Mode (Testing Only)")) {
+            Toggle("Enable Debug Premium Mode", isOn: $premiumManager.debugModeEnabled)
+            
+            if premiumManager.debugModeEnabled {
+                Picker("Debug Tier", selection: $premiumManager.debugTier) {
+                    ForEach(PremiumTier.allCases, id: \.self) { tier in
+                        Text(tier.displayName).tag(tier)
+                    }
+                }
+                .pickerStyle(SegmentedPickerStyle())
+                
+                HStack {
+                    Text("Current Tier:")
+                    Spacer()
+                    Text(premiumManager.currentTier.displayName)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text("⚠️ Debug mode is for testing only. Remember to disable before release!")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
+        }
+    }
+    #endif
 }

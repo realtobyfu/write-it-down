@@ -4,6 +4,8 @@
 <dict>
 	<key>Purchase</key>
 	<string></string>
+	<key>CFBundleExecutable</key>
+	<string>Ecrivez-local</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.tobiasfu.write-it-down</string>
 	<key>CFBundleURLTypes</key>
@@ -25,5 +27,19 @@
 	</array>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>To attach your current location to a note.</string>
+    <key>UILaunchScreen</key>
+    <dict>
+        <key>UIColorName</key>
+        <string>Background</string>
+        <key>UIImageRespectsSafeAreaInsets</key>
+        <true/>
+    </dict>
+    <key>UILaunchScreen_Generation</key>
+    <dict>
+        <key>UIImageName</key>
+        <string>AppIcon</string>
+        <key>UIImageRespectsSafeAreaInsets</key>
+        <true/>
+    </dict>
 </dict>
 </plist>

@@ -19,6 +19,7 @@ struct NoteEditorView: View {
     
     @Environment(\.presentationMode) private var presentationMode
     @Environment(\.colorScheme) private var colorScheme
+    @EnvironmentObject private var premiumManager: PremiumManager
     
     init(
         mode: Mode,
@@ -48,14 +49,9 @@ struct NoteEditorView: View {
     
     @StateObject private var contextRT = RichTextContext()
     
-    enum ImageSourceType {
-        case camera
-        case photoLibrary
-    }
-    
     @State private var isConfirmationDialogPresented = false
     @State private var isShowingImagePicker = false
-    @State private var imageSourceType: ImageSourceType = .photoLibrary
+    @State private var imageSourceType: UIImagePickerController.SourceType = .photoLibrary
     @State private var inputImage: UIImage?
     
     
@@ -69,7 +65,10 @@ struct NoteEditorView: View {
 #endif
                 
                 EnhancedCategorySelectionView(
-                    selectedCategory: $viewModel.category,
+                    selectedCategory: Binding<Category?>(
+                        get: { viewModel.category },
+                        set: { if let newValue = $0 { viewModel.category = newValue } }
+                    ),
                     categories: categories
                 )
                 
@@ -127,8 +126,7 @@ struct NoteEditorView: View {
                     showingWeatherPicker: $showingWeatherPicker,
                     showingImagePicker: $isShowingImagePicker,
                     imageSourceType: $imageSourceType,
-                    showingPrivacySettings: $showPrivacySettings,
-                    isAuthenticated: isAuthenticated
+                    premiumManager: premiumManager
                 )
             }
             .padding()
@@ -183,6 +181,8 @@ struct NoteEditorView: View {
                 case .camera:
                     CameraImagePicker(image: $inputImage, sourceType: .camera)
                 case .photoLibrary:
+                    PhotoLibraryPicker(selectedImage: $inputImage)
+                @unknown default:
                     PhotoLibraryPicker(selectedImage: $inputImage)
                 }
             }

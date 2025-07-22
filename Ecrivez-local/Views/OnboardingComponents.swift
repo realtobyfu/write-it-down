@@ -93,13 +93,20 @@ struct WelcomeStep: View {
                     .multilineTextAlignment(.center)
                     .opacity(showText ? 1 : 0)
                     .animation(.easeIn(duration: 0.8).delay(0.5), value: showText)
-                Text("Let's take a quick tour of what you can do")
-                    .font(.body)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.top)
-                    .opacity(showText ? 1 : 0)
-                    .animation(.easeIn(duration: 0.8).delay(0.7), value: showText)
+                VStack(spacing: 8) {
+                    Text("Let's take a quick tour of what you can do")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Free: 10 notes • Premium: $5/year for unlimited")
+                        .font(.caption)
+                        .foregroundColor(.blue)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top)
+                .opacity(showText ? 1 : 0)
+                .animation(.easeIn(duration: 0.8).delay(0.7), value: showText)
             }
             .padding(.horizontal, 40)
             Spacer()
@@ -196,9 +203,16 @@ struct InteractiveCategoryDemo: View {
                 }
             }
             .padding()
-            Text("Create custom categories to keep your notes organized")
-                .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+            VStack(spacing: 8) {
+                Text("Use default categories or upgrade for custom ones")
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                
+                Text("Premium feature: Create your own categories")
+                    .font(.caption)
+                    .foregroundColor(.blue)
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding()
     }
@@ -666,6 +680,116 @@ struct PublicSharingDemo: View {
             }
             .padding(.horizontal, 40)
             .padding(.bottom)
+        }
+    }
+}
+
+// MARK: - PremiumOverviewStep
+struct PremiumOverviewStep: View {
+    @State private var showFeatures = false
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            Text("Simple & Affordable")
+                .font(.largeTitle)
+                .bold()
+            
+            VStack(spacing: 24) {
+                // Free tier
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Free")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text("$0")
+                            .font(.title3)
+                    }
+                    .padding(.horizontal)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        OnboardingFeatureRow(text: "10 notes", included: true)
+                        OnboardingFeatureRow(text: "Default categories", included: true)
+                        OnboardingFeatureRow(text: "Rich text & images", included: true)
+                        OnboardingFeatureRow(text: "Location tagging", included: true)
+                        OnboardingFeatureRow(text: "Public sharing", included: true)
+                        OnboardingFeatureRow(text: "Cloud sync", included: false)
+                        OnboardingFeatureRow(text: "Custom categories", included: false)
+                        OnboardingFeatureRow(text: "Unlimited notes", included: false)
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(12)
+                
+                // Premium tier
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Text("Premium")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text("$5/year")
+                            .font(.title3)
+                            .foregroundColor(.blue)
+                    }
+                    .padding(.horizontal)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        OnboardingFeatureRow(text: "Everything in Free", included: true)
+                        OnboardingFeatureRow(text: "Unlimited notes", included: true)
+                        OnboardingFeatureRow(text: "Custom categories", included: true)
+                        OnboardingFeatureRow(text: "Cloud sync", included: true)
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
+                .background(
+                    LinearGradient(
+                        colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.blue, lineWidth: 2)
+                )
+                .cornerRadius(12)
+                .scaleEffect(showFeatures ? 1.02 : 1.0)
+                .animation(.spring(response: 0.5), value: showFeatures)
+            }
+            .padding(.horizontal)
+            
+            Text("Start free and upgrade anytime")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .onAppear {
+            withAnimation(.easeIn(duration: 0.5).delay(0.3)) {
+                showFeatures = true
+            }
+        }
+    }
+}
+
+struct OnboardingFeatureRow: View {
+    let text: String
+    let included: Bool
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: included ? "checkmark.circle.fill" : "xmark.circle")
+                .foregroundColor(included ? .green : .gray)
+                .font(.system(size: 16))
+            
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(included ? .primary : .secondary)
+            
+            Spacer()
         }
     }
 }
