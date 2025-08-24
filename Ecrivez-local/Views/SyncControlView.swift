@@ -18,6 +18,7 @@ struct SyncControlView: View {
     ) var categories: FetchedResults<Category>
     
     @State private var showingDatabaseResetAlert = false
+    @State private var showingConsolidateAlert = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -46,6 +47,35 @@ struct SyncControlView: View {
             )
             
             if syncManager.syncEnabled {
+                // Sync Options
+                VStack(alignment: .leading, spacing: 12) {
+                    // Consolidate duplicates button
+                    Button(action: {
+                        showingConsolidateAlert = true
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.triangle.merge")
+                                .foregroundColor(.orange)
+                            VStack(alignment: .leading) {
+                                Text("Consolidate Duplicates")
+                                    .font(.subheadline)
+                                Text("Remove duplicate categories from cloud")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray6))
+                )
+                
                 // Sync Status
                 VStack(alignment: .leading, spacing: 12) {
                     // Status indicator
@@ -142,6 +172,22 @@ struct SyncControlView: View {
             }
         } message: {
             Text("This will delete and recreate your local database. All local data will be lost, but any data you've synced to the server can be downloaded again. Continue?")
+        }
+        .alert("Consolidate Duplicate Categories", isPresented: $showingConsolidateAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Consolidate", role: .destructive) {
+                Task {
+                    do {
+                        try await syncManager.consolidateDuplicateCategoriesInSupabase()
+                        // Trigger a sync after consolidation
+                        await syncManager.performAutoSync(context: context)
+                    } catch {
+                        print("Failed to consolidate duplicates: \(error)")
+                    }
+                }
+            }
+        } message: {
+            Text("This will merge duplicate categories in the cloud that have the same name, color, and symbol. Notes will be reassigned to the primary category. Continue?")
         }
     }
     

@@ -196,7 +196,12 @@ class CoreDataManager: ObservableObject {
     func populateDefaultCategories(context: NSManagedObjectContext) {
         for (index, categoryData) in StyleManager.defaultCategories.enumerated() {
             let category = Category(context: context)
-            category.id = UUID() // Make sure each category has a unique UUID
+            // Use deterministic UUID for default categories
+            category.id = CategoryUUIDGenerator.generateDeterministicUUID(
+                name: categoryData.name,
+                color: categoryData.color,
+                symbol: categoryData.symbol
+            )
             category.symbol = categoryData.symbol
             category.colorString = categoryData.color
             category.name = categoryData.name

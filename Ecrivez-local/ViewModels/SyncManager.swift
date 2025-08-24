@@ -439,14 +439,41 @@ class SyncManager: ObservableObject {
         }
         
         // Filter out categories without UUIDs
-        let validCategories = categories.filter { $0.id != nil }
+        var validCategories = categories.filter { $0.id != nil }
         if validCategories.count < categories.count {
             print("⚠️ Skipping \(categories.count - validCategories.count) categories due to missing UUIDs")
         }
         
+        // Always only sync categories with notes
+        validCategories = validCategories.filter { category in
+            let hasNotes = (category.note?.count ?? 0) > 0
+            if !hasNotes {
+                print("Skipping category '\(category.name ?? "unnamed")' - no associated notes")
+            }
+            return hasNotes
+        }
+        print("Filtered to \(validCategories.count) categories with notes")
+        
+        // Fetch existing remote categories to check for duplicates by content
+        let existingRemoteCategories = try await fetchAllRemoteCategories()
+        let userRemoteCategories = existingRemoteCategories.filter { $0.owner_id == userID }
+        
         for category in validCategories {
             do {
                 let syncedCategory = category.toSyncedCategory(ownerID: userID)
+                
+                // Check if a category with the same content already exists
+                let duplicateExists = userRemoteCategories.contains { remote in
+                    remote.name == syncedCategory.name &&
+                    remote.symbol == syncedCategory.symbol &&
+                    remote.colorString == syncedCategory.colorString
+                }
+                
+                if duplicateExists {
+                    print("⚠️ Skipping category '\(syncedCategory.name)' - duplicate content already exists in remote")
+                    continue
+                }
+                
                 print("Uploading category: \(syncedCategory.id) - \(syncedCategory.name)")
                 
                 // Print category details for debugging
@@ -860,6 +887,87 @@ class SyncManager: ObservableObject {
         } catch {
             print("Error cleaning up duplicate categories: \(error)")
             throw error
+        }
+    }
+    
+    /// Consolidates duplicate categories in Supabase based on content (name, color, symbol)
+    func consolidateDuplicateCategoriesInSupabase() async throws {
+        guard let userID = try? await client.auth.user().id else {
+            throw SyncError.notAuthenticated
+        }
+        
+        print("Starting consolidation of duplicate categories in Supabase")
+        
+        // Fetch all remote categories for this user
+        let allRemoteCategories = try await fetchAllRemoteCategories()
+        let userCategories = allRemoteCategories.filter { $0.owner_id == userID }
+        
+        // Group categories by their content signature
+        var categoriesByContent: [String: [SyncedCategory]] = [:]
+        
+        for category in userCategories {
+            let contentKey = "\(category.name)|\(category.colorString)|\(category.symbol)"
+            if categoriesByContent[contentKey] == nil {
+                categoriesByContent[contentKey] = []
+            }
+            categoriesByContent[contentKey]?.append(category)
+        }
+        
+        // Process duplicates
+        var duplicatesConsolidated = 0
+        
+        for (contentKey, categories) in categoriesByContent {
+            if categories.count > 1 {
+                print("Found \(categories.count) duplicate categories with content: \(contentKey)")
+                
+                // Sort by created_at to keep the oldest one
+                let sortedCategories = categories.sorted { cat1, cat2 in
+                    (cat1.created_at ?? Date.distantPast) < (cat2.created_at ?? Date.distantPast)
+                }
+                
+                let primaryCategory = sortedCategories[0]
+                let duplicatesToRemove = Array(sortedCategories.dropFirst())
+                
+                print("Keeping category: \(primaryCategory.id), removing \(duplicatesToRemove.count) duplicates")
+                
+                // First, update all notes pointing to duplicate categories to point to the primary
+                for duplicate in duplicatesToRemove {
+                    // Fetch notes with this category
+                    let notesWithCategory: [SyncedNote] = try await client
+                        .from("synced_notes")
+                        .select()
+                        .eq("category_id", value: duplicate.id)
+                        .execute()
+                        .value
+                    
+                    print("Found \(notesWithCategory.count) notes with duplicate category \(duplicate.id)")
+                    
+                    // Update notes to use the primary category
+                    for note in notesWithCategory {
+                        try await client
+                            .from("synced_notes")
+                            .update(["category_id": primaryCategory.id])
+                            .eq("id", value: note.id)
+                            .execute()
+                    }
+                    
+                    // Now delete the duplicate category
+                    try await client
+                        .from("synced_categories")
+                        .delete()
+                        .eq("id", value: duplicate.id)
+                        .execute()
+                    
+                    duplicatesConsolidated += 1
+                    print("Deleted duplicate category: \(duplicate.id)")
+                }
+            }
+        }
+        
+        if duplicatesConsolidated > 0 {
+            print("Successfully consolidated \(duplicatesConsolidated) duplicate categories in Supabase")
+        } else {
+            print("No duplicate categories found in Supabase")
         }
     }
     
