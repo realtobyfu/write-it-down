@@ -15,10 +15,13 @@ struct NoteMetadataView: View {
     
     @State private var isDatePressed = false
     @State private var isLocationPressed = false
+    @State private var isWeatherPressed = false
+    @State private var isPhotoPressed = false
     
     var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 16) {
+        VStack(spacing: 16) {
+            // Main metadata icon bar
+            HStack(spacing: 32) {
                 // Date button
                 Button(action: {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -33,29 +36,10 @@ struct NoteMetadataView: View {
                         isDatePressed = false
                     }
                 }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: selectedDate != nil ? "calendar.badge.checkmark" : "calendar")
-                            .font(.title3)
-                            .foregroundColor(selectedDate != nil ? .blue : .gray)
-                        if let date = selectedDate {
-                            Text(date, style: .date)
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(Color.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(selectedDate != nil ? Color.blue : Color.gray.opacity(0.3), lineWidth: 2)
-                            )
-                    )
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                    .scaleEffect(isDatePressed ? 0.95 : 1.0)
+                    Image(systemName: selectedDate != nil ? "calendar.badge.checkmark" : "calendar")
+                        .font(.title2)
+                        .foregroundColor(selectedDate != nil ? .blue : .gray)
+                        .scaleEffect(isDatePressed ? 0.85 : 1.0)
                 }
                 
                 // Location button
@@ -70,50 +54,29 @@ struct NoteMetadataView: View {
                         }
                     }
                 }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: location != nil ? "location.fill" : "location")
-                            .font(.title3)
-                            .foregroundColor(location != nil ? .green : .gray)
-                        if let name = locationName {
-                            Text(name)
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .lineLimit(1)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(Color.white)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(location != nil ? Color.green : Color.gray.opacity(0.3), lineWidth: 2)
-                            )
-                    )
-                    .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
-                    .scaleEffect(isLocationPressed ? 0.95 : 1.0)
+                    Image(systemName: location != nil ? "location.fill" : "location")
+                        .font(.title2)
+                        .foregroundColor(location != nil ? .green : .gray)
+                        .scaleEffect(isLocationPressed ? 0.85 : 1.0)
                 }
                 .disabled(!premiumManager.hasAccess(to: .locationTagging))
                 
                 // Weather button
                 Button(action: {
                     if premiumManager.hasAccess(to: .weatherTagging) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                            isWeatherPressed.toggle()
+                        }
                         showingWeatherPicker = true
-                    }
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: weather.isEmpty ? "cloud" : weather)
-                        if !weather.isEmpty {
-                            Text(getWeatherDescription(weather))
-                                .font(.caption)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            isWeatherPressed = false
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(!weather.isEmpty ? Color.orange.opacity(0.2) : Color(.systemGray6))
-                    .cornerRadius(16)
+                }) {
+                    Image(systemName: getWeatherIcon())
+                        .font(.title2)
+                        .foregroundColor(getWeatherColor())
+                        .scaleEffect(isWeatherPressed ? 0.85 : 1.0)
                 }
                 .disabled(!premiumManager.hasAccess(to: .weatherTagging))
                 
@@ -134,15 +97,129 @@ struct NoteMetadataView: View {
                     }
                 } label: {
                     Image(systemName: "photo")
-                        .padding(8)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(16)
+                        .font(.title2)
+                        .foregroundColor(showingImagePicker ? .purple : .gray)
+                        .scaleEffect(isPhotoPressed ? 0.85 : 1.0)
                 }
                 .disabled(!premiumManager.hasAccess(to: .imageInsertion))
-                
-                Spacer()
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isPhotoPressed.toggle()
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isPhotoPressed = false
+                    }
+                }
             }
             .padding(.horizontal)
+            
+            // Bottom info display
+            if selectedDate != nil || location != nil {
+                HStack(spacing: 0) {
+                    // Date display (left half)
+                    HStack {
+                        if let date = selectedDate {
+                            HStack(spacing: 6) {
+                                Image(systemName: "calendar")
+                                    .font(.caption)
+                                    .foregroundColor(.blue.opacity(0.8))
+                                Text(date, style: .date)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Location display (right half)
+                    HStack {
+                        if let name = locationName {
+                            HStack(spacing: 6) {
+                                Image(systemName: "location.fill")
+                                    .font(.caption)
+                                    .foregroundColor(.green.opacity(0.8))
+                                Text(name)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
+                        }
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.horizontal)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+    }
+    
+    private func getWeatherIcon() -> String {
+        if weather.isEmpty {
+            return "cloud"
+        }
+        
+        switch weather {
+        case "Sunny":
+            return "sun.max.fill"
+        case "Partly Cloudy":
+            return "cloud.sun.fill"
+        case "Cloudy":
+            return "cloud.fill"
+        case "Rainy":
+            return "cloud.rain.fill"
+        case "Stormy":
+            return "cloud.bolt.fill"
+        case "Snowy":
+            return "cloud.snow.fill"
+        case "Windy":
+            return "wind"
+        case "Foggy":
+            return "cloud.fog.fill"
+        default:
+            // Handle SF Symbol names directly
+            if weather.contains("sun.max.fill") { return "sun.max.fill" }
+            if weather.contains("cloud.fill") { return "cloud.fill" }
+            if weather.contains("cloud.rain.fill") { return "cloud.rain.fill" }
+            if weather.contains("cloud.snow.fill") { return "cloud.snow.fill" }
+            if weather.contains("wind") { return "wind" }
+            if weather.contains("cloud.fog.fill") { return "cloud.fog.fill" }
+            return "cloud"
+        }
+    }
+    
+    private func getWeatherColor() -> Color {
+        if weather.isEmpty {
+            return .gray
+        }
+        
+        switch weather {
+        case "Sunny":
+            return .yellow
+        case "Partly Cloudy":
+            return .orange
+        case "Cloudy":
+            return .gray
+        case "Rainy":
+            return .blue
+        case "Stormy":
+            return Color(red: 0.4, green: 0.2, blue: 0.6) // Purple
+        case "Snowy":
+            return Color(red: 0.6, green: 0.8, blue: 1.0) // Light blue
+        case "Windy":
+            return .teal
+        case "Foggy":
+            return .gray.opacity(0.7)
+        default:
+            // Handle SF Symbol names directly
+            if weather.contains("sun.max.fill") { return .yellow }
+            if weather.contains("cloud.fill") { return .gray }
+            if weather.contains("cloud.rain.fill") { return .blue }
+            if weather.contains("cloud.snow.fill") { return Color(red: 0.6, green: 0.8, blue: 1.0) }
+            if weather.contains("wind") { return .teal }
+            if weather.contains("cloud.fog.fill") { return .gray.opacity(0.7) }
+            return .gray
         }
     }
     
