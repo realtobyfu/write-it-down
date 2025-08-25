@@ -121,7 +121,8 @@ class NoteRepository {
             locationLongitude: note.locationLongitude?.stringValue,
             colorString: note.category?.colorString ?? "",
             symbol: note.category?.symbol ?? "",
-            isAnonymous: note.isAnonymous
+            isAnonymous: note.isAnonymous,
+            weather: note.weather
         )
         return supaNote
     }

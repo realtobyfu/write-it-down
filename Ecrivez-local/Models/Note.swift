@@ -120,7 +120,8 @@ extension Note {
             locationLongitude: self.locationLongitude?.stringValue,
             colorString: self.category?.colorString ?? "",
             symbol: self.category?.symbol ?? "",
-            isAnonymous: self.isAnonymous
+            isAnonymous: self.isAnonymous,
+            weather: self.weather
         )
     }
 }

@@ -17,9 +17,6 @@ struct SettingsView: View {
             // Account & Sync Section
             accountSection
             
-            // Editor Preferences Section
-            editorSection
-            
             // Privacy & Security Section
             privacySection
             
@@ -129,36 +126,6 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Editor Section
-    private var editorSection: some View {
-        Section(header: Text("Editor Preferences")) {
-            NavigationLink(destination: EditorPreferencesView()) {
-                HStack {
-                    Image(systemName: "textformat")
-                    Text("Text & Formatting")
-                    Spacer()
-                    if premiumManager.currentTier == .free {
-                        PremiumBadge()
-                    }
-                }
-            }
-            .premiumGate(.richTextFormatting)
-            
-            Picker("Default Note Type", selection: $settingsManager.settings.defaultNoteType) {
-                Text("Note").tag("note")
-                Text("List").tag("list")
-                Text("Task").tag("task")
-            }
-            
-            HStack {
-                Label("Default Color", systemImage: "paintpalette")
-                Spacer()
-                Circle()
-                    .fill(Color(settingsManager.settings.defaultNoteColor))
-                    .frame(width: 24, height: 24)
-            }
-        }
-    }
     
     // MARK: - Privacy Section
     private var privacySection: some View {
@@ -190,29 +157,12 @@ struct SettingsView: View {
                     .badge(premiumManager.currentTier == .free ? Text("PRO") : nil)
             }
             .premiumGate(.darkMode)
-            
-            Picker("Theme", selection: $settingsManager.settings.appTheme) {
-                Text("System").tag("system")
-                Text("Light").tag("light")
-                Text("Dark").tag("dark")
-            }
-            .premiumGate(.customThemes)
-            
-            Picker("Note List Density", selection: $settingsManager.settings.noteListDensity) {
-                Text("Compact").tag("compact")
-                Text("Standard").tag("standard")
-                Text("Comfortable").tag("comfortable")
-            }
         }
     }
     
     // MARK: - Notifications Section
     private var notificationsSection: some View {
         Section {
-            Toggle(isOn: $settingsManager.settings.enableSyncNotifications) {
-                Label("Sync Notifications", systemImage: "arrow.triangle.2.circlepath")
-            }
-            
             Toggle(isOn: $settingsManager.settings.enableDailyReminder) {
                 Label("Daily Writing Reminder", systemImage: "bell")
             }
@@ -222,11 +172,6 @@ struct SettingsView: View {
                           selection: $settingsManager.settings.dailyReminderTime,
                           displayedComponents: .hourAndMinute)
             }
-            
-            Toggle(isOn: $settingsManager.settings.enableSocialNotifications) {
-                Label("Social Interactions", systemImage: "heart")
-            }
-            .premiumGate(.socialFeatures)
         } header: {
             Text("Notifications")
         }
@@ -270,22 +215,7 @@ struct SettingsView: View {
     
     // MARK: - Support Section
     private var supportSection: some View {
-        Section(header: Text("Support & Feedback")) {
-            NavigationLink(destination: SuggestFeatureView()) {
-                Label("Suggest a Feature", systemImage: "lightbulb")
-            }
-            
-            NavigationLink(destination: DonationView()) {
-                HStack {
-                    Image(systemName: "heart.fill")
-                        .foregroundColor(.red)
-                    Text("Support the Developer")
-                    Spacer()
-                    Image(systemName: "dollarsign.circle.fill")
-                        .foregroundColor(.yellow)
-                }
-            }
-            
+        Section(header: Text("Settings")) {
             Button(action: {
                 // Reset all settings
                 settingsManager.reset()

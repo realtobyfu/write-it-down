@@ -20,6 +20,7 @@ struct SupabaseNote: Codable, Identifiable {
     var locationLongitude: String?
     var locationLatitude: String?
     var isAnonymous: Bool?
+    var weather: String?
     let colorString: String
     let symbol: String
     var archived_content: String?
@@ -33,7 +34,7 @@ struct SupabaseNote: Codable, Identifiable {
         case id, owner_id, category_id
         case content, rtf_content, archived_content
         case date, locationName, locationLocality, locationLongitude, locationLatitude
-        case isAnonymous
+        case isAnonymous, weather
         case colorString, symbol
         case profiles
     }
@@ -62,6 +63,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.locationLongitude = try container.decodeIfPresent(String.self, forKey: .locationLongitude)
         self.locationLatitude = try container.decodeIfPresent(String.self, forKey: .locationLatitude)
         self.isAnonymous = try container.decodeIfPresent(Bool.self, forKey: .isAnonymous)
+        self.weather = try container.decodeIfPresent(String.self, forKey: .weather)
         
         self.colorString = try container.decode(String.self, forKey: .colorString)
         self.symbol = try container.decode(String.self, forKey: .symbol)
@@ -83,7 +85,8 @@ struct SupabaseNote: Codable, Identifiable {
          locationLongitude: String?,
          colorString: String,
          symbol: String,
-         isAnonymous: Bool?
+         isAnonymous: Bool?,
+         weather: String?
     ) {
         self.id = id
         self.owner_id = owner_id
@@ -97,6 +100,7 @@ struct SupabaseNote: Codable, Identifiable {
         self.locationLongitude = locationLongitude
         self.locationLatitude = locationLatitude
         self.isAnonymous = isAnonymous
+        self.weather = weather
         self.colorString = colorString
         self.symbol = symbol
         self.profiles = nil

@@ -44,7 +44,7 @@ class NoteEditorViewModel: ObservableObject {
             self.locationName   = note.locationName
             self.locationLocality = note.locationLocality // Initialize locality from note
             self.category       = note.category!   // Force unwrap or handle fallback
-            self.weather        = "" // or note.weather if you store it in Core Data
+            self.weather        = note.weather ?? ""
         case .create(let cat):
             // New note scenario
             self.existingNote = nil
@@ -70,6 +70,7 @@ class NoteEditorViewModel: ObservableObject {
         noteToSave.locationName = locationName
         noteToSave.locationLocality = locationLocality // Save locality field
         noteToSave.location = location.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+        noteToSave.weather = weather
         
         noteToSave.lastModified = Date()
 
