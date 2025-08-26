@@ -18,13 +18,7 @@ struct ProgressBar: View {
                         .fill(Color.gray.opacity(0.2))
                         .frame(height: 8)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.blue, Color.purple],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .fill(Color(red: 0.0, green: 0.48, blue: 1.0))
                         .frame(width: geometry.size.width * progress, height: 8)
                         .animation(.spring(response: 0.5, dampingFraction: 0.8), value: progress)
                 }
@@ -33,7 +27,7 @@ struct ProgressBar: View {
             HStack {
                 ForEach(0..<totalSteps, id: \.self) { step in
                     Circle()
-                        .fill(step <= currentStep ? Color.blue : Color.gray.opacity(0.3))
+                        .fill(step <= currentStep ? Color(red: 0.0, green: 0.48, blue: 1.0) : Color.gray.opacity(0.3))
                         .frame(width: 8, height: 8)
                         .scaleEffect(step == currentStep ? 1.3 : 1.0)
                         .animation(.spring(response: 0.3), value: currentStep)
@@ -52,72 +46,102 @@ struct WelcomeStep: View {
     @State private var showText = false
     
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 40) {
             Spacer()
+            
+            // Clean app icon
             ZStack {
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 150, height: 150)
-                    .scaleEffect(animateIcon ? 1.1 : 0.9)
+                    .fill(Color(.systemGray6))
+                    .frame(width: 120, height: 120)
+                    .scaleEffect(animateIcon ? 1.05 : 0.95)
                     .animation(
                         .easeInOut(duration: 2)
                         .repeatForever(autoreverses: true),
                         value: animateIcon
                     )
                 Image(systemName: "square.and.pencil")
-                    .font(.system(size: 60))
-                    .foregroundColor(.blue)
-                    .rotationEffect(.degrees(animateIcon ? 5 : -5))
+                    .font(.system(size: 50))
+                    .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0)) // iOS Blue
+                    .rotationEffect(.degrees(animateIcon ? 3 : -3))
                     .animation(
-                        .easeInOut(duration: 1.5)
+                        .easeInOut(duration: 1.8)
                         .repeatForever(autoreverses: true),
                         value: animateIcon
                     )
             }
-            VStack(spacing: 16) {
-                Text("Welcome to Write-It-Down")
+            
+            VStack(spacing: 20) {
+                Text("Write-It-Down")
                     .font(.largeTitle)
-                    .bold()
-                    .multilineTextAlignment(.center)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                     .opacity(showText ? 1 : 0)
                     .animation(.easeIn(duration: 0.8).delay(0.3), value: showText)
-                Text("Your thoughts, beautifully captured")
+                
+                Text("Simple. Organized. Yours.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .opacity(showText ? 1 : 0)
                     .animation(.easeIn(duration: 0.8).delay(0.5), value: showText)
-                VStack(spacing: 8) {
-                    Text("Let's take a quick tour of what you can do")
+                
+                VStack(spacing: 12) {
+                    Text("Capture your thoughts with beautiful notes")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                     
-                    Text("Free: 10 notes • Premium: $5/year for unlimited")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                        .multilineTextAlignment(.center)
+                    HStack(spacing: 4) {
+                        Text("Start free with 10 notes")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Text("•")
+                            .foregroundColor(.secondary)
+                        Text("Upgrade for unlimited")
+                            .font(.subheadline)
+                            .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    }
                 }
-                .padding(.top)
                 .opacity(showText ? 1 : 0)
                 .animation(.easeIn(duration: 0.8).delay(0.7), value: showText)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, 32)
+            
             Spacer()
-            HStack(spacing: 30) {
-                FeatureIcon(icon: "pencil.and.outline", label: "Rich Text")
-                FeatureIcon(icon: "folder.fill", label: "Categories")
-                FeatureIcon(icon: "location.fill", label: "Location")
-                FeatureIcon(icon: "globe", label: "Share")
+            
+            // Core value props
+            HStack(spacing: 40) {
+                VStack(spacing: 8) {
+                    Image(systemName: "folder.fill")
+                        .font(.title2)
+                        .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    Text("Organize")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                VStack(spacing: 8) {
+                    Image(systemName: "pencil")
+                        .font(.title2)
+                        .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    Text("Create")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                VStack(spacing: 8) {
+                    Image(systemName: "icloud.fill")
+                        .font(.title2)
+                        .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    Text("Sync")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
             }
             .opacity(showText ? 1 : 0)
             .animation(.easeIn(duration: 0.8).delay(1.0), value: showText)
+            
             Spacer()
         }
         .onAppear {
@@ -143,97 +167,117 @@ struct FeatureIcon: View {
     }
 }
 
-// MARK: - InteractiveCategoryDemo
-struct InteractiveCategoryDemo: View {
-    @State private var selectedCategory: String = "Ideas"
-    @State private var showCategories = false
+// MARK: - CoreFeaturesDemo
+struct CoreFeaturesDemo: View {
+    @State private var selectedNote = 0
+    @State private var showDemo = false
+    
+    // Use actual app categories from StyleManager
+    private let demoCategories = Array(StyleManager.defaultCategories.prefix(4))
+    
+    private var demoNotes: [(String, String, Color, String)] {
+        let noteTexts = [
+            "Reading my favorite novel...",
+            "New recipe to try tonight...",
+            "Beautiful sunny morning...",
+            "Watched an amazing film..."
+        ]
+        
+        return demoCategories.enumerated().map { index, category in
+            (
+                category.name,
+                category.symbol,
+                StyleManager.color(from: category.color),
+                noteTexts[index]
+            )
+        }
+    }
     
     var body: some View {
-        VStack(spacing: 30) {
-            Text("Organize Your Thoughts")
-                .font(.largeTitle)
-                .bold()
-            VStack {
+        VStack(spacing: 32) {
+            VStack(spacing: 16) {
+                Text("Your Notes, Organized")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Start with built-in categories")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            
+            VStack(spacing: 16) {
+                // Demo note cards
+                ForEach(0..<demoNotes.count, id: \.self) { index in
+                    let note = demoNotes[index]
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(note.2)
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                Image(systemName: note.1)
+                                    .font(.system(size: 20))
+                                    .foregroundColor(.white)
+                            )
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(note.0)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text(note.3)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                        
+                        Spacer()
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color(.tertiaryLabel))
+                    }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(.systemGray5), lineWidth: 1)
+                    )
+                    .cornerRadius(12)
+                    .scaleEffect(showDemo ? 1.0 : 0.9)
+                    .opacity(showDemo ? 1.0 : 0.0)
+                    .animation(.spring(response: 0.6).delay(Double(index) * 0.1), value: showDemo)
+                }
+            }
+            .padding(.horizontal)
+            
+            VStack(spacing: 12) {
                 HStack {
-                    Circle()
-                        .fill(categoryColor(selectedCategory))
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            Image(systemName: categoryIcon(selectedCategory))
-                                .foregroundColor(.white)
-                        )
-                    Text(selectedCategory)
-                        .font(.headline)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("4 default categories included")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
                     Spacer()
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                Button("Tap to Change Category") {
-                    withAnimation {
-                        showCategories.toggle()
-                    }
-                }
-                .buttonStyle(.bordered)
-                if showCategories {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ForEach(["Ideas", "Work", "Personal", "Travel"], id: \.self) { category in
-                                Button(action: {
-                                    selectedCategory = category
-                                    showCategories = false
-                                }) {
-                                    VStack {
-                                        Circle()
-                                            .fill(categoryColor(category))
-                                            .frame(width: 60, height: 60)
-                                            .overlay(
-                                                Image(systemName: categoryIcon(category))
-                                                    .foregroundColor(.white)
-                                            )
-                                        Text(category)
-                                            .font(.caption)
-                                    }
-                                }
-                            }
-                        }
-                        .padding()
-                    }
-                    .transition(.scale.combined(with: .opacity))
-                }
-            }
-            .padding()
-            VStack(spacing: 8) {
-                Text("Use default categories or upgrade for custom ones")
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
                 
-                Text("Premium feature: Create your own categories")
-                    .font(.caption)
-                    .foregroundColor(.blue)
-                    .multilineTextAlignment(.center)
+                HStack {
+                    Image(systemName: "folder.badge.plus")
+                        .foregroundColor(Color(red: 1.0, green: 0.42, blue: 0.28))
+                    Text("Create custom categories with Premium")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
             }
+            .padding(.horizontal)
+            
+            Spacer()
         }
-        .padding()
-    }
-    
-    func categoryColor(_ category: String) -> Color {
-        switch category {
-        case "Ideas": return .blue
-        case "Work": return .green
-        case "Personal": return .purple
-        case "Travel": return .orange
-        default: return .gray
-        }
-    }
-    
-    func categoryIcon(_ category: String) -> String {
-        switch category {
-        case "Ideas": return "lightbulb.fill"
-        case "Work": return "briefcase.fill"
-        case "Personal": return "person.fill"
-        case "Travel": return "airplane"
-        default: return "folder.fill"
+        .onAppear {
+            withAnimation {
+                showDemo = true
+            }
         }
     }
 }
@@ -689,87 +733,198 @@ struct PremiumOverviewStep: View {
     @State private var showFeatures = false
     
     var body: some View {
-        VStack(spacing: 30) {
-            Text("Simple & Affordable")
-                .font(.largeTitle)
-                .bold()
+        VStack(spacing: 32) {
+            VStack(spacing: 16) {
+                Text("Choose Your Plan")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Start free, upgrade when ready")
+                    .font(.title3)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
             
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 // Free tier
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
                         Text("Free")
                             .font(.title2)
                             .fontWeight(.semibold)
+                            .foregroundColor(.primary)
                         Spacer()
                         Text("$0")
-                            .font(.title3)
+                            .font(.title2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal)
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        OnboardingFeatureRow(text: "10 notes", included: true)
-                        OnboardingFeatureRow(text: "Default categories", included: true)
-                        OnboardingFeatureRow(text: "Rich text & images", included: true)
-                        OnboardingFeatureRow(text: "Location tagging", included: true)
-                        OnboardingFeatureRow(text: "Public sharing", included: true)
-                        OnboardingFeatureRow(text: "Cloud sync", included: false)
-                        OnboardingFeatureRow(text: "Custom categories", included: false)
-                        OnboardingFeatureRow(text: "Unlimited notes", included: false)
+                    VStack(alignment: .leading, spacing: 10) {
+                        OnboardingFeatureRow(text: "10 notes limit", included: true)
+                        OnboardingFeatureRow(text: "4 default categories", included: true)
+                        OnboardingFeatureRow(text: "Basic text editing", included: true)
+                        OnboardingFeatureRow(text: "Local storage only", included: true)
                     }
-                    .padding(.horizontal)
                 }
-                .padding(.vertical)
-                .background(Color.gray.opacity(0.1))
+                .padding()
+                .background(Color(.systemGray6))
                 .cornerRadius(12)
                 
                 // Premium tier
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
-                        Text("Premium")
-                            .font(.title2)
-                            .fontWeight(.semibold)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Premium")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                            Text("Everything you need")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                         Spacer()
-                        Text("$5/year")
-                            .font(.title3)
-                            .foregroundColor(.blue)
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("$5")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                            Text("per year")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                    .padding(.horizontal)
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        OnboardingFeatureRow(text: "Everything in Free", included: true)
-                        OnboardingFeatureRow(text: "Unlimited notes", included: true)
-                        OnboardingFeatureRow(text: "Custom categories", included: true)
-                        OnboardingFeatureRow(text: "Cloud sync", included: true)
+                    VStack(alignment: .leading, spacing: 10) {
+                        OnboardingFeatureRow(text: "Unlimited notes", included: true, isPremium: true)
+                        OnboardingFeatureRow(text: "Custom categories", included: true, isPremium: true)
+                        OnboardingFeatureRow(text: "Rich text & images", included: true, isPremium: true)
+                        OnboardingFeatureRow(text: "Location & weather tags", included: true, isPremium: true)
+                        OnboardingFeatureRow(text: "Cloud sync", included: true, isPremium: true)
+                        OnboardingFeatureRow(text: "Public sharing", included: true, isPremium: true)
                     }
-                    .padding(.horizontal)
                 }
-                .padding(.vertical)
+                .padding()
                 .background(
-                    LinearGradient(
-                        colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
+                    Color(red: 0.0, green: 0.48, blue: 1.0).opacity(0.05)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.blue, lineWidth: 2)
+                        .stroke(Color(red: 0.0, green: 0.48, blue: 1.0), lineWidth: 2)
                 )
                 .cornerRadius(12)
-                .scaleEffect(showFeatures ? 1.02 : 1.0)
-                .animation(.spring(response: 0.5), value: showFeatures)
+                .scaleEffect(showFeatures ? 1.0 : 0.98)
+                .animation(.spring(response: 0.6).delay(0.2), value: showFeatures)
             }
             .padding(.horizontal)
             
-            Text("Start free and upgrade anytime")
-                .font(.subheadline)
+            Text("Try free first • Cancel anytime • No commitments")
+                .font(.footnote)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+            
+            Spacer()
         }
         .onAppear {
-            withAnimation(.easeIn(duration: 0.5).delay(0.3)) {
+            withAnimation {
                 showFeatures = true
+            }
+        }
+    }
+}
+
+// MARK: - GetStartedStep
+struct GetStartedStep: View {
+    @State private var showContent = false
+    
+    var body: some View {
+        VStack(spacing: 40) {
+            Spacer()
+            
+            VStack(spacing: 24) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 60))
+                    .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    .scaleEffect(showContent ? 1.0 : 0.8)
+                    .animation(.spring(response: 0.6).delay(0.2), value: showContent)
+                
+                VStack(spacing: 16) {
+                    Text("Ready to Start Writing?")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+                    
+                    Text("Create your first note and experience the joy of organized thoughts")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                }
+                .opacity(showContent ? 1.0 : 0.0)
+                .animation(.easeIn(duration: 0.8).delay(0.4), value: showContent)
+            }
+            .padding(.horizontal, 32)
+            
+            VStack(spacing: 20) {
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundColor(.green)
+                        Text("Your data stays private")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundColor(.green)
+                        Text("Start with 10 free notes")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundColor(.green)
+                        Text("No account required to begin")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+                .opacity(showContent ? 1.0 : 0.0)
+                .animation(.easeIn(duration: 0.8).delay(0.6), value: showContent)
+            }
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            VStack(spacing: 12) {
+                Text("Tap 'Get Started' to begin your writing journey")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                
+                Text("You can always upgrade to Premium later")
+                    .font(.caption)
+                    .foregroundColor(Color(.tertiaryLabel))
+                    .multilineTextAlignment(.center)
+            }
+            .opacity(showContent ? 1.0 : 0.0)
+            .animation(.easeIn(duration: 0.8).delay(0.8), value: showContent)
+            
+            Spacer()
+        }
+        .onAppear {
+            withAnimation {
+                showContent = true
             }
         }
     }
@@ -778,11 +933,12 @@ struct PremiumOverviewStep: View {
 struct OnboardingFeatureRow: View {
     let text: String
     let included: Bool
+    var isPremium: Bool = false
     
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: included ? "checkmark.circle.fill" : "xmark.circle")
-                .foregroundColor(included ? .green : .gray)
+                .foregroundColor(included ? (isPremium ? Color(red: 0.0, green: 0.48, blue: 1.0) : .green) : .gray)
                 .font(.system(size: 16))
             
             Text(text)

@@ -13,44 +13,44 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Clean white background
+            Color(.systemBackground)
+                .ignoresSafeArea()
 
-            VStack {
+            VStack(spacing: 0) {
                 ProgressBar(currentStep: coordinator.currentStep, totalSteps: coordinator.totalSteps)
-                    .padding()
+                    .padding(.horizontal)
+                    .padding(.top)
 
                 TabView(selection: $coordinator.currentStep) {
                     WelcomeStep()
                         .tag(0)
 
-                    InteractiveCategoryDemo()
+                    CoreFeaturesDemo()
                         .tag(1)
 
-                    RichTextEditingDemo()
-                        .tag(2)
-
-                    LocationAndMetadataDemo()
-                        .tag(3)
-
-                    PublicSharingDemo()
-                        .tag(4)
-                    
                     PremiumOverviewStep()
-                        .tag(5)
+                        .tag(2)
+                    
+                    GetStartedStep()
+                        .tag(3)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
 
-                HStack {
+                HStack(spacing: 16) {
                     if coordinator.currentStep > 0 {
                         Button("Back") {
                             coordinator.previousStep()
                         }
+                        .font(.body)
                         .foregroundColor(.secondary)
+                    } else {
+                        // Invisible spacer to keep Next button aligned
+                        Button("Back") {
+                            coordinator.previousStep()
+                        }
+                        .font(.body)
+                        .foregroundColor(.clear)
                     }
 
                     Spacer()
@@ -62,9 +62,16 @@ struct OnboardingView: View {
                             coordinator.nextStep()
                         }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                    .cornerRadius(10)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.bottom, 40)
             }
         }
     }
