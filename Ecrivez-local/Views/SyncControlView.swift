@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SyncControlView: View {
     @ObservedObject var syncManager = SyncManager.shared
+    @StateObject private var premiumManager = PremiumManager.shared
     @Environment(\.managedObjectContext) private var context
     @EnvironmentObject private var coreDataManager: CoreDataManager
     
@@ -19,9 +20,50 @@ struct SyncControlView: View {
     
     @State private var showingDatabaseResetAlert = false
     @State private var showingConsolidateAlert = false
+    @State private var showingPaywall = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Check if user has premium access
+            if !premiumManager.hasAccess(to: .cloudSync) {
+                // Premium upgrade prompt
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "crown.fill")
+                            .font(.title2)
+                            .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Premium Required")
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                            Text("Cloud sync requires premium access")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            showingPaywall = true
+                        }) {
+                            Text("Upgrade")
+                                .font(.subheadline)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemGray6))
+                )
+                .padding(.horizontal)
+            } else {
             // Enable Sync Toggle
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(isOn: $syncManager.syncEnabled) {
@@ -157,6 +199,7 @@ struct SyncControlView: View {
                         .fill(Color(.systemGray6))
                 )
             }
+            } // End premium check
         }
         .padding(.horizontal)
         .onReceive(NotificationCenter.default.publisher(for: .syncEnabledNotification)) { _ in
@@ -188,6 +231,9 @@ struct SyncControlView: View {
             }
         } message: {
             Text("This will merge duplicate categories in the cloud that have the same name, color, and symbol. Notes will be reassigned to the primary category. Continue?")
+        }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
         }
     }
     

@@ -4,35 +4,22 @@ import StoreKit
 struct PaywallView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var premiumManager = PremiumManager.shared
-    @State private var selectedPlan: PlanType = .yearly
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
     
-    enum PlanType {
-        case yearly
-    }
-    
     var body: some View {
         NavigationView {
-            ZStack {
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.1), Color.purple.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 24) {
-                        headerSection
-                        featuresSection
-                        plansSection
-                        ctaButton
-                        restoreButton
-                    }
-                    .padding()
+            ScrollView {
+                VStack(spacing: 24) {
+                    headerSection
+                    featuresSection
+                    pricingSection
+                    ctaButton
+                    restoreButton
                 }
+                .padding()
             }
+            .background(Color(.systemBackground))
             .navigationBarItems(trailing: closeButton)
             .alert("Restore Purchases", isPresented: $showRestoreAlert) {
                 Button("OK") {}
@@ -52,58 +39,69 @@ struct PaywallView: View {
     
     private var headerSection: some View {
         VStack(spacing: 16) {
-            Image(systemName: "crown.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-            
-            Text("Unlock Premium")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
-            Text("Just $5/year for unlimited access")
-                .font(.title2)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
+            VStack(spacing: 8) {
+                Text("Premium Features")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Text("Everything you need to capture and organize your thoughts")
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+            }
         }
         .padding(.top, 20)
     }
     
     private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("What's Included")
-                .font(.headline)
-                .padding(.horizontal)
+        VStack(spacing: 16) {
+            FeatureCard(
+                icon: "infinity",
+                title: "Unlimited Notes",
+                description: "Create more than 10 notes with no restrictions"
+            )
             
-            VStack(spacing: 12) {
-                FeatureItem(icon: "infinity", title: "Unlimited Notes", description: "Create more than 10 notes")
-                FeatureItem(icon: "folder.fill", title: "Custom Categories", description: "Create your own categories")
-                FeatureItem(icon: "icloud.fill", title: "Cloud Sync", description: "Access notes on all devices")
-            }
-            .padding(.horizontal)
+            FeatureCard(
+                icon: "folder.badge.plus",
+                title: "Custom Categories", 
+                description: "Create and organize your own custom categories"
+            )
+            
+            FeatureCard(
+                icon: "icloud.and.arrow.up",
+                title: "Cloud Sync",
+                description: "Automatically sync your notes across all devices"
+            )
         }
-        .padding(.vertical)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(16)
     }
     
-    private var plansSection: some View {
-        VStack(spacing: 12) {
-            PlanOption(
-                title: "Annual Premium",
-                price: premiumManager.getYearlyPrice(),
-                description: "Billed yearly",
-                isSelected: true,
-                badge: "ONLY $5/YEAR"
-            ) {
-                selectedPlan = .yearly
+    private var pricingSection: some View {
+        VStack(spacing: 16) {
+            VStack(spacing: 8) {
+                Text("Premium")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                HStack(alignment: .bottom, spacing: 4) {
+                    Text(premiumManager.getYearlyPrice())
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    
+                    Text("per year")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                
+                Text("Billed annually")
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
             }
         }
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(12)
     }
     
     private var ctaButton: some View {
@@ -129,13 +127,7 @@ struct PaywallView: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .purple],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
+                    .background(Color(red: 0.0, green: 0.48, blue: 1.0))
                     .cornerRadius(12)
             }
         }
@@ -143,7 +135,7 @@ struct PaywallView: View {
     }
     
     private var ctaButtonText: String {
-        return "Unlock Premium - $5/year"
+        return "Continue"
     }
     
     private var restoreButton: some View {
@@ -168,102 +160,47 @@ struct PaywallView: View {
         }) {
             Text("Restore Purchases")
                 .font(.footnote)
-                .foregroundColor(.blue)
+                .foregroundColor(.secondary)
         }
-        .padding(.top, 8)
+        .padding(.bottom, 10)
     }
 }
 
-struct FeatureItem: View {
+struct FeatureCard: View {
     let icon: String
     let title: String
     let description: String
     
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [.blue, .purple],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 32)
+            Image(systemName: "checkmark.circle.fill")
+                .font(.title2)
+                .foregroundColor(.green)
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
+                    .foregroundColor(.primary)
                 
                 Text(description)
-                    .font(.caption)
+                    .font(.footnote)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
             
             Spacer()
+            
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
         }
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(12)
     }
 }
 
-struct PlanOption: View {
-    let title: String
-    let price: String
-    let description: String
-    let isSelected: Bool
-    let badge: String?
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(title)
-                            .font(.headline)
-                            .foregroundColor(.primary)
-                        
-                        if let badge = badge {
-                            Text(badge)
-                                .font(.caption2)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 2)
-                                .background(Color.orange)
-                                .cornerRadius(4)
-                        }
-                    }
-                    
-                    Text(description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Text(price)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 24))
-                    .foregroundColor(isSelected ? .blue : .gray)
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: 2)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(isSelected ? Color.blue.opacity(0.05) : Color.clear)
-                    )
-            )
-        }
-    }
-}
 
 #Preview {
     PaywallView()

@@ -45,6 +45,7 @@ struct ProfileView: View {
 
     // Add state for showing authentication view
     @State private var showingAuthView = false
+    @State private var showingPaywall = false
 
     var body: some View {
         ScrollView {
@@ -114,36 +115,106 @@ struct ProfileView: View {
                 }
                 
                     // Data Sync section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Data Synchronization")
+                    VStack(alignment: .leading, spacing: 16) {
+                        Text("Cloud Sync")
                             .font(.headline)
                             .padding(.horizontal)
                         
-                    if authVM.isAuthenticated {
-                        SyncControlView()
-                            .padding(.vertical, 8)
-                    } else {
-                        VStack(alignment: .leading, spacing: 12) {
+                        if !authVM.isAuthenticated {
+                            VStack(alignment: .leading, spacing: 12) {
                                 HStack {
                                     Image(systemName: "exclamationmark.triangle")
                                         .foregroundColor(.orange)
-                            Text("Sign in to enable syncing across devices")
-                                .foregroundColor(.secondary)
+                                    Text("Sign in to enable syncing across devices")
+                                        .foregroundColor(.secondary)
                                 }
                                 .padding(.horizontal)
-                            
+                                
                                 Button(action: {
-                                    // Present the authentication view
                                     showingAuthView = true
                                 }) {
                                     Label("Sign In", systemImage: "person.fill.badge.plus")
                                         .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(.borderedProminent)
+                                }
+                                .buttonStyle(.borderedProminent)
                                 .padding(.horizontal)
+                            }
+                            .padding(.vertical, 8)
+                        } else if premiumManager.hasAccess(to: .cloudSync) {
+                            SyncControlView()
+                                .padding(.vertical, 8)
+                        } else {
+                            // Premium upgrade section for sync
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "crown.fill")
+                                        .font(.title2)
+                                        .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Cloud Sync")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.primary)
+                                        
+                                        Text("Sync your notes across all devices")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "lock.fill")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(Color(.secondarySystemBackground))
+                                .cornerRadius(12)
+                                
+                                VStack(spacing: 12) {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text("Automatic backup to cloud")
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                    }
+                                    
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text("Access notes on all devices")
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                    }
+                                    
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(.green)
+                                        Text("Never lose your notes")
+                                            .font(.subheadline)
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                    }
+                                }
+                                
+                                Button(action: {
+                                    showingPaywall = true
+                                }) {
+                                    Text("Upgrade to Premium")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .frame(maxWidth: .infinity)
+                                        .padding()
+                                        .background(Color(red: 0.0, green: 0.48, blue: 1.0))
+                                        .cornerRadius(12)
+                                }
+                            }
+                            .padding()
                         }
-                        .padding(.vertical, 8)
-                    }
                 }
                     .padding(.vertical, 8)
                     .background(
@@ -234,6 +305,9 @@ struct ProfileView: View {
         // Present authentication sheet when showingAuthView is true
         .sheet(isPresented: $showingAuthView) {
             AuthenticationView(authVM: authVM)
+        }
+        .sheet(isPresented: $showingPaywall) {
+            PaywallView()
         }
     }
     
