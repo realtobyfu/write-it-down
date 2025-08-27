@@ -4,7 +4,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
-    @StateObject private var settingsManager = UserSettingsManager.shared
+    // @StateObject private var settingsManager = UserSettingsManager.shared
     @StateObject private var premiumManager = PremiumManager.shared
     @StateObject private var authViewModel = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -24,8 +24,8 @@ struct SettingsView: View {
             // Appearance Section
             appearanceSection
             
-            // Notifications Section
-            notificationsSection
+            // Notifications Section (Temporarily Disabled)
+            // notificationsSection
             
             // Categories & Organization
             organizationSection
@@ -143,10 +143,10 @@ struct SettingsView: View {
             }
             .premiumGate(.publicNoteSharing)
             
-            Toggle(isOn: $settingsManager.settings.enableLocationServices) {
-                Label("Location Services", systemImage: "location")
-            }
-            .premiumGate(.locationTagging)
+            // Toggle(isOn: $settingsManager.settings.enableLocationServices) {
+            //     Label("Location Services", systemImage: "location")
+            // }
+            // .premiumGate(.locationTagging)
         }
     }
     
@@ -161,7 +161,8 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Notifications Section
+    // MARK: - Notifications Section (Temporarily Disabled)
+    /*
     /// **Enhanced Notifications UI**: Rich preference controls with smart defaults
     /// **Design Philosophy**: Progressive disclosure - show advanced options only when needed
     /// **UX Pattern**: Primary toggle first, then conditional sub-settings for enabled features
@@ -269,6 +270,7 @@ struct SettingsView: View {
             }
         }
     }
+    */
     
     // MARK: - Organization Section
     private var organizationSection: some View {
@@ -309,13 +311,13 @@ struct SettingsView: View {
     // MARK: - Support Section
     private var supportSection: some View {
         Section(header: Text("Settings")) {
-            Button(action: {
-                // Reset all settings
-                settingsManager.reset()
-            }) {
-                Label("Reset All Settings", systemImage: "arrow.counterclockwise")
-                    .foregroundColor(.red)
-            }
+            // Button(action: {
+            //     // Reset all settings
+            //     settingsManager.reset()
+            // }) {
+            //     Label("Reset All Settings", systemImage: "arrow.counterclockwise")
+            //         .foregroundColor(.red)
+            // }
         }
     }
     

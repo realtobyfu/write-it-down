@@ -19,8 +19,10 @@ struct UserSettings: Codable {
     var dataRetentionDays: Int = 0 // 0 = forever
     
     // Notifications
-    var enableDailyReminder: Bool = false
-    var dailyReminderTime: Date = Calendar.current.date(from: DateComponents(hour: 9, minute: 0)) ?? Date()
+    var enableDailyReminder: Bool = true
+    var dailyReminderTime: Date = Calendar.current.date(from: DateComponents(hour: 19, minute: 0)) ?? Date()
+    var preferredMessageStyle: String = "auto" // "auto", "reflective", "inspirational", "casual", "achievement"
+    var enableSmartNotifications: Bool = true
     
     // List of available colors (still used for map pins)
     static let availableColors = ["blue", "green", "yellow", "red", "purple", "orange", "pink", "cyan", "indigo"]

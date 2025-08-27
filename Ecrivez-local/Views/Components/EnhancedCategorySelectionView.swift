@@ -33,8 +33,8 @@ struct CategoryChip: View {
             HStack(spacing: 4) {
                 Image(systemName: category.symbol ?? "folder")
                     .font(.caption)
-                Text(category.name ?? "Untitled")
-                    .font(.caption)
+//                Text(category.name ?? "Untitled")
+//                    .font(.caption)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
