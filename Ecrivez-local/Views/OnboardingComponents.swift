@@ -786,7 +786,7 @@ struct PremiumOverviewStep: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("$5")
+                            Text("$11.99")
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .foregroundColor(Color(red: 0.0, green: 0.48, blue: 1.0))

@@ -288,11 +288,7 @@ struct SettingsView: View {
                 }
             }
             
-            NavigationLink(destination: Text("Map Pin Customization Coming Soon")
-                .font(.title3)
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            ) {
+            NavigationLink(destination: MapPinCustomizationView()) {
                 HStack {
                     Image(systemName: "map")
                     Text("Map Pin Customization")

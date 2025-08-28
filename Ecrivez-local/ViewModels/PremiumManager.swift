@@ -106,7 +106,8 @@ class PremiumManager: ObservableObject {
     private var purchaseTask: Task<Void, Error>?
     private var updateListenerTask: Task<Void, Error>?
     
-    // Product IDs (simplified to yearly only)
+    // Product IDs
+    private let monthlySubscriptionID = "com.tobiasfu.write-it-down.premium.monthly"
     private let yearlySubscriptionID = "com.tobiasfu.write-it-down.premium.yearly"
     
     // Free tier limits
@@ -236,7 +237,7 @@ class PremiumManager: ObservableObject {
     @MainActor
     private func loadProducts() async {
         do {
-            let productIDs = [yearlySubscriptionID]
+            let productIDs = [monthlySubscriptionID, yearlySubscriptionID]
             
             products = try await Product.products(for: productIDs)
         } catch {
@@ -254,7 +255,7 @@ class PremiumManager: ObservableObject {
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result {
                 switch transaction.productID {
-                case yearlySubscriptionID:
+                case monthlySubscriptionID, yearlySubscriptionID:
                     if let expiryDate = transaction.expirationDate, expiryDate > Date() {
                         hasActiveSubscription = true
                         if latestExpiryDate == nil || expiryDate > latestExpiryDate! {
@@ -298,6 +299,10 @@ class PremiumManager: ObservableObject {
     // MARK: - Purchase Methods
     
     @MainActor
+    func purchaseMonthlySubscription() async {
+        await purchase(productID: monthlySubscriptionID)
+    }
+    
     func purchaseYearlySubscription() async {
         await purchase(productID: yearlySubscriptionID)
     }
@@ -364,9 +369,16 @@ class PremiumManager: ObservableObject {
     
     // MARK: - Pricing Info
     
+    func getMonthlyPrice() -> String {
+        guard let product = products.first(where: { $0.id == monthlySubscriptionID }) else {
+            return "$2.99"
+        }
+        return product.displayPrice
+    }
+    
     func getYearlyPrice() -> String {
         guard let product = products.first(where: { $0.id == yearlySubscriptionID }) else {
-            return "$5/year"
+            return "$11.99"
         }
         return product.displayPrice
     }

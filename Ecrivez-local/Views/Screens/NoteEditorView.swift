@@ -241,7 +241,8 @@ struct NoteEditorView: View {
                 LocationPickerView(
                     location: $viewModel.location,
                     locationName: $viewModel.locationName,
-                    locationLocality: $viewModel.locationLocality
+                    locationLocality: $viewModel.locationLocality,
+                    category: viewModel.category
                 )
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)

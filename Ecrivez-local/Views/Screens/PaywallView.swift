@@ -6,6 +6,11 @@ struct PaywallView: View {
     @StateObject private var premiumManager = PremiumManager.shared
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
+    @State private var selectedSubscription: SubscriptionType = .yearly
+    
+    enum SubscriptionType {
+        case monthly, yearly
+    }
     
     var body: some View {
         NavigationView {
@@ -78,36 +83,111 @@ struct PaywallView: View {
     
     private var pricingSection: some View {
         VStack(spacing: 16) {
-            VStack(spacing: 8) {
-                Text("Premium")
-                    .font(.headline)
-                    .foregroundColor(.primary)
+            Text("Choose Your Plan")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            VStack(spacing: 12) {
+                // Yearly Option (Recommended)
+                subscriptionOption(
+                    type: .yearly,
+                    price: premiumManager.getYearlyPrice(),
+                    period: "per year",
+                    description: "Save 67% - Best Value!",
+                    isRecommended: true
+                )
                 
-                HStack(alignment: .bottom, spacing: 4) {
-                    Text(premiumManager.getYearlyPrice())
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
-                    
-                    Text("per year")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Text("Billed annually")
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
+                // Monthly Option  
+                subscriptionOption(
+                    type: .monthly,
+                    price: premiumManager.getMonthlyPrice(),
+                    period: "per month",
+                    description: "Billed monthly",
+                    isRecommended: false
+                )
             }
         }
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
+    }
+    
+    private func subscriptionOption(type: SubscriptionType, price: String, period: String, description: String, isRecommended: Bool) -> some View {
+        Button(action: {
+            selectedSubscription = type
+        }) {
+            VStack(spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(alignment: .bottom, spacing: 4) {
+                            Text(price)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+                            
+                            Text(period)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    ZStack {
+                        Circle()
+                            .fill(selectedSubscription == type ? Color.blue : Color.clear)
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.gray, lineWidth: 2)
+                            )
+                        
+                        if selectedSubscription == type {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                
+                if isRecommended {
+                    HStack {
+                        Text("RECOMMENDED")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color.blue)
+                            .cornerRadius(4)
+                        
+                        Spacer()
+                    }
+                }
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(selectedSubscription == type ? Color.blue.opacity(0.1) : Color(.secondarySystemBackground))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(selectedSubscription == type ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private var ctaButton: some View {
         Button(action: {
             Task {
-                await premiumManager.purchaseYearlySubscription()
+                switch selectedSubscription {
+                case .monthly:
+                    await premiumManager.purchaseMonthlySubscription()
+                case .yearly:
+                    await premiumManager.purchaseYearlySubscription()
+                }
                 
                 if premiumManager.purchaseError == nil {
                     dismiss()
@@ -135,7 +215,12 @@ struct PaywallView: View {
     }
     
     private var ctaButtonText: String {
-        return "Continue"
+        switch selectedSubscription {
+        case .monthly:
+            return "Start Monthly Subscription"
+        case .yearly:
+            return "Start Yearly Subscription"
+        }
     }
     
     private var restoreButton: some View {
