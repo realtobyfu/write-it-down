@@ -10,7 +10,6 @@ struct CategoryEditorListView: View {
     @StateObject private var premiumManager = PremiumManager.shared
     
     @State private var showingAddCategoryView = false
-    @State private var newCategory: Category? = nil
     @State private var showLimitAlert = false
     @State private var showPaywall = false
 
@@ -26,7 +25,6 @@ struct CategoryEditorListView: View {
                                 saveContext()
                             }
                         )
-                        .disabled(categories[index].isDefault) // Disable editing for default categories
                     ) {
                         HStack {
                             Circle()
@@ -41,12 +39,6 @@ struct CategoryEditorListView: View {
                                 .padding(.leading, 10)
 
                             Spacer()
-                            
-                            if categories[index].isDefault {
-                                Text("Default")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
                         }
                     }
                 }
@@ -61,8 +53,6 @@ struct CategoryEditorListView: View {
             // "+" Button
             Button(action: {
                 if premiumManager.canCreateCustomCategories() {
-                    newCategory = Category(context: context)
-                    newCategory?.id = UUID()  // Explicitly assign a UUID
                     showingAddCategoryView = true
                 } else {
                     showLimitAlert = true
@@ -81,16 +71,13 @@ struct CategoryEditorListView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .center)
             .sheet(isPresented: $showingAddCategoryView) {
-                if let newCategory = newCategory {
-                    CategoryEditorView(
-                        category: newCategory,
-                        onSave: {
-                            saveContext()
-                            self.newCategory = nil
-                            showingAddCategoryView = false
-                        }
-                    )
-                }
+                CategoryEditorView(
+                    category: nil, // Pass nil for new category
+                    onSave: {
+                        saveContext()
+                        showingAddCategoryView = false
+                    }
+                )
             }
         }
         .navigationTitle("Categories")
@@ -134,10 +121,7 @@ struct CategoryEditorListView: View {
     private func deleteCategory(at offsets: IndexSet) {
         for index in offsets {
             let categoryToDelete = categories[index]
-            // Prevent deletion of default categories
-            if !categoryToDelete.isDefault {
-                context.delete(categoryToDelete)
-            }
+            context.delete(categoryToDelete)
         }
         saveContext()
     }

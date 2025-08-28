@@ -6,16 +6,18 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct CategoryEditorView: View {
-    @ObservedObject var category: Category
+    var category: Category?
     
     @State private var name: String
     @State private var symbol: String
     @State private var colorString: String
     
-    @Environment(\.presentationMode) var presentationMode
-    var onSave: () -> Void  // No need to pass the `Category` back, we just save it
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.managedObjectContext) private var context
+    var onSave: () -> Void
 
     private let colorMapping: [String: Color] = Dictionary(
         uniqueKeysWithValues: StyleManager.availableColors.map { ($0, StyleManager.color(from: $0)) }
@@ -23,122 +25,220 @@ struct CategoryEditorView: View {
 
     private let availableSymbols = StyleManager.availableSymbols
     private let availableColors = StyleManager.availableColors
+    
+    private let colorColumns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
+    private let symbolColumns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 3)
 
-    init(category: Category, onSave: @escaping () -> Void) {
+    init(category: Category? = nil, onSave: @escaping () -> Void) {
         self.category = category
         self.onSave = onSave
-        _name = State(initialValue: category.name ?? "")
-        _symbol = State(initialValue: category.symbol ?? "")
-        _colorString = State(initialValue: category.colorString ?? "")
+        _name = State(initialValue: category?.name ?? "")
+        _symbol = State(initialValue: category?.symbol ?? "")
+        _colorString = State(initialValue: category?.colorString ?? "")
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            // Show notice for default categories
-            if category.isDefault {
-                HStack {
-                    Image(systemName: "info.circle.fill")
-                        .foregroundColor(.blue)
-                    Text("This is a default category and cannot be edited")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Live Preview Section
+                    previewSection
+                    
+                    // Name Edit Section
+                    nameSection
+                    
+                    // Icon Selection Section
+                    iconSelectionSection
+                    
+                    // Color Selection Section
+                    colorSelectionSection
                 }
                 .padding()
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+            }
+            .navigationTitle("Edit Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        saveCategory()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+    
+    // MARK: - UI Sections
+    
+    private var previewSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Preview")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                if category?.isDefault == true {
+                    Text("DEFAULT")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.blue)
+                        .cornerRadius(4)
+                }
             }
             
-            // Edit Category Name
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemGray6))
+                    .frame(height: 120)
+                
+                VStack(spacing: 12) {
+                    // Preview Category Chip
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(selectedColor)
+                                .frame(width: 40, height: 40)
+                            
+                            Image(systemName: symbol)
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        
+                        Text(name.isEmpty ? "Category Name" : name)
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .fill(Color(.systemBackground))
+                            .shadow(radius: 2)
+                    )
+                    
+                    Text("How your category will appear")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var nameSection: some View {
+        VStack(spacing: 16) {
             Text("Category Name")
                 .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
             TextField("Enter category name", text: $name)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.bottom, 10)
-                .disabled(category.isDefault)
-            
-            // Symbol selection
-            Text("Select Icon")
-                .font(.headline)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 20) {
-                    ForEach(availableSymbols, id: \.self) { symbol in
-                        Button(action: {
-                            self.symbol = symbol
-                        }) {
-                            Image(systemName: symbol)
-                                .font(.largeTitle)
-                                .foregroundColor(self.symbol == symbol ? .blue : .primary)
-                                .padding()
-                                .background(
-                                    Circle()
-                                        .stroke(self.symbol == symbol ? Color.blue : Color.clear, lineWidth: 2)
-                                )
-                        }
-                        .disabled(category.isDefault)
-                    }
-                }
-                .padding(.vertical, 10)
-            }
-
-            Divider().padding(.vertical, 10)
-
-            // Color selection
-            Text("Select Color")
-                .font(.headline)
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 20) {
-                    ForEach(availableColors, id: \.self) { colorString in
-                        Button(action: {
-                            self.colorString = colorString
-                        }) {
-                            Circle()
-                                .fill(colorMapping[colorString] ?? .black)
-                                .frame(width: 40, height: 40)
-                                .overlay(
-                                    Circle().stroke(self.colorString == colorString ? Color.blue : Color.clear, lineWidth: 3)
-                                )
-                        }
-                        .disabled(category.isDefault)
-                    }
-                }
-                .padding(.vertical, 10)
-            }
-
-            Spacer()
-            
-            // Confirm Button
-            Button(action: {
-                // Update the existing category (only if not default)
-                if !category.isDefault {
-                    category.name = self.name
-                    category.symbol = self.symbol
-                    category.colorString = self.colorString
-                }
-                                
-                onSave()
-                presentationMode.wrappedValue.dismiss()
-            }) {
-                Text("Confirm")
-                    .bold()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-            }
-
+                .textFieldStyle(.roundedBorder)
+                .font(.body)
         }
-        .padding()
-        .navigationTitle("Edit Category")
-        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private var iconSelectionSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Category Icon")
+                    .font(.headline)
+                
+                Spacer()
+            }
+            
+            LazyVGrid(columns: symbolColumns, spacing: 12) {
+                ForEach(availableSymbols, id: \.self) { symbolName in
+                    Button(action: {
+                        symbol = symbolName
+                    }) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(symbol == symbolName ? selectedColor.opacity(0.2) : Color(.systemGray5))
+                                .frame(width: 60, height: 60)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(symbol == symbolName ? selectedColor : Color.clear, lineWidth: 2)
+                                )
+                            
+                            Image(systemName: symbolName)
+                                .font(.system(size: 24, weight: .medium))
+                                .foregroundColor(symbol == symbolName ? selectedColor : .primary)
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+        }
+    }
+    
+    private var colorSelectionSection: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Category Color")
+                    .font(.headline)
+                
+                Spacer()
+            }
+            
+            LazyVGrid(columns: colorColumns, spacing: 12) {
+                ForEach(availableColors, id: \.self) { colorName in
+                    Button(action: {
+                        colorString = colorName
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(colorMapping[colorName] ?? .black)
+                                .frame(width: 50, height: 50)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.primary, lineWidth: colorString == colorName ? 3 : 0)
+                                )
+                                .shadow(radius: 2)
+                            
+                            if colorString == colorName {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Properties and Methods
+    
+    private var selectedColor: Color {
+        return colorMapping[colorString] ?? .blue
+    }
+    
+    private func saveCategory() {
+        let categoryToSave: Category
+        
+        if let existingCategory = category {
+            // Editing existing category
+            categoryToSave = existingCategory
+        } else {
+            // Creating new category
+            categoryToSave = Category(context: context)
+            categoryToSave.id = UUID()
+            // Set index for new category (put it at the end)
+            let fetchRequest: NSFetchRequest<Category> = Category.fetchRequest()
+            let existingCount = (try? context.count(for: fetchRequest)) ?? 0
+            categoryToSave.index = Int16(existingCount)
+        }
+        
+        // Apply all changes
+        categoryToSave.name = name
+        categoryToSave.symbol = symbol
+        categoryToSave.colorString = colorString
+        
+        onSave()
+        dismiss()
     }
 }
-
-
-//struct CategoryEditorView_Previews: PreviewProvider {
-//    @State static var sampleCategory = Category(symbol: "book", colorString: "green", name: "Sample Category")
-//
-//    static var previews: some View {
-//        CategoryEditorView(category: sampleCategory)
-//    }
-//}
