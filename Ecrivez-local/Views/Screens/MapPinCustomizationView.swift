@@ -143,7 +143,7 @@ struct MapPinCustomizationView: View {
         VStack(spacing: 12) {
             Button(action: {
                 settingsManager.settings.pinColor = "blue"
-                settingsManager.settings.pinIcon = "map.pin"
+                settingsManager.settings.pinIcon = "mappin"
             }) {
                 HStack {
                     Image(systemName: "arrow.counterclockwise")

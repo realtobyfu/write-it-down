@@ -10,11 +10,10 @@ import SwiftUI
 struct UserSettings: Codable {
     // Map Settings
     var pinColor: String = "blue"
-    var pinIcon: String = "map.pin"
+    var pinIcon: String = "mappin"
     
     // Privacy & Security
-    var defaultNotePrivacy: Bool = true // true = private, false = public
-    var enableAnonymousPosting: Bool = false
+    // REMOVED: defaultNotePrivacy, enableAnonymousPosting - privacy handled per-note
     var enableLocationServices: Bool = true
     var dataRetentionDays: Int = 0 // 0 = forever
     
@@ -29,7 +28,7 @@ struct UserSettings: Codable {
     
     // List of available icons (still used for map pins)
     static let availableIcons = [
-        "map.pin", "star", "flag", "heart", "leaf", "camera", "bell", "bookmark", "tag"
+        "mappin", "star", "flag", "heart", "leaf", "camera", "bell", "bookmark", "tag"
     ]
 }
 

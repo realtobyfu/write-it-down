@@ -136,6 +136,11 @@ class PremiumManager: ObservableObject {
     // MARK: - Feature Access
     
     func hasAccess(to feature: PremiumFeature) -> Bool {
+        // Location tagging is free for all users
+        if feature == .locationTagging {
+            return true
+        }
+        
         switch currentTier {
         case .free:
             return false // Premium features (unlimited notes, custom categories, sync) are locked

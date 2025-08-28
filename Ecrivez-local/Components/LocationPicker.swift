@@ -96,7 +96,7 @@ struct LocationPickerView: View {
             stateIndicatorView
         }
         .padding(.horizontal)
-        .padding(.top, 24)
+        .padding(.top, 32)
         .padding(.bottom, 16)
         .background(Color(.systemGroupedBackground))
     }
@@ -292,8 +292,8 @@ struct LocationPickerView: View {
     
     private var iPhoneLayout: some View {
         VStack(spacing: 0) {
-            // Search results list - only show if there are results AND user is actively searching AND no location is selected
-            if !searchViewModel.landmarks.isEmpty && (!searchViewModel.searchText.isEmpty || searchViewModel.searchState == .searching) && locationName == nil {
+            // Search results list - show if there are results AND user is actively searching
+            if !searchViewModel.landmarks.isEmpty && (!searchViewModel.searchText.isEmpty || searchViewModel.searchState == .searching) {
                 searchResultsList
                     .frame(maxHeight: 250)
                 
@@ -357,6 +357,7 @@ struct LocationPickerView: View {
                                     .fill(Color(.systemBackground).opacity(0.9))
                                     .shadow(radius: 5)
                             )
+                            .allowsHitTesting(false)
                         )
                 }
             }
@@ -397,7 +398,22 @@ struct LocationPickerView: View {
     }
     
     private func handleMapTap(at location: CGPoint, mapProxy: MapProxy) {
-        if let coordinate = mapProxy.convert(location, from: .local) {
+        print("🗺️ Map tapped at: \(location)")
+        print("🗺️ MapProxy: \(mapProxy)")
+        
+        // Try both .local and .global coordinate systems
+        var coordinate: CLLocationCoordinate2D?
+        
+        if let localCoordinate = mapProxy.convert(location, from: .local) {
+            coordinate = localCoordinate
+            print("🧭 Converted using .local: \(localCoordinate.latitude), \(localCoordinate.longitude)")
+        } else if let globalCoordinate = mapProxy.convert(location, from: .global) {
+            coordinate = globalCoordinate  
+            print("🧭 Converted using .global: \(globalCoordinate.latitude), \(globalCoordinate.longitude)")
+        }
+        
+        if let coordinate = coordinate {
+            print("🧭 Converted to coordinate: \(coordinate.latitude), \(coordinate.longitude)")
             // Perform reverse geocoding for the tapped location
             let geocoder = CLGeocoder()
             let clLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
@@ -405,6 +421,7 @@ struct LocationPickerView: View {
             geocoder.reverseGeocodeLocation(clLocation) { [weak searchViewModel] placemarks, error in
                 DispatchQueue.main.async {
                     if let placemark = placemarks?.first, error == nil {
+                        print("🏠 Geocoding success: \(placemark.name ?? "No name")")
                         let mkPlacemark = MKPlacemark(placemark: placemark)
                         let mapItem = MKMapItem(placemark: mkPlacemark)
                         
@@ -419,16 +436,22 @@ struct LocationPickerView: View {
                             mapItem.name = "Selected Location"
                         }
                         
+                        print("📍 Selecting location: \(mapItem.name ?? "Unknown")")
                         selectLocation(mapItem)
                     } else {
+                        print("❌ Geocoding failed: \(error?.localizedDescription ?? "Unknown error")")
                         // Fallback to coordinate-based naming
                         let placemark = MKPlacemark(coordinate: coordinate)
                         let mapItem = MKMapItem(placemark: placemark)
                         mapItem.name = String(format: "%.4f, %.4f", coordinate.latitude, coordinate.longitude)
+                        print("📍 Fallback selecting location: \(mapItem.name ?? "Unknown")")
                         selectLocation(mapItem)
                     }
                 }
             }
+        } else {
+            print("❌ Failed to convert tap location to coordinate")
+            print("❌ Location: \(location), MapProxy: \(mapProxy)")
         }
     }
 }
@@ -494,19 +517,13 @@ struct CategoryMapPin: View {
     @StateObject private var settingsManager = UserSettingsManager.shared
     
     private var pinColor: Color {
-        if let category = category {
-            return category.color
-        } else {
-            return colorFromString(settingsManager.settings.pinColor)
-        }
+        // Always use user settings first in location picker context
+        return colorFromString(settingsManager.settings.pinColor)
     }
     
     private var pinSymbol: String {
-        if let category = category, let symbol = category.symbol {
-            return symbol
-        } else {
-            return settingsManager.settings.pinIcon
-        }
+        // Always use user settings first in location picker context
+        return settingsManager.settings.pinIcon
     }
     
     private func colorFromString(_ colorName: String) -> Color {
@@ -543,7 +560,7 @@ struct CategoryMapPin: View {
             .scaleEffect(isSelected ? 1.2 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: isSelected)
             
-            if let title = title {
+            if let title = title {  
                 Text(title)
                     .font(.caption2)
                     .fontWeight(.medium)
