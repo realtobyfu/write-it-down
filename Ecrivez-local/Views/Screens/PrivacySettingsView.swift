@@ -9,8 +9,8 @@ struct PrivacySettingsView: View {
     
     var body: some View {
         Form {
-            // Note Privacy Section
-            notePrivacySection
+            // Note Privacy Section - REMOVED: Privacy is handled per-note, not globally
+            // notePrivacySection
             
             // Location Services Section
             locationSection
@@ -18,8 +18,8 @@ struct PrivacySettingsView: View {
             // Data Management Section
             dataManagementSection
             
-            // Social Privacy Section
-            socialPrivacySection
+            // Social Privacy Section - REMOVED: Social features not implemented
+            // socialPrivacySection
         }
         .navigationTitle("Privacy & Security")
         .navigationBarTitleDisplayMode(.inline)
@@ -35,6 +35,7 @@ struct PrivacySettingsView: View {
         }
         .alert("Delete All Data", isPresented: $showDataDeletionAlert) {
             Button("Delete", role: .destructive) {
+                // TODO: Implement data deletion functionality
                 // Implementation would go here
             }
             Button("Cancel", role: .cancel) {}
@@ -43,6 +44,8 @@ struct PrivacySettingsView: View {
         }
     }
     
+    // REMOVED: Privacy is handled per-note in the editor, not as global defaults
+    /*
     private var notePrivacySection: some View {
         Section(header: Text("Note Privacy"), footer: Text("Choose whether new notes are public or private by default")) {
             Picker("Default Note Privacy", selection: $settingsManager.settings.defaultNotePrivacy) {
@@ -54,6 +57,7 @@ struct PrivacySettingsView: View {
             Toggle("Enable Anonymous Posting", isOn: $settingsManager.settings.enableAnonymousPosting)
         }
     }
+    */
     
     private var locationSection: some View {
         Section(header: Text("Location Services"), footer: Text("Location data is used to tag notes and never shared without your permission")) {
@@ -92,6 +96,8 @@ struct PrivacySettingsView: View {
                 Text("1 year").tag(365)
             }
             
+            // TODO: Implement data export functionality
+            /*
             Button(action: {
                 // Export all data
             }) {
@@ -100,6 +106,7 @@ struct PrivacySettingsView: View {
                     Text("Export All Data")
                 }
             }
+            */
             // Export is available to all users
             
             Button(action: {
@@ -114,6 +121,8 @@ struct PrivacySettingsView: View {
         }
     }
     
+    // REMOVED: Social features (comments, likes) are not implemented yet
+    /*
     private var socialPrivacySection: some View {
         Section(header: Text("Social Features"), footer: Text("Control who can interact with your public notes")) {
             Toggle("Allow Comments on Public Notes", isOn: .constant(true))
@@ -124,6 +133,7 @@ struct PrivacySettingsView: View {
                 .disabled(!settingsManager.settings.enableAnonymousPosting)
         }
     }
+    */
     
     private func checkLocationPermission() {
         let locationManager = CLLocationManager()

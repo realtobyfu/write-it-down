@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3E0203B72E6090540094DECE /* MapPinCustomizationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E0203B62E6090540094DECE /* MapPinCustomizationView.swift */; };
 		3E252DA62CEBAB390053506C /* screenshot.png in Resources */ = {isa = PBXBuildFile; fileRef = 3E252DA52CEBAB390053506C /* screenshot.png */; };
 		3E730C2F2D15441200FCD000 /* RichTextKit in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C2E2D15441200FCD000 /* RichTextKit */; };
 		3E730C322D15471D00FCD000 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 3E730C312D15471D00FCD000 /* Auth */; };
@@ -111,6 +112,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3E0203B62E6090540094DECE /* MapPinCustomizationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPinCustomizationView.swift; sourceTree = "<group>"; };
 		3E252DA52CEBAB390053506C /* screenshot.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = screenshot.png; sourceTree = "<group>"; };
 		3E252DA72CEBAC160053506C /* screenshot-1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "screenshot-1.png"; sourceTree = "<group>"; };
 		3E7B743E2CC5467800569AE7 /* Model.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Model.xcdatamodel; sourceTree = "<group>"; };
@@ -360,6 +362,7 @@
 		3ED0E4E22E5E3F6E00D2965E /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				3E0203B62E6090540094DECE /* MapPinCustomizationView.swift */,
 				3ED0E4CD2E5E3F6E00D2965E /* Feed */,
 				3ED0E4D22E5E3F6E00D2965E /* Registration */,
 				3ED0E4D32E5E3F6E00D2965E /* CategoryEditorListView.swift */,
@@ -555,6 +558,7 @@
 				3ED0E5032E5E3F6E00D2965E /* NotificationManager.swift in Sources */,
 				3ED0E5042E5E3F6E00D2965E /* DateBar.swift in Sources */,
 				3ED0E5052E5E3F6E00D2965E /* UserSettings.swift in Sources */,
+				3E0203B72E6090540094DECE /* MapPinCustomizationView.swift in Sources */,
 				3ED0E5062E5E3F6E00D2965E /* LocationView.swift in Sources */,
 				3ED0E5072E5E3F6E00D2965E /* PremiumManager.swift in Sources */,
 				3ED0E5082E5E3F6E00D2965E /* Profile.swift in Sources */,

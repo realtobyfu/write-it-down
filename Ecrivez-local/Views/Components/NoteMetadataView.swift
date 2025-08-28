@@ -44,14 +44,12 @@ struct NoteMetadataView: View {
                 
                 // Location button
                 Button(action: {
-                    if premiumManager.hasAccess(to: .locationTagging) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            isLocationPressed.toggle()
-                        }
-                        showingLocationPicker = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            isLocationPressed = false
-                        }
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        isLocationPressed.toggle()
+                    }
+                    showingLocationPicker = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        isLocationPressed = false
                     }
                 }) {
                     Image(systemName: location != nil ? "location.fill" : "location")
@@ -59,7 +57,6 @@ struct NoteMetadataView: View {
                         .foregroundColor(location != nil ? Color(red: 1.0, green: 0.42, blue: 0.28) : .gray)
                         .scaleEffect(isLocationPressed ? 0.85 : 1.0)
                 }
-                .disabled(!premiumManager.hasAccess(to: .locationTagging))
                 
                 // Weather button
                 Button(action: {
@@ -115,7 +112,7 @@ struct NoteMetadataView: View {
             
             // Bottom info display
             if selectedDate != nil || location != nil {
-                HStack(spacing: 20) {
+                HStack(spacing: 12) {
                     // Date display
                     if let date = selectedDate {
                         HStack(spacing: 6) {
@@ -131,14 +128,13 @@ struct NoteMetadataView: View {
                         .padding(.vertical, 6)
                         .background(Color(.systemGray6).opacity(0.8))
                         .cornerRadius(8)
+                        .frame(maxWidth: .infinity)
                     }
                     
                     // Location display
                     if let name = locationName {
                         Button(action: {
-                            if premiumManager.hasAccess(to: .locationTagging) {
-                                showingLocationPicker = true
-                            }
+                            showingLocationPicker = true
                         }) {
                             HStack(spacing: 6) {
                                 Image(systemName: "location.fill")
@@ -156,10 +152,8 @@ struct NoteMetadataView: View {
                             .cornerRadius(8)
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .disabled(!premiumManager.hasAccess(to: .locationTagging))
+                        .frame(maxWidth: .infinity)
                     }
-                    
-                    Spacer()
                 }
                 .padding(.horizontal)
                 .transition(.move(edge: .top).combined(with: .opacity))

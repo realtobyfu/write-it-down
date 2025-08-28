@@ -17,12 +17,12 @@ struct AuthenticationView: View {
     var body: some View {
         VStack(spacing: 18) {
             
-            Text("Create an Account / Log-In")
+            Text("New Account / Log-In")
                 .font(.title2)
                 .bold()
                 .padding(.top, 18)
             
-            Text("for auto-sync, social functionalties, and more")
+            Text("for sync, share, and more")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.horizontal, 4)
