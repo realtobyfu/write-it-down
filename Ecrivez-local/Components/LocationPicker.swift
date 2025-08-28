@@ -22,6 +22,7 @@ struct LocationPickerView: View {
     @Binding var location: CLLocationCoordinate2D?
     @Binding var locationName: String?
     @Binding var locationLocality: String?
+    let category: Category?
 
     @Environment(\.dismiss) private var dismiss
     @StateObject private var searchViewModel = LocationSearchViewModel()
@@ -320,52 +321,44 @@ struct LocationPickerView: View {
     private var mapView: some View {
         Group {
             if let annotation = selectedAnnotation {
-                Map(coordinateRegion: $searchViewModel.region, annotationItems: [annotation]) { annotation in
-                    MapAnnotation(coordinate: annotation.coordinate) {
-                        VStack(spacing: 4) {
-                            Image(systemName: "mappin.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.red)
-                                .background(
-                                    Circle()
-                                        .fill(Color.white)
-                                        .frame(width: 32, height: 32)
-                                )
-                                .shadow(radius: 3)
-                            
-                            if let title = annotation.title {
-                                Text(title)
-                                    .font(.caption2)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color.black.opacity(0.7))
-                                    )
-                                    .foregroundColor(.white)
-                            }
+                MapReader { mapProxy in
+                    Map(coordinateRegion: $searchViewModel.region, annotationItems: [annotation]) { annotation in
+                        MapAnnotation(coordinate: annotation.coordinate) {
+                            CategoryMapPin(
+                                category: category,
+                                title: annotation.title,
+                                isSelected: true
+                            )
                         }
+                    }
+                    .onTapGesture { location in
+                        handleMapTap(at: location, mapProxy: mapProxy)
                     }
                 }
             } else {
-                Map(coordinateRegion: $searchViewModel.region)
-                .overlay(
-                    VStack(spacing: 8) {
-                        Image(systemName: "map")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondary)
-                        Text("Search and select a location")
-                            .font(.headline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.systemBackground).opacity(0.9))
-                            .shadow(radius: 5)
-                    )
-                )
+                MapReader { mapProxy in
+                    Map(coordinateRegion: $searchViewModel.region)
+                        .onTapGesture { location in
+                            handleMapTap(at: location, mapProxy: mapProxy)
+                        }
+                        .overlay(
+                            VStack(spacing: 8) {
+                                Image(systemName: "map")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.secondary)
+                                Text("Search, tap on map, or use current location")
+                                    .font(.headline)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color(.systemBackground).opacity(0.9))
+                                    .shadow(radius: 5)
+                            )
+                        )
+                }
             }
         }
     }
@@ -400,6 +393,42 @@ struct LocationPickerView: View {
                 latitudinalMeters: 2000,
                 longitudinalMeters: 2000
             )
+        }
+    }
+    
+    private func handleMapTap(at location: CGPoint, mapProxy: MapProxy) {
+        if let coordinate = mapProxy.convert(location, from: .local) {
+            // Perform reverse geocoding for the tapped location
+            let geocoder = CLGeocoder()
+            let clLocation = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            
+            geocoder.reverseGeocodeLocation(clLocation) { [weak searchViewModel] placemarks, error in
+                DispatchQueue.main.async {
+                    if let placemark = placemarks?.first, error == nil {
+                        let mkPlacemark = MKPlacemark(placemark: placemark)
+                        let mapItem = MKMapItem(placemark: mkPlacemark)
+                        
+                        // Use intelligent naming strategy
+                        if let name = placemark.name, !name.isEmpty {
+                            mapItem.name = name
+                        } else if let thoroughfare = placemark.thoroughfare, !thoroughfare.isEmpty {
+                            mapItem.name = thoroughfare
+                        } else if let locality = placemark.locality, !locality.isEmpty {
+                            mapItem.name = locality
+                        } else {
+                            mapItem.name = "Selected Location"
+                        }
+                        
+                        selectLocation(mapItem)
+                    } else {
+                        // Fallback to coordinate-based naming
+                        let placemark = MKPlacemark(coordinate: coordinate)
+                        let mapItem = MKMapItem(placemark: placemark)
+                        mapItem.name = String(format: "%.4f, %.4f", coordinate.latitude, coordinate.longitude)
+                        selectLocation(mapItem)
+                    }
+                }
+            }
         }
     }
 }
@@ -452,5 +481,81 @@ private struct LocationResultRow: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(isSelected ? Color.green.opacity(0.1) : Color.clear)
         )
+    }
+}
+
+// MARK: - CategoryMapPin
+
+struct CategoryMapPin: View {
+    let category: Category?
+    let title: String?
+    let isSelected: Bool
+    
+    @StateObject private var settingsManager = UserSettingsManager.shared
+    
+    private var pinColor: Color {
+        if let category = category {
+            return category.color
+        } else {
+            return colorFromString(settingsManager.settings.pinColor)
+        }
+    }
+    
+    private var pinSymbol: String {
+        if let category = category, let symbol = category.symbol {
+            return symbol
+        } else {
+            return settingsManager.settings.pinIcon
+        }
+    }
+    
+    private func colorFromString(_ colorName: String) -> Color {
+        switch colorName {
+        case "blue": return .blue
+        case "green": return .green
+        case "yellow": return .yellow
+        case "red": return .red
+        case "purple": return .purple
+        case "orange": return .orange
+        case "pink": return .pink
+        case "cyan": return .cyan
+        case "indigo": return .indigo
+        default: return .red
+        }
+    }
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 36, height: 36)
+                    .shadow(radius: 4)
+                
+                Circle()
+                    .fill(pinColor)
+                    .frame(width: 32, height: 32)
+                
+                Image(systemName: pinSymbol)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+            }
+            .scaleEffect(isSelected ? 1.2 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: isSelected)
+            
+            if let title = title {
+                Text(title)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill(Color.black.opacity(0.8))
+                    )
+                    .foregroundColor(.white)
+                    .shadow(radius: 2)
+            }
+        }
     }
 }
