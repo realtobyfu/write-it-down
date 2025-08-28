@@ -29,6 +29,8 @@
 	</array>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>To attach your current location to a note.</string>
+    <key>NSUserNotificationsUsageDescription</key>
+    <string>Send gentle daily reminders to help you maintain a consistent writing practice and capture your thoughts.</string>
     <key>UILaunchScreen</key>
     <dict>
         <key>UIColorName</key>

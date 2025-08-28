@@ -59,7 +59,7 @@ struct NoteEditorView: View {
     // MARK: - Computed Properties
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            VStack(spacing: 8) {
 #if os(macOS)
                 RichTextFormat.Toolbar(context: contextRT)
 #endif
@@ -74,7 +74,7 @@ struct NoteEditorView: View {
                 
                 RichTextEditor(text: $viewModel.attributedText, context: contextRT, format: .archivedData)
                     .frame(minHeight: 200)
-                    .padding(8)
+                    .padding(4)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(Color(.systemBackground))
@@ -129,7 +129,8 @@ struct NoteEditorView: View {
                     premiumManager: premiumManager
                 )
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .confirmationDialog(
                 "Select Image Source",
                 isPresented: $isConfirmationDialogPresented,
