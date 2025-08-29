@@ -97,10 +97,10 @@ struct NotificationPermissionStatus: View {
         }
         .onAppear {
             // **Load Details**: Get granular permission info when view appears
-            /// **Performance**: Only check detailed permissions when needed
-            /// **Threading**: Async task prevents UI blocking
-            Task {
-                permissionDetails = await notificationManager.getDetailedPermissionStatus()
+            notificationManager.getDetailedPermissionStatus { authorized, alert, sound, badge in
+                DispatchQueue.main.async {
+                    self.permissionDetails = (authorized, alert, sound, badge)
+                }
             }
         }
     }
@@ -169,8 +169,7 @@ struct NotificationPermissionStatus: View {
             /// **Error Handling**: Gracefully handles user denial
             /// **State Update**: UI automatically updates based on result
             Button(action: {
-                Task {
-                    let _ = await notificationManager.requestPermission()
+                notificationManager.requestPermission { _ in
                     // **UI Updates**: @StateObject ensures automatic UI refresh after permission change
                 }
             }) {

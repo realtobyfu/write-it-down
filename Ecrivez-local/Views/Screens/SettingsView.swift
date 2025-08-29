@@ -4,7 +4,7 @@ import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.managedObjectContext) private var context
-    // @StateObject private var settingsManager = UserSettingsManager.shared
+    @StateObject private var settingsManager = UserSettingsManager.shared
     @StateObject private var premiumManager = PremiumManager.shared
     @StateObject private var authViewModel = AuthViewModel()
     @AppStorage("isDarkMode") private var isDarkMode = false
@@ -24,8 +24,8 @@ struct SettingsView: View {
             // Appearance Section
             appearanceSection
             
-            // Notifications Section (Temporarily Disabled)
-            // notificationsSection
+            // Notifications Section
+            notificationsSection
             
             // Categories & Organization
             organizationSection
@@ -142,11 +142,6 @@ struct SettingsView: View {
                 }
             }
             .premiumGate(.publicNoteSharing)
-            
-            // Toggle(isOn: $settingsManager.settings.enableLocationServices) {
-            //     Label("Location Services", systemImage: "location")
-            // }
-            // .premiumGate(.locationTagging)
         }
     }
     
@@ -162,10 +157,9 @@ struct SettingsView: View {
     }
     
     // MARK: - Notifications Section (Temporarily Disabled)
-    /*
-    /// **Enhanced Notifications UI**: Rich preference controls with smart defaults
-    /// **Design Philosophy**: Progressive disclosure - show advanced options only when needed
-    /// **UX Pattern**: Primary toggle first, then conditional sub-settings for enabled features
+    // **Enhanced Notifications UI**: Rich preference controls with smart defaults
+    // **Design Philosophy**: Progressive disclosure - show advanced options only when needed
+    // **UX Pattern**: Primary toggle first, then conditional sub-settings for enabled features
     private var notificationsSection: some View {
         Section {
             // **Primary Control**: Main toggle for daily reminders
@@ -177,14 +171,12 @@ struct SettingsView: View {
                 set: { newValue in
                     settingsManager.settings.enableDailyReminder = newValue
                     // **Real-time Sync**: Update notification schedule immediately when toggled
-                    /// **Threading**: Uses Task to handle async notification operations on main thread
+                    /// **Simple Scheduling**: Direct call without async complexity
                     /// **Error Handling**: NotificationManager handles permission failures gracefully
-                    Task {
-                        await NotificationManager.shared.scheduleDailyReminder(
-                            at: settingsManager.settings.dailyReminderTime,
-                            isEnabled: newValue
-                        )
-                    }
+                    NotificationManager.shared.scheduleDailyReminder(
+                        at: settingsManager.settings.dailyReminderTime,
+                        isEnabled: newValue
+                    )
                 }
             )) {
                 Label("Daily Writing Reminder", systemImage: "bell")
@@ -207,12 +199,10 @@ struct SettingsView: View {
                             settingsManager.settings.dailyReminderTime = newTime
                             // **Immediate Update**: Reschedule notification with new time
                             /// **User Feedback**: Changes take effect immediately, no "save" button needed
-                            Task {
-                                await NotificationManager.shared.scheduleDailyReminder(
-                                    at: newTime,
-                                    isEnabled: settingsManager.settings.enableDailyReminder
-                                )
-                            }
+                            NotificationManager.shared.scheduleDailyReminder(
+                                at: newTime,
+                                isEnabled: settingsManager.settings.enableDailyReminder
+                            )
                         }
                     ),
                     displayedComponents: .hourAndMinute
@@ -243,9 +233,7 @@ struct SettingsView: View {
                 /// **Trust Building**: Users can confirm the feature works before depending on it
                 /// **Development**: Helpful for debugging notification issues
                 Button(action: {
-                    Task {
-                        await NotificationManager.shared.sendTestNotification()
-                    }
+                    NotificationManager.shared.sendTestNotification()
                 }) {
                     HStack {
                         Image(systemName: "paperplane")
@@ -270,8 +258,7 @@ struct SettingsView: View {
             }
         }
     }
-    */
-    
+
     // MARK: - Organization Section
     private var organizationSection: some View {
         Section {
@@ -307,13 +294,13 @@ struct SettingsView: View {
     // MARK: - Support Section
     private var supportSection: some View {
         Section(header: Text("Settings")) {
-            // Button(action: {
-            //     // Reset all settings
-            //     settingsManager.reset()
-            // }) {
-            //     Label("Reset All Settings", systemImage: "arrow.counterclockwise")
-            //         .foregroundColor(.red)
-            // }
+            Button(action: {
+                // Reset all settings
+                settingsManager.reset()
+            }) {
+                Label("Reset All Settings", systemImage: "arrow.counterclockwise")
+                    .foregroundColor(.red)
+            }
         }
     }
     

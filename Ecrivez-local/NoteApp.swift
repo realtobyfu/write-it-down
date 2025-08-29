@@ -16,11 +16,11 @@ struct NoteApp: App {
     // go to the home screen
     @StateObject private var dataController = CoreDataManager()
     @StateObject private var authVM = AuthViewModel()
-    // @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var notificationManager = NotificationManager.shared
     
     /// **User Settings**: App-wide preferences and customizations
     /// **Integration**: Manages notification preferences and other user settings
-    // @StateObject private var settingsManager = UserSettingsManager.shared
+    @StateObject private var settingsManager = UserSettingsManager.shared
     
     /// **Dark Mode**: System-wide theme preference
     /// **Binding**: Directly bound to system preference for immediate updates
@@ -82,7 +82,7 @@ struct NoteApp: App {
                         /// **User Engagement**: Critical for building writing habits
                         /// **Smart Defaults**: Uses user's saved preferences for scheduling
                         /// **Permission Handling**: Gracefully handles denied permissions
-                        // await setupNotifications()
+                        setupNotifications()
                         
                         // **5. Cloud Sync**: Sync data if user is authenticated
                         /// **Data Consistency**: Keep local and cloud data synchronized
@@ -142,13 +142,11 @@ struct NoteApp: App {
     
     // MARK: - Notification Setup
     
-    // MARK: - Notification Setup (Temporarily Disabled)
-    /*
     /// **Notification Initialization**: Set up daily writing reminders based on user preferences
     /// **Smart Defaults**: New users get reminders enabled at optimal time (7 PM)
     /// **Existing Users**: Respects their saved preferences and schedules accordingly
     /// **Permission Strategy**: Non-intrusive permission requests with graceful fallbacks
-    private func setupNotifications() async {
+    private func setupNotifications() {
         let settings = settingsManager.settings
         
         // **Permission Check**: Only proceed if notifications should be enabled
@@ -170,19 +168,20 @@ struct NoteApp: App {
             /// **Timing**: During app setup when user is most engaged
             /// **Context**: User has already enabled reminders in settings
             print("📱 NoteApp: Requesting notification permissions for first time")
-            let granted = await notificationManager.requestPermission()
             
-            if granted {
-                // **Success Path**: Schedule the reminder immediately
-                await scheduleUserReminder()
-            } else {
-                print("⚠️ NoteApp: Notification permission denied, reminders won't work")
+            notificationManager.requestPermission { granted in
+                if granted {
+                    // **Success Path**: Schedule the reminder immediately
+                    self.scheduleUserReminder()
+                } else {
+                    print("⚠️ NoteApp: Notification permission denied, reminders won't work")
+                }
             }
             
         case .authorized:
             // **Already Granted**: Just schedule the reminder
             /// **Efficiency**: Skip permission checks and go straight to scheduling
-            await scheduleUserReminder()
+            scheduleUserReminder()
             
         case .denied:
             // **Previously Denied**: Log for debugging but don't pester user
@@ -193,24 +192,24 @@ struct NoteApp: App {
         case .provisional, .ephemeral:
             // **Limited Permissions**: Try to schedule anyway, might work partially
             /// **iOS Feature**: Some notification types may still work
-            await scheduleUserReminder()
+            scheduleUserReminder()
             
         @unknown default:
             // **Future Compatibility**: Handle any new states Apple might add
             print("❓ NoteApp: Unknown notification permission state")
-            await scheduleUserReminder()
+            scheduleUserReminder()
         }
     }
     
     /// **Reminder Scheduling**: Actually schedule the daily notification based on user settings
     /// **Smart Messaging**: Uses time-aware message selection for better engagement
-    private func scheduleUserReminder() async {
+    private func scheduleUserReminder() {
         let settings = settingsManager.settings
         
         // **Schedule Notification**: Use user's preferred time and enable status
         /// **Real-time Settings**: Always uses current user preferences
         /// **Smart Messages**: NotificationManager handles message rotation automatically
-        await notificationManager.scheduleDailyReminder(
+        notificationManager.scheduleDailyReminder(
             at: settings.dailyReminderTime,
             isEnabled: settings.enableDailyReminder
         )
@@ -221,5 +220,4 @@ struct NoteApp: App {
         let timeString = formatter.string(from: settings.dailyReminderTime)
         print("✅ NoteApp: Daily writing reminder scheduled for \(timeString)")
     }
-    */
 }
