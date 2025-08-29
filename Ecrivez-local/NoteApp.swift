@@ -84,6 +84,11 @@ struct NoteApp: App {
                         /// **Permission Handling**: Gracefully handles denied permissions
                         setupNotifications()
                         
+                        // **4.5. Clear App Badge**: Reset notification badge when app launches
+                        /// **UX Fix**: Remove persistent red badge from app icon
+                        /// **User Expectation**: Opening the app should clear notification badges
+                        clearAppBadge()
+                        
                         // **5. Cloud Sync**: Sync data if user is authenticated
                         /// **Data Consistency**: Keep local and cloud data synchronized
                         /// **Conditional**: Only runs if user has sync enabled and is logged in
@@ -219,5 +224,18 @@ struct NoteApp: App {
         formatter.timeStyle = .short
         let timeString = formatter.string(from: settings.dailyReminderTime)
         print("✅ NoteApp: Daily writing reminder scheduled for \(timeString)")
+    }
+    
+    /// **Badge Management**: Clear app icon badge when user opens the app
+    /// **UX Improvement**: Removes persistent red badge that confuses users
+    /// **iOS Standard**: Most apps clear badges when opened
+    private func clearAppBadge() {
+        UNUserNotificationCenter.current().setBadgeCount(0) { error in
+            if let error = error {
+                print("⚠️ NoteApp: Failed to clear badge: \(error.localizedDescription)")
+            } else {
+                print("🔄 NoteApp: App badge cleared")
+            }
+        }
     }
 }

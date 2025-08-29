@@ -278,6 +278,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
     ) {
         let identifier = response.notification.request.identifier
         
+        // **Badge Management**: Clear app badge when user interacts with notification
+        /// **UX Standard**: Tapping notification should clear the red badge
+        /// **User Expectation**: Notification interaction means "read"
+        /// **iOS 17+ Compatible**: Use modern UNUserNotificationCenter API
+        center.setBadgeCount(0) { error in
+            if let error = error {
+                print("⚠️ Failed to clear badge: \(error.localizedDescription)")
+            }
+        }
+        
         // **Action Handling**: Different responses based on notification type
         if identifier == dailyReminderIdentifier {
             print("📝 NotificationManager: User tapped daily reminder notification")
@@ -288,6 +298,8 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             // **Analytics Opportunity**: Track how often users engage with reminders
             // This helps optimize timing and message content
         }
+        
+        print("🔄 NotificationManager: Badge cleared after notification interaction")
         
         // **iOS Requirement**: Must call completion handler
         completionHandler()

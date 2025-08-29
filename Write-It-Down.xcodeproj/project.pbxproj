@@ -87,7 +87,6 @@
 		3ED0E53B2E5E3F6E00D2965E /* NoteEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4DB2E5E3F6E00D2965E /* NoteEditorViewModel.swift */; };
 		3ED0E53C2E5E3F6E00D2965E /* WeatherPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E49E2E5E3F6E00D2965E /* WeatherPicker.swift */; };
 		3ED0E53D2E5E3F6E00D2965E /* SyncControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4EE2E5E3F6E00D2965E /* SyncControlView.swift */; };
-		3ED0E53E2E5E3F6E00D2965E /* TutorialConcurrency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4B92E5E3F6E00D2965E /* TutorialConcurrency.swift */; };
 		3ED0E53F2E5E3F6E00D2965E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4DF2E5E3F6E00D2965E /* SettingsView.swift */; };
 		3ED0E5402E5E3F6E00D2965E /* BubbleMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4BC2E5E3F6E00D2965E /* BubbleMenuView.swift */; };
 		3ED0E5412E5E3F6E00D2965E /* LikeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3ED0E4A22E5E3F6E00D2965E /* LikeModel.swift */; };
@@ -143,7 +142,6 @@
 		3ED0E4B62E5E3F6E00D2965E /* SupabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseManager.swift; sourceTree = "<group>"; };
 		3ED0E4B72E5E3F6E00D2965E /* SyncedNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncedNote.swift; sourceTree = "<group>"; };
 		3ED0E4B82E5E3F6E00D2965E /* SyncManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncManager.swift; sourceTree = "<group>"; };
-		3ED0E4B92E5E3F6E00D2965E /* TutorialConcurrency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialConcurrency.swift; sourceTree = "<group>"; };
 		3ED0E4BB2E5E3F6E00D2965E /* AttributedTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AttributedTextView.swift; sourceTree = "<group>"; };
 		3ED0E4BC2E5E3F6E00D2965E /* BubbleMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleMenuView.swift; sourceTree = "<group>"; };
 		3ED0E4BD2E5E3F6E00D2965E /* EnhancedCategorySelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedCategorySelectionView.swift; sourceTree = "<group>"; };
@@ -312,7 +310,6 @@
 				3ED0E4B62E5E3F6E00D2965E /* SupabaseManager.swift */,
 				3ED0E4B72E5E3F6E00D2965E /* SyncedNote.swift */,
 				3ED0E4B82E5E3F6E00D2965E /* SyncManager.swift */,
-				3ED0E4B92E5E3F6E00D2965E /* TutorialConcurrency.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -614,7 +611,6 @@
 				3ED0E53B2E5E3F6E00D2965E /* NoteEditorViewModel.swift in Sources */,
 				3ED0E53C2E5E3F6E00D2965E /* WeatherPicker.swift in Sources */,
 				3ED0E53D2E5E3F6E00D2965E /* SyncControlView.swift in Sources */,
-				3ED0E53E2E5E3F6E00D2965E /* TutorialConcurrency.swift in Sources */,
 				3ED0E53F2E5E3F6E00D2965E /* SettingsView.swift in Sources */,
 				3ED0E5402E5E3F6E00D2965E /* BubbleMenuView.swift in Sources */,
 				3ED0E5412E5E3F6E00D2965E /* LikeModel.swift in Sources */,
