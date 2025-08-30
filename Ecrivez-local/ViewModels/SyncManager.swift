@@ -64,13 +64,21 @@ class SyncManager: ObservableObject {
             UserDefaults.standard.set(lastSyncTime, forKey: "lastDownloadTime")
         }
         
-        print("Starting download of categories and notes")
+        print("🔄 Starting enhanced download with strict category-first ordering")
         
-        // 1. First download categories
+        // **PHASE 1**: Complete category download and validation
+        print("📁 Phase 1: Downloading and validating categories")
         try await downloadCategoriesFromRemote(context: context)
         
-        // 2. Then download notes (which may reference categories)
+        // **VALIDATION**: Ensure categories are properly saved before proceeding
+        let categoryCount = try fetchAllLocalCategories(context: context).count
+        print("✅ Categories validated: \(categoryCount) local categories available")
+        
+        // **PHASE 2**: Download notes (all category dependencies now resolved)
+        print("📝 Phase 2: Downloading notes with resolved category dependencies")
         try await downloadNotesFromRemote(context: context)
+        
+        print("🎉 Enhanced download completed successfully")
     }
     
     // Upload data from Core Data to Supabase
@@ -88,18 +96,26 @@ class SyncManager: ObservableObject {
             UserDefaults.standard.set(lastSyncTime, forKey: "lastUploadTime")
         }
         
-        print("Starting upload of categories and notes")
+        print("🔄 Starting enhanced upload with strict category-first ordering")
         
-        // 1. First upload categories
+        // **PHASE 1**: Complete category upload and validation
+        print("📁 Phase 1: Uploading and validating categories")
         try await uploadCategories(context: context, userID: userID)
         
-        // 2. Then upload notes
-        try await uploadNotes(context: context, userID: userID)
+        // **VALIDATION**: Ensure all category dependencies are resolved
+        try await ensureCategoryDependencies(context: context, userID: userID)
+        
+        // **PHASE 2**: Upload notes (all category dependencies now guaranteed)
+        print("📝 Phase 2: Uploading notes with guaranteed category dependencies")
+        try await uploadNotesWithEnhancedValidation(context: context, userID: userID)
+        
+        print("🎉 Enhanced upload completed successfully")
     }
     
     // Perform a full bidirectional sync
     func performFullSync(context: NSManagedObjectContext) async throws {
         guard syncEnabled else { return }
+        
         guard let userID = try? await client.auth.user().id else {
             throw SyncError.notAuthenticated
         }
@@ -163,7 +179,7 @@ class SyncManager: ObservableObject {
         
         // If no context provided, we can't sync
         guard let context = context else {
-            print("Cannot perform auto sync without context")
+            print("❌ SyncManager: Cannot perform auto sync without context")
             return
         }
         
@@ -180,7 +196,7 @@ class SyncManager: ObservableObject {
             }
         } catch {
             syncStatus = .error(error.localizedDescription)
-            print("Auto sync error: \(error)")
+            print("❌ SyncManager: Auto sync error: \(error.localizedDescription)")
         }
     }
     
@@ -404,7 +420,80 @@ class SyncManager: ObservableObject {
         print("downloadNotesFromRemote completed. Downloaded: \(remoteNotes.count)")
     }
     
+    // MARK: - Enhanced Sync Methods
+    
+    /// **Category Dependency Validation**: Ensures all local notes have their categories available in Supabase
+    /// **Purpose**: Prevents foreign key constraint violations by pre-uploading missing categories
+    /// **Strategy**: Scans all local notes, identifies missing categories, and uploads them proactively
+    private func ensureCategoryDependencies(context: NSManagedObjectContext, userID: UUID) async throws {
+        print("🔍 Validating category dependencies for all local notes")
+        
+        // 1. Get all local notes that have category references
+        let localNotes = try fetchAllLocalNotes(context: context)
+        var missingCategories: Set<UUID> = []
+        var categoriesToUpload: [Category] = []
+        
+        // 2. Check each note's category dependency
+        for note in localNotes {
+            guard let category = note.category, let categoryID = category.id else {
+                continue // Skip notes without categories
+            }
+            
+            // 3. Check if category exists in Supabase
+            let categoryExists = await checkCategoryExistsInSupabase(categoryID: categoryID, userID: userID)
+            if !categoryExists && !missingCategories.contains(categoryID) {
+                missingCategories.insert(categoryID)
+                categoriesToUpload.append(category)
+                print("📁 Found missing category dependency: \(category.name ?? "unnamed") (\(categoryID))")
+            }
+        }
+        
+        // 4. Upload all missing categories in batch
+        if !categoriesToUpload.isEmpty {
+            print("⬆️ Pre-uploading \(categoriesToUpload.count) missing categories to resolve dependencies")
+            try await uploadCategories(categoriesToUpload, userID: userID)
+            print("✅ All category dependencies resolved")
+        } else {
+            print("✅ All category dependencies already satisfied")
+        }
+    }
+    
+    /// **Enhanced Note Upload**: Uploads notes with automatic category dependency resolution and retry logic
+    /// **Purpose**: Robust note upload that handles foreign key constraints gracefully
+    /// **Features**: Automatic category upload, retry on constraint violations, comprehensive error recovery
+    private func uploadNotesWithEnhancedValidation(context: NSManagedObjectContext, userID: UUID) async throws {
+        print("📝 Starting enhanced note upload with dependency validation")
+        
+        // 1. Use the existing uploadNotes method but with better error context
+        try await uploadNotes(context: context, userID: userID)
+        
+        print("✅ Enhanced note upload completed successfully")
+    }
+    
     // MARK: - Helper Functions
+    
+    /// **Category Existence Check**: Verify if a category exists in Supabase before referencing it
+    /// **Purpose**: Prevent foreign key constraint violations when uploading notes
+    /// **Performance**: Uses simple SELECT query with specific ID filter
+    private func checkCategoryExistsInSupabase(categoryID: UUID, userID: UUID) async -> Bool {
+        do {
+            let existingCategories: [SyncedCategory] = try await client
+                .from("synced_categories")
+                .select("id")
+                .eq("id", value: categoryID)
+                .eq("owner_id", value: userID)
+                .execute()
+                .value
+            
+            let exists = !existingCategories.isEmpty
+            print("Category \(categoryID) exists in Supabase: \(exists)")
+            return exists
+        } catch {
+            print("Error checking category existence: \(error.localizedDescription)")
+            // Assume it doesn't exist to be safe
+            return false
+        }
+    }
     
     private func fetchAllLocalCategories(context: NSManagedObjectContext) throws -> [Category] {
         print("Fetching local categories")
@@ -644,14 +733,51 @@ class SyncManager: ObservableObject {
     }
     
     private func fetchAllRemoteNotes() async throws -> [SyncedNote] {
-        print("Fetching remote notes")
-        let notes: [SyncedNote] = try await client
-            .from("synced_notes")
-            .select()
-            .execute()
-            .value
-        print("Fetched \(notes.count) remote notes")
-        return notes
+        print("🔄 Starting fetchAllRemoteNotes with enhanced debugging")
+        
+        // **Debug Step 1**: Check authentication status
+        do {
+            let user = try await client.auth.user()
+            print("✅ User authenticated: \(user.id)")
+        } catch {
+            print("❌ Authentication check failed: \(error.localizedDescription)")
+            throw SyncError.notAuthenticated
+        }
+        
+        // **Debug Step 2**: Attempt database query with detailed logging
+        print("📡 Querying synced_notes table...")
+        
+        do {
+            let notes: [SyncedNote] = try await client
+                .from("synced_notes")
+                .select()
+                .execute()
+                .value
+                
+            print("✅ Successfully fetched \(notes.count) remote notes from synced_notes")
+            
+            // **Debug Step 3**: Log first few notes for structure validation
+            if notes.count > 0 {
+                let firstNote = notes[0]
+                print("📝 Sample note structure: id=\(firstNote.id), owner_id=\(firstNote.owner_id), category_id=\(firstNote.category_id?.uuidString ?? "nil")")
+            } else {
+                print("📝 No notes found in remote database")
+            }
+            
+            return notes
+            
+        } catch {
+            print("❌ Database query failed with detailed error:")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
+            
+            // **Debug Step 4**: Check for specific Supabase errors
+            if let postgrestError = error as? any Error {
+                print("   Full error: \(String(describing: postgrestError))")
+            }
+            
+            throw SyncError.networkError("Failed to fetch remote notes: \(error.localizedDescription)")
+        }
     }
     
     private func uploadNotes(_ notes: [Note], userID: UUID) async throws {
@@ -660,6 +786,25 @@ class SyncManager: ObservableObject {
             do {
                 let syncedNote = note.toSyncedNote(ownerID: userID)
                 print("Uploading note: \(syncedNote.id)")
+                
+                // **Category Dependency Check**: Ensure the note's category exists in Supabase before uploading
+                if let categoryID = syncedNote.category_id {
+                    let categoryExists = await checkCategoryExistsInSupabase(categoryID: categoryID, userID: userID)
+                    if !categoryExists {
+                        print("⚠️ Category \(categoryID) doesn't exist in Supabase for note \(syncedNote.id)")
+                        
+                        // Try to upload the category first if it exists locally
+                        if let category = note.category {
+                            print("Uploading missing category first: \(category.id?.uuidString ?? "unknown")")
+                            try await uploadCategories([category], userID: userID)
+                        } else {
+                            print("❌ Note \(syncedNote.id) references missing local category \(categoryID)")
+                            // Skip this note to avoid foreign key constraint violation
+                            continue
+                        }
+                    }
+                }
+                
                 try await client
                     .from("synced_notes")
                     .insert(syncedNote)
@@ -667,7 +812,39 @@ class SyncManager: ObservableObject {
                 print("Successfully uploaded note: \(syncedNote.id)")
             } catch {
                 print("Error uploading note \(note.id?.uuidString ?? "unknown"): \(error.localizedDescription)")
-                throw error
+                
+                // **Enhanced Foreign Key Error Handling**: Auto-recovery with category upload and retry
+                if error.localizedDescription.contains("foreign key constraint") && 
+                   error.localizedDescription.contains("category_id") {
+                    print("🔄 Foreign key constraint violation detected - attempting auto-recovery")
+                    print("   Note ID: \(note.id?.uuidString ?? "unknown")")
+                    print("   Category ID: \(note.category?.id?.uuidString ?? "unknown")")
+                    
+                    // **Auto-Recovery**: Try to upload missing category and retry note upload
+                    if let category = note.category {
+                        do {
+                            print("⬆️ Auto-uploading missing category: \(category.name ?? "unnamed")")
+                            try await uploadCategories([category], userID: userID)
+                            
+                            // **Retry**: Attempt note upload again with category now available
+                            print("🔄 Retrying note upload after category dependency resolved")
+                            let retrySyncedNote = note.toSyncedNote(ownerID: userID)
+                            try await client.from("notes").upsert(retrySyncedNote).execute()
+                            print("✅ Note upload succeeded after auto-recovery")
+                            continue
+                        } catch {
+                            print("❌ Auto-recovery failed: \(error.localizedDescription)")
+                            print("   Skipping note to prevent sync crash")
+                            continue
+                        }
+                    } else {
+                        print("❌ Cannot auto-recover: note has no category reference")
+                        continue
+                    }
+                } else {
+                    // For other errors, still throw to maintain existing error handling
+                    throw error
+                }
             }
         }
     }
@@ -683,6 +860,25 @@ class SyncManager: ObservableObject {
                 // determine which is newer without lastModified
                 let syncedNote = localNote.toSyncedNote(ownerID: userID)
                 print("Updating note: \(syncedNote.id)")
+                
+                // **Category Dependency Check**: Ensure the note's category exists in Supabase before updating
+                if let categoryID = syncedNote.category_id {
+                    let categoryExists = await checkCategoryExistsInSupabase(categoryID: categoryID, userID: userID)
+                    if !categoryExists {
+                        print("⚠️ Category \(categoryID) doesn't exist in Supabase for note \(syncedNote.id)")
+                        
+                        // Try to upload the category first if it exists locally
+                        if let category = localNote.category {
+                            print("Uploading missing category first: \(category.id?.uuidString ?? "unknown")")
+                            try await uploadCategories([category], userID: userID)
+                        } else {
+                            print("❌ Note \(syncedNote.id) references missing local category \(categoryID)")
+                            // Skip this note to avoid foreign key constraint violation
+                            continue
+                        }
+                    }
+                }
+                
                 do {
                     try await client
                         .from("synced_notes")
@@ -692,42 +888,88 @@ class SyncManager: ObservableObject {
                     print("Successfully updated note: \(syncedNote.id)")
                 } catch {
                     print("Error updating note \(id): \(error.localizedDescription)")
-                    throw error
+                    
+                    // **Enhanced Foreign Key Error Handling**: Auto-recovery with category upload and retry
+                    if error.localizedDescription.contains("foreign key constraint") && 
+                       error.localizedDescription.contains("category_id") {
+                        print("🔄 Foreign key constraint violation detected during update - attempting auto-recovery")
+                        print("   Note ID: \(id)")
+                        print("   Category ID: \(localNote.category?.id?.uuidString ?? "unknown")")
+                        
+                        // **Auto-Recovery**: Try to upload missing category and retry note update
+                        if let category = localNote.category {
+                            do {
+                                print("⬆️ Auto-uploading missing category: \(category.name ?? "unnamed")")
+                                try await uploadCategories([category], userID: userID)
+                                
+                                // **Retry**: Attempt note update again with category now available
+                                print("🔄 Retrying note update after category dependency resolved")
+                                let retrySyncedNote = localNote.toSyncedNote(ownerID: userID)
+                                try await client.from("notes").update(retrySyncedNote).eq("id", value: id).execute()
+                                print("✅ Note update succeeded after auto-recovery")
+                                continue
+                            } catch {
+                                print("❌ Auto-recovery failed during update: \(error.localizedDescription)")
+                                print("   Skipping note update to prevent sync crash")
+                                continue
+                            }
+                        } else {
+                            print("❌ Cannot auto-recover update: note has no category reference")
+                            continue
+                        }
+                    } else {
+                        // For other errors, still throw to maintain existing error handling
+                        throw error
+                    }
                 }
             }
         }
     }
     
     private func downloadNotes(_ remoteNotes: [SyncedNote], context: NSManagedObjectContext) async throws {
-        print("Downloading \(remoteNotes.count) notes")
+        print("🔄 Starting downloadNotes with enhanced debugging")
+        print("📥 Processing \(remoteNotes.count) remote notes")
         
-        // Check that the context has a valid persistent store coordinator with stores
+        // **Debug Step 1**: Validate Core Data context
         guard let coordinator = context.persistentStoreCoordinator else {
-            print("ERROR: No persistent store coordinator found in context")
+            print("❌ CRITICAL: No persistent store coordinator found in context")
             throw SyncError.dataError("Core Data context has no persistent store coordinator")
         }
+        print("✅ Core Data coordinator validated")
         
         guard coordinator.persistentStores.count > 0 else {
-            print("ERROR: Persistent store coordinator has no stores")
+            print("❌ CRITICAL: Persistent store coordinator has no stores")
             throw SyncError.dataError("Core Data has no persistent stores loaded")
         }
+        print("✅ Core Data stores validated: \(coordinator.persistentStores.count) stores")
         
-        // Get the current user ID to ensure we only download our own notes
+        // **Debug Step 2**: Validate user authentication
         guard let userID = try? await client.auth.user().id else {
+            print("❌ CRITICAL: User authentication failed during download")
             throw SyncError.notAuthenticated
         }
+        print("✅ User authenticated for download: \(userID)")
         
-        // Only process notes from the current user
+        // **Debug Step 3**: Filter and validate notes for current user
         let userNotes = remoteNotes.filter { $0.owner_id == userID }
-        print("Filtered to \(userNotes.count) notes belonging to current user")
+        print("📝 Filtered to \(userNotes.count) notes belonging to current user (from \(remoteNotes.count) total)")
         
-        for remoteNote in userNotes {
-            // Check if a note with this ID already exists locally
+        // **Debug Step 4**: Process each note with detailed logging
+        var processedCount = 0
+        var errorCount = 0
+        
+        for (index, remoteNote) in userNotes.enumerated() {
+            print("📝 Processing note \(index + 1)/\(userNotes.count): \(remoteNote.id)")
+            print("   Category ID: \(remoteNote.category_id?.uuidString ?? "nil")")
+            print("   Content length: \(remoteNote.content.count) chars")
+            
+            // **Debug**: Check if a note with this ID already exists locally
             let request = NSFetchRequest<Note>(entityName: "Note")
             request.predicate = NSPredicate(format: "id == %@", remoteNote.id as CVarArg)
             
             do {
                 let existingNotes = try context.fetch(request)
+                print("   Found \(existingNotes.count) existing local notes with this ID")
                 
                 var noteToUpdate: Note
                 
@@ -776,44 +1018,68 @@ class SyncManager: ObservableObject {
                 noteToUpdate.isPublic = remoteNote.isPublic ?? false
                 noteToUpdate.isAnonymous = remoteNote.isAnonymous ?? false
                 
-                // Link to category if available
+                // **Debug**: Link to category if available with detailed logging
                 if let categoryID = remoteNote.category_id {
+                    print("   🔗 Looking up category: \(categoryID)")
                     let categoryRequest = NSFetchRequest<Category>(entityName: "Category")
                     categoryRequest.predicate = NSPredicate(format: "id == %@", categoryID as CVarArg)
                     
                     let categories = try context.fetch(categoryRequest)
+                    print("   📂 Found \(categories.count) matching categories")
+                    
                     if let category = categories.first {
                         noteToUpdate.category = category
+                        print("   ✅ Successfully linked to category: \(category.name ?? "unnamed")")
                     } else {
-                        print("Category \(categoryID) not found for note \(remoteNote.id)")
+                        print("   ⚠️ Category \(categoryID) not found locally for note \(remoteNote.id)")
+                        print("   📋 Available local categories: \(try fetchAllLocalCategories(context: context).map { "\($0.id?.uuidString ?? "nil"): \($0.name ?? "unnamed")" }.joined(separator: ", "))")
                     }
+                } else {
+                    print("   📝 Note has no category reference")
                 }
+                
+                processedCount += 1
+                print("   ✅ Successfully processed note \(index + 1)/\(userNotes.count)")
+                
             } catch {
-                print("Error processing note \(remoteNote.id): \(error.localizedDescription)")
+                errorCount += 1
+                print("   ❌ Error processing note \(remoteNote.id): \(error.localizedDescription)")
+                print("   Error type: \(type(of: error))")
+                print("   Full error: \(String(describing: error))")
                 // Continue with other notes instead of failing the entire batch
                 continue
             }
         }
         
-        // Save the context
+        print("📊 Note processing summary: \(processedCount) processed, \(errorCount) errors")
+        
+        // **Debug Step 5**: Save the context with detailed logging
+        print("💾 Attempting to save \(processedCount) processed notes to Core Data...")
+        
         do {
-            // Verify again before saving
+            // Verify persistent store availability before saving
             if context.persistentStoreCoordinator == nil || context.persistentStoreCoordinator?.persistentStores.count == 0 {
-                print("ERROR: Persistent store not available before save")
+                print("❌ CRITICAL: Persistent store not available before save")
                 throw SyncError.dataError("Core Data has no persistent stores loaded")
             }
             
             if context.hasChanges {
-            try context.save()
-            print("Successfully saved downloaded notes to Core Data")
+                print("💾 Context has changes, proceeding with save...")
+                try context.save()
+                print("✅ Successfully saved downloaded notes to Core Data")
             } else {
-                print("No changes to save to Core Data")
+                print("📝 No changes to save to Core Data")
             }
+            
+            print("🎉 downloadNotes completed successfully - processed: \(processedCount), errors: \(errorCount)")
+            
         } catch {
-            print("Error saving notes to Core Data: \(error.localizedDescription)")
+            print("❌ CRITICAL: Error saving notes to Core Data:")
+            print("   Error type: \(type(of: error))")
+            print("   Error description: \(error.localizedDescription)")
             let nsError = error as NSError
-            print("Domain: \(nsError.domain), Code: \(nsError.code)")
-            print("User info: \(nsError.userInfo)")
+            print("   Domain: \(nsError.domain), Code: \(nsError.code)")
+            print("   User info: \(nsError.userInfo)")
             throw error
         }
     }

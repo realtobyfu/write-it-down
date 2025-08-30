@@ -82,7 +82,7 @@ struct AuthenticationView: View {
                 }
                 
                 if case .success = signInResult {
-                    Text("Check your inbox for the magic link.")
+                    Text("Check your inbox for the magic link (Supabase Auth).")
                         .font(.footnote)
                         .foregroundColor(.green)
                         .padding(.horizontal, 20)

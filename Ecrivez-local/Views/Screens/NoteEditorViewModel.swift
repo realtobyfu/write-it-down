@@ -100,6 +100,27 @@ class NoteEditorViewModel: ObservableObject {
             if SyncManager.shared.syncEnabled {
                 SyncManager.shared.triggerSyncAfterSave(context: context)
             }
+            
+            // **First Note Experience**: Set up notifications after user creates their first note
+            /// **Better UX**: Ask for permissions when user has experienced app value
+            /// **State Tracking**: Only do this once per user lifecycle
+            let hasCreatedFirstNote = UserDefaults.standard.bool(forKey: "hasCreatedFirstNote")
+            if !hasCreatedFirstNote && existingNote == nil {
+                // **Mark Achievement**: User has now created their first note
+                UserDefaults.standard.set(true, forKey: "hasCreatedFirstNote")
+                
+                // **Contextual Permission Request**: Set up notifications with better timing
+                /// **App Access**: Get reference to main app instance through notification
+                /// **Background Safety**: Post notification to trigger permission flow
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(
+                        name: .init("setupNotificationsAfterFirstNote"),
+                        object: nil
+                    )
+                }
+                
+                print("✅ NoteEditorViewModel: First note created, triggering notification setup")
+            }
         } catch {
             print("Failed to save note:", error)
         }

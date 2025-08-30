@@ -6,7 +6,7 @@
 //
 import SwiftUI
 import CoreData
-import UserNotifications
+@preconcurrency import UserNotifications
 
 @main
 struct NoteApp: App {
@@ -29,6 +29,10 @@ struct NoteApp: App {
     /// **Onboarding**: Track whether user has completed initial setup
     /// **First Launch**: Determines whether to show onboarding vs. main app
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    
+    /// **User Engagement**: Track when user creates their first note for better permission UX
+    /// **Permission Strategy**: Only ask for notifications after user understands app value
+    @AppStorage("hasCreatedFirstNote") private var hasCreatedFirstNote = false
     // TEMPORARY: Reset onboarding for testing
 //    UserDefaults.standard.removeObject(forKey: "hasCompletedOnboarding")
 
@@ -51,6 +55,12 @@ struct NoteApp: App {
                         Task {
                             await handleURL(url: url)
                         }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: .init("setupNotificationsAfterFirstNote"))) { _ in
+                        // **First Note Achievement**: Set up notifications after user creates first note
+                        /// **Better UX**: Contextual permission request when user understands app value
+                        /// **Trigger**: Called from NoteEditorViewModel when first note is saved
+                        setupNotificationsAfterFirstNote()
                     }
                     .task {
                         // **App Launch Sequence**: Critical initialization tasks in optimal order
@@ -78,16 +88,15 @@ struct NoteApp: App {
                             print("Failed to cleanup duplicate categories: \(error)")
                         }
                         
-                        // **4. Notification Setup**: Initialize daily writing reminders
-                        /// **User Engagement**: Critical for building writing habits
-                        /// **Smart Defaults**: Uses user's saved preferences for scheduling
-                        /// **Permission Handling**: Gracefully handles denied permissions
-                        setupNotifications()
+                        // **4. Notification Setup**: Initialize daily writing reminders for existing users only
+                        /// **Better UX**: Only schedule if user already granted permissions, don't ask for new ones
+                        /// **Permission Strategy**: Wait until user creates first note to ask for permissions
+                        setupNotificationsIfAlreadyGranted()
                         
                         // **4.5. Clear App Badge**: Reset notification badge when app launches
                         /// **UX Fix**: Remove persistent red badge from app icon
                         /// **User Expectation**: Opening the app should clear notification badges
-                        clearAppBadge()
+                        await clearAppBadge()
                         
                         // **5. Cloud Sync**: Sync data if user is authenticated
                         /// **Data Consistency**: Keep local and cloud data synchronized
@@ -147,11 +156,42 @@ struct NoteApp: App {
     
     // MARK: - Notification Setup
     
-    /// **Notification Initialization**: Set up daily writing reminders based on user preferences
+    /// **Non-Intrusive Setup**: Only schedule notifications if user already granted permissions
+    /// **App Launch**: Called during app startup - doesn't ask for new permissions
+    /// **Better UX**: Avoids aggressive permission requests on first launch
+    private func setupNotificationsIfAlreadyGranted() {
+        let settings = settingsManager.settings
+        
+        // **Permission Check**: Only proceed if notifications should be enabled
+        guard settings.enableDailyReminder else {
+            print("📴 NoteApp: Daily reminders disabled by user preference")
+            return
+        }
+        
+        // **Existing Users Only**: Only schedule if user already granted permissions
+        let currentStatus = notificationManager.authorizationStatus
+        
+        switch currentStatus {
+        case .authorized:
+            // **Already Granted**: Just schedule the reminder
+            scheduleUserReminder()
+            print("✅ NoteApp: Scheduled notifications for existing user")
+            
+        case .notDetermined, .denied, .provisional, .ephemeral:
+            // **No Action**: Don't ask for permissions during app launch
+            /// **Better UX**: Wait for natural moment (after first note creation)
+            print("📴 NoteApp: Skipping notification setup - will ask after first note")
+            
+        @unknown default:
+            print("❓ NoteApp: Unknown notification permission state")
+        }
+    }
+    
+    /// **Contextual Permission Request**: Set up notifications after user creates their first note
+    /// **Better UX**: User understands app value before being asked for permissions
     /// **Smart Defaults**: New users get reminders enabled at optimal time (7 PM)
-    /// **Existing Users**: Respects their saved preferences and schedules accordingly
-    /// **Permission Strategy**: Non-intrusive permission requests with graceful fallbacks
-    private func setupNotifications() {
+    /// **Permission Strategy**: Contextual permission requests with clear value proposition
+    func setupNotificationsAfterFirstNote() {
         let settings = settingsManager.settings
         
         // **Permission Check**: Only proceed if notifications should be enabled
@@ -170,14 +210,15 @@ struct NoteApp: App {
         switch currentStatus {
         case .notDetermined:
             // **First Time**: Request permissions with clear value proposition
-            /// **Timing**: During app setup when user is most engaged
+            /// **Timing**: After user creates first note when they understand app value
             /// **Context**: User has already enabled reminders in settings
-            print("📱 NoteApp: Requesting notification permissions for first time")
+            print("📱 NoteApp: Requesting notification permissions after first note")
             
             notificationManager.requestPermission { granted in
                 if granted {
                     // **Success Path**: Schedule the reminder immediately
                     self.scheduleUserReminder()
+                    print("✅ NoteApp: Permissions granted, daily reminders scheduled")
                 } else {
                     print("⚠️ NoteApp: Notification permission denied, reminders won't work")
                 }
@@ -187,21 +228,23 @@ struct NoteApp: App {
             // **Already Granted**: Just schedule the reminder
             /// **Efficiency**: Skip permission checks and go straight to scheduling
             scheduleUserReminder()
+            print("✅ NoteApp: Permissions already granted, scheduling reminders")
             
         case .denied:
             // **Previously Denied**: Log for debugging but don't pester user
             /// **Respect Choice**: User explicitly denied, don't keep asking
             /// **Logging**: Track for analytics on permission denial rates
-            print("⚠️ NoteApp: Notifications denied, cannot schedule reminders")
+            print("⚠️ NoteApp: Notifications previously denied, cannot schedule reminders")
             
         case .provisional, .ephemeral:
             // **Limited Permissions**: Try to schedule anyway, might work partially
             /// **iOS Feature**: Some notification types may still work
             scheduleUserReminder()
+            print("⚠️ NoteApp: Limited notification permissions, attempting to schedule")
             
         @unknown default:
             // **Future Compatibility**: Handle any new states Apple might add
-            print("❓ NoteApp: Unknown notification permission state")
+            print("❓ NoteApp: Unknown notification permission state, attempting to schedule")
             scheduleUserReminder()
         }
     }
@@ -229,13 +272,23 @@ struct NoteApp: App {
     /// **Badge Management**: Clear app icon badge when user opens the app
     /// **UX Improvement**: Removes persistent red badge that confuses users
     /// **iOS Standard**: Most apps clear badges when opened
-    private func clearAppBadge() {
-        UNUserNotificationCenter.current().setBadgeCount(0) { error in
-            if let error = error {
-                print("⚠️ NoteApp: Failed to clear badge: \(error.localizedDescription)")
+    /// **Thread Safety**: MainActor ensures UI operations run on main thread
+    @MainActor
+    private func clearAppBadge() async {
+        // **Safe Badge Clearing**: Simple approach without complex concurrency
+        do {
+            let center = UNUserNotificationCenter.current()
+            
+            // Use iOS 16+ async version when available
+            if #available(iOS 16.0, *) {
+                try? await center.setBadgeCount(0)
             } else {
-                print("🔄 NoteApp: App badge cleared")
+                // Fire and forget for older iOS - no complex callbacks
+                center.setBadgeCount(0) { _ in }
             }
+        } catch {
+            // Gracefully handle any exceptions without crashing
+            print("⚠️ NoteApp: Badge clearing failed gracefully: \(error.localizedDescription)")
         }
     }
 }

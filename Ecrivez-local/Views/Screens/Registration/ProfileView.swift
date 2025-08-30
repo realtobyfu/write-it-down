@@ -1,9 +1,7 @@
 import SwiftUI
-import _PhotosUI_SwiftUI
 import Storage
 import CoreData
 import UIKit
-import PhotosUI
 
 struct ProfileView: View {
     
@@ -15,18 +13,9 @@ struct ProfileView: View {
     // The user's profile that we're displaying or editing
     @State var editedProfile: Profile
     
-    // For picking a new profile photo
-    @State private var selectedImageData: Data?
-    @State private var selectedImageItem: PhotosPickerItem?  // Add this back
-    
-    // For camera selection
-    @State private var isShowingCameraPicker = false
-    @State private var isConfirmationDialogPresented = false
-    
     // For error / saving state
     @State private var errorMessage: String?
     @State private var isSaving = false
-    @State private var isUploading = false
 
     // MARK: - MyPublicNotes states
     @Environment(\.managedObjectContext) private var context
@@ -49,7 +38,7 @@ struct ProfileView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
+            VStack(spacing: 24) {
                 // Header with profile photo and name
                 ZStack {
                     Rectangle()
@@ -58,24 +47,26 @@ struct ProfileView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ))
-                        .frame(height: 180)
+                        .frame(height: 200)
                     
-                    VStack(spacing: 12) {
-                profilePhotoSection
+                    VStack(spacing: 16) {
+                        profilePhotoSection
                             .shadow(radius: 4)
                         
                         if !isEditing {
-                            Text(editedProfile.display_name ?? "Display Name")
-                                .font(.title2)
-                                .bold()
-                                .foregroundColor(.white)
-                            
-                            Text("@\(editedProfile.username ?? "username")")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.9))
+                            VStack(spacing: 8) {
+                                Text(editedProfile.display_name ?? "Display Name")
+                                    .font(.title2)
+                                    .bold()
+                                    .foregroundColor(.white)
+                                
+                                Text("@\(editedProfile.username ?? "username")")
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
                         }
                     }
-                    .padding(.top, 20)
+                    .padding(.vertical, 24)
                 }
                 
                 // Main content area
@@ -102,7 +93,7 @@ struct ProfileView: View {
                     }
                             .buttonStyle(.bordered)
                         }
-                        .padding(.top, 16)
+                        .padding(.top, 8)
                 }
                     
                     // Error message
@@ -329,21 +320,6 @@ struct ProfileView: View {
                     Circle()
                         .stroke(Color.white, lineWidth: 3)
                 )
-            
-            if isEditing {
-                Button(action: { isConfirmationDialogPresented = true }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.blue)
-                            .frame(width: 30, height: 30)
-                        
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.white)
-                    }
-                }
-                .offset(x: 35, y: 35)
-            }
         }
     }
     
@@ -391,10 +367,10 @@ struct ProfileView: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
-                .disabled(isSaving || isUploading)
+                .disabled(isSaving)
                 
                 Button(action: { Task { await saveProfileEdits() } }) {
-                    if isSaving || isUploading {
+                    if isSaving {
                         ProgressView()
                             .tint(.white)
                     } else {
@@ -407,7 +383,7 @@ struct ProfileView: View {
                 .background(Color.blue)
                 .foregroundColor(.white)
                 .cornerRadius(8)
-                .disabled(isSaving || isUploading)
+                .disabled(isSaving)
             }
         }
     }
@@ -530,39 +506,14 @@ extension ProfileView {
         defer { isSaving = false }
 
         do {
-            // 1) If using Supabase Storage for the new photo, upload and get URL:
-            if let data = selectedImageData {
-                isUploading = true
-                do {
-                    // Use StorageManager to upload the image
-                    if let image = UIImage(data: data) {
-                        let imagePath = try await StorageManager.shared.uploadProfileImage(image)
-                        
-                        // Get a public URL for the image
-                        let imageUrl = try StorageManager.shared.getPublicURL(for: imagePath)
-                        
-                        // Update the profile with the new URL
-                        editedProfile.profile_photo_url = imageUrl.absoluteString
-                    } else {
-                        throw StorageManager.StorageError.imageConversionFailed
-                    }
-                    
-                    isUploading = false
-                } catch {
-                    isUploading = false
-                    errorMessage = "Failed to upload profile image: \(error.localizedDescription)"
-                    return
-                }
-            }
-            
-            // 2) Prepare payload for updating in DB
+            // Prepare payload for updating in DB
             let updatePayload = ProfileUpdateRequest(
                 username: editedProfile.username,
                 display_name: editedProfile.display_name,
                 profile_photo_url: editedProfile.profile_photo_url
             )
             
-            // 3) Send update to "profiles" table
+            // Send update to "profiles" table
             try await SupabaseManager.shared.client
                 .from("profiles")
                 .update(updatePayload)
@@ -570,10 +521,8 @@ extension ProfileView {
                 .single()
                 .execute()
             
-            // 4) If no error, exit edit mode & clear the temp image data
+            // If no error, exit edit mode
             isEditing = false
-            selectedImageData = nil
-            selectedImageItem = nil
         } catch {
             print("Caught error message in updating profile")
             errorMessage = "Error updating profile: \(error.localizedDescription)"
@@ -584,8 +533,6 @@ extension ProfileView {
         // Discard unsaved changes
         isEditing = false
         errorMessage = nil
-        selectedImageData = nil
-        selectedImageItem = nil
     }
 }
 

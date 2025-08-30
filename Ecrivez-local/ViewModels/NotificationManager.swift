@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 import SwiftUI
 
 /// Centralized notification management system for Write-It-Down
@@ -282,10 +282,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         /// **UX Standard**: Tapping notification should clear the red badge
         /// **User Expectation**: Notification interaction means "read"
         /// **iOS 17+ Compatible**: Use modern UNUserNotificationCenter API
-        center.setBadgeCount(0) { error in
-            if let error = error {
-                print("⚠️ Failed to clear badge: \(error.localizedDescription)")
+        /// **Thread Safety**: Delegate methods run on main thread by default
+        
+        // **Safe Badge Clearing**: Simple approach without complex concurrency
+        if #available(iOS 16.0, *) {
+            Task {
+                try? await notificationCenter.setBadgeCount(0)
             }
+        } else {
+            // Fire and forget for older iOS
+            notificationCenter.setBadgeCount(0) { _ in }
         }
         
         // **Action Handling**: Different responses based on notification type

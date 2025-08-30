@@ -29,6 +29,10 @@ Write-It-Down is a SwiftUI-based note-taking application designed to help users 
 - [] Add automatic location detection to LocationPicker
 - [] UI changes (add more symbols / colors in settings)
 
+#### Notifications
+- [] AI-personalized messages based on writing patterns
+- [] Even more variety of notification messages?
+
 ## Installation
 
 1. Clone the repository:
